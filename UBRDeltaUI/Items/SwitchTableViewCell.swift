@@ -10,14 +10,14 @@ import UIKit
 import UBRDelta
 
 
-class SwitchTableViewCell: UITableViewCell, UpdateableTableViewCell {
+public class SwitchTableViewCell: UITableViewCell, UpdateableTableViewCell {
     
     var titleLabel = UILabel()
     var switchControl = UISwitch()
     
     private var item: SwitchItem? = nil
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    public override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .None
         addSubviews()
@@ -25,12 +25,12 @@ class SwitchTableViewCell: UITableViewCell, UpdateableTableViewCell {
     }
     
     
-    required init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     
-    func addSubviews() {
+    private func addSubviews() {
         // Title View
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
@@ -42,7 +42,7 @@ class SwitchTableViewCell: UITableViewCell, UpdateableTableViewCell {
     }
     
     
-    func addViewConstraints() {
+    private func addViewConstraints() {
         let views = ["titleLabel": titleLabel, "switchControl": switchControl]
         let h = NSLayoutConstraint.constraintsWithVisualFormat("H:|-[titleLabel]-[switchControl]-|", options: [], metrics: nil, views: views)
         let vColorView = NSLayoutConstraint.constraintsWithVisualFormat("V:|-[titleLabel]-|", options: [], metrics: nil, views: views)
@@ -51,12 +51,12 @@ class SwitchTableViewCell: UITableViewCell, UpdateableTableViewCell {
     }
 
     
-    func switchValueChanged(sender: AnyObject) {
+    private func switchValueChanged(sender: AnyObject) {
         item?.valueHandler(value: switchControl.on)
     }
  
     
-    func updateCellWithItem(item: ComparableItem, animated: Bool) {
+    public func updateCellWithItem(item: ComparableItem, animated: Bool) {
         
         guard let switchItem = item as? SwitchItem else { return }
 

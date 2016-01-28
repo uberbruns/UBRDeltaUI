@@ -10,12 +10,12 @@ import UIKit
 import UBRDelta
 
 
-class StaticValueTableViewCell: UITableViewCell, UpdateableTableViewCell {
+public class StaticValueTableViewCell: UITableViewCell, UpdateableTableViewCell {
     
-    let titleView = UILabel()
-    let valueView = UILabel()
+    private let titleView = UILabel()
+    private let valueView = UILabel()
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    public override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .None
         addSubviews()
@@ -23,12 +23,12 @@ class StaticValueTableViewCell: UITableViewCell, UpdateableTableViewCell {
     }
     
     
-    required init?(coder aDecoder: NSCoder) {
+    public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     
-    func addSubviews() {
+    private func addSubviews() {
         // Title View
         titleView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleView)
@@ -40,7 +40,7 @@ class StaticValueTableViewCell: UITableViewCell, UpdateableTableViewCell {
     }
     
     
-    func addViewConstraints() {
+    private func addViewConstraints() {
         let views = ["titleView": titleView, "valueView": valueView]
         let h = NSLayoutConstraint.constraintsWithVisualFormat("H:|-[titleView]-[valueView]-|", options: [], metrics: nil, views: views)
         let vColorView = NSLayoutConstraint.constraintsWithVisualFormat("V:|-[titleView]-|", options: [], metrics: nil, views: views)
@@ -49,7 +49,7 @@ class StaticValueTableViewCell: UITableViewCell, UpdateableTableViewCell {
     }
  
     
-    func updateCellWithItem(item: ComparableItem, animated: Bool) {
+    public func updateCellWithItem(item: ComparableItem, animated: Bool) {
         guard let staticValueItem = item as? StaticValueItem else { return }
         titleView.text = staticValueItem.title
         valueView.text = staticValueItem.value

@@ -9,34 +9,37 @@
 import UIKit
 import UBRDelta
 
-class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+
+public class DeltaTableView : UITableView {}
+
+
+public class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     // MARK: - Controller -
 
-    var reusableCellNibs = [String:UINib]()
-    var reusableCellClasses = [String:AnyClass]()
+    public var reusableCellNibs = [String:UINib]()
+    public var reusableCellClasses = [String:AnyClass]()
     
-    var sections: [TableViewSectionItem] = []
-    let contentDiffer = UBRDeltaContent()
+    public private(set) var sections: [TableViewSectionItem] = []
+    private let contentDiffer = UBRDeltaContent()
     private var animateViews = true
     
-    let tableView = UITableView(frame: CGRectZero, style: .Grouped)
+    public let tableView = DeltaTableView(frame: CGRectZero, style: .Grouped)
     
     
     // MARK: - View -
     // MARK: Life-Cycle
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         configureContentDiffer()
         prepareReusableTableViewCells()
         addTableView()
         updateTableView()
-        updateAppearance()
     }
 
     
-    override func viewWillDisappear(animated: Bool) {
+    public  override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         self.view.endEditing(true)
     }
@@ -44,7 +47,7 @@ class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableVi
     
     // MARK: Add Views
 
-    func addTableView() {
+    private func addTableView() {
         // Add
         view.addSubview(tableView)
         
@@ -68,23 +71,13 @@ class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableVi
     
     // MARK: Update Views
 
-    func updateAppearance() {
-        switch tableView.style {
-        case .Grouped :
-            tableView.backgroundColor = UIColor(white: 0.96, alpha: 1.0)
-        default :
-            tableView.backgroundColor = UIColor(white: 1, alpha: 1.0)
-        }
-    }
-    
-    
-    func updateView(animated: Bool = true) {
+    public func updateView(animated: Bool = true) {
         animateViews = animated
         updateTableView()
     }
     
     
-    func updateTableView() {
+    public func updateTableView() {
         let newSections: [TableViewSectionItem] = generateItems()
         
         if sections.count == 0 {
@@ -100,7 +93,7 @@ class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableVi
     
     // MARK: Configuration
     
-    func configureContentDiffer() {
+    private func configureContentDiffer() {
         
         contentDiffer.userInterfaceUpdateTime = 0.16667
         
@@ -197,10 +190,10 @@ class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableVi
     
     // MARK: - API -
     
-    func prepareReusableTableViewCells() { }
+    public func prepareReusableTableViewCells() { }
     
     
-    func generateItems() -> [TableViewSectionItem] {
+    public func generateItems() -> [TableViewSectionItem] {
         return []
     }
     
@@ -208,17 +201,17 @@ class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableVi
     // MARK: - Protocols -
     // MARK: UITableViewDataSource
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    public func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return sections.count
     }
     
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    public func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sections[section].items.count
     }
     
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    public func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         let item = sections[indexPath.section].items[indexPath.row]
         
@@ -248,13 +241,13 @@ class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     
-    func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    public func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         let section = sections[section]
         return section.title
     }
     
     
-    func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    public func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         let section = sections[section]
         return section.footer
     }
@@ -262,7 +255,7 @@ class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableVi
     
     // MARK: UITableViewDelegate
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    public func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         
         let item = sections[indexPath.section].items[indexPath.row]
         

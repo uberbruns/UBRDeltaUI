@@ -10,19 +10,19 @@ import UIKit
 import UBRDelta
 
 
-struct SwitchItem : DelataTableViewItem, SelectableTableViewItem  {
+public struct SwitchItem : DelataTableViewItem, SelectableTableViewItem  {
     
-    typealias ValueHandler = (value: Bool) -> ()
+    public typealias ValueHandler = (value: Bool) -> ()
     
-    let id: String
-    let reuseIdentifier = "Switch"
+    public let id: String
+    public let reuseIdentifier = "Switch"
     
-    let title: String
-    let value: Bool
-    let valueHandler: ValueHandler
-    let selectionHandler: SelectionHandler?
+    public let title: String
+    public let value: Bool
+    public let valueHandler: ValueHandler
+    public let selectionHandler: SelectionHandler?
     
-    init(id: String, title: String, value: Bool, valueHandler: ValueHandler, selectionHandler: SelectionHandler? = nil) {
+    public init(id: String, title: String, value: Bool, valueHandler: ValueHandler, selectionHandler: SelectionHandler? = nil) {
         self.id = id
         self.title = title
         self.value = value
@@ -33,7 +33,7 @@ struct SwitchItem : DelataTableViewItem, SelectableTableViewItem  {
 
 
 
-extension SwitchItem : ComparableItem {
+public extension SwitchItem : ComparableItem {
 
     var uniqueIdentifier: Int { return id.hash }
     

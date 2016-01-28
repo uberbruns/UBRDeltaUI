@@ -10,14 +10,14 @@ import UIKit
 import UBRDelta
 
 
-struct StaticValueItem : DelataTableViewItem  {
+public struct StaticValueItem : DelataTableViewItem  {
     
-    let reuseIdentifier = "StaticValue"
-    let id: String
-    let title: String
-    let value: String
+    public let reuseIdentifier = "StaticValue"
+    public let id: String
+    public let title: String
+    public let value: String
     
-    init(id: String, title: String, value: String) {
+    public init(id: String, title: String, value: String) {
         self.id = id
         self.title = title
         self.value = value
@@ -28,9 +28,9 @@ struct StaticValueItem : DelataTableViewItem  {
 
 extension StaticValueItem : ComparableItem {
     
-    var uniqueIdentifier: Int { return id.hash }
+    public var uniqueIdentifier: Int { return id.hash }
     
-    func compareTo(other: ComparableItem) -> ComparisonLevel {
+    public func compareTo(other: ComparableItem) -> ComparisonLevel {
         guard other.uniqueIdentifier == self.uniqueIdentifier else { return .Different }
         guard let otherItem = other as? StaticValueItem else { return .Different }
         
