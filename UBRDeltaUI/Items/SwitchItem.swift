@@ -33,11 +33,11 @@ public struct SwitchItem : DelataTableViewItem, SelectableTableViewItem  {
 
 
 
-public extension SwitchItem : ComparableItem {
+extension SwitchItem : ComparableItem {
 
-    var uniqueIdentifier: Int { return id.hash }
+    public var uniqueIdentifier: Int { return id.hash }
     
-    func compareTo(other: ComparableItem) -> ComparisonLevel {
+    public func compareTo(other: ComparableItem) -> ComparisonLevel {
         guard other.uniqueIdentifier == self.uniqueIdentifier else { return .Different }
         guard let otherRow = other as? SwitchItem else { return .Different }
         
