@@ -13,18 +13,24 @@ import UBRDelta
 public typealias SelectionHandler = () -> ()
 
 
-public protocol DelataTableViewItem {
+public protocol DeltaTableViewItem : ComparableItem {
     var id: String { get }
     var reuseIdentifier: String { get }
 }
 
 
-public protocol UpdateableTableViewCell {
+public protocol DeltaTableViewHeaderFooterItem : ComparableItem {
+    var id: String { get }
+    var reuseIdentifier: String { get }
+}
+
+
+public protocol UpdateableTableViewCell : class {
     func updateCellWithItem(item: ComparableItem, animated: Bool)
 }
 
 
-public protocol UpdateableTableViewHeaderFooterView {
+public protocol UpdateableTableViewHeaderFooterView : class {
     func updateViewWithItem(item: ComparableItem, animated: Bool, type: HeaderFooterType)
 }
 

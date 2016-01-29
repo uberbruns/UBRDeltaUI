@@ -10,7 +10,7 @@ import UIKit
 import UBRDelta
 
 
-public struct StaticValueItem : DelataTableViewItem  {
+public struct StaticValueItem : DeltaTableViewItem  {
     
     public let reuseIdentifier = "StaticValue"
     public let id: String

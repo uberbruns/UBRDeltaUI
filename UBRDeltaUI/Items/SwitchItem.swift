@@ -10,7 +10,7 @@ import UIKit
 import UBRDelta
 
 
-public struct SwitchItem : DelataTableViewItem, SelectableTableViewItem  {
+public struct SwitchItem : DeltaTableViewItem, SelectableTableViewItem  {
     
     public typealias ValueHandler = (value: Bool) -> ()
     

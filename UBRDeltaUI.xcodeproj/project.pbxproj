@@ -16,7 +16,6 @@
 		9B78BDA11C5A660B002D3CE4 /* DeltaTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */; };
 		9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */; };
 		9B78BDA31C5A660B002D3CE4 /* TableViewSectionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */; };
-		9B78BDA41C5A660B002D3CE4 /* UITableViewHeaderFooterView+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD9A1C5A660B002D3CE4 /* UITableViewHeaderFooterView+Extensions.swift */; };
 		9B78BDAA1C5A66A3002D3CE4 /* UBRDelta.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B78BDA91C5A66A3002D3CE4 /* UBRDelta.framework */; };
 /* End PBXBuildFile section */
 
@@ -32,7 +31,6 @@
 		9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeltaTableViewController.swift; sourceTree = "<group>"; };
 		9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DeltaTableViewController+Protocols.swift"; sourceTree = "<group>"; };
 		9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewSectionItem.swift; sourceTree = "<group>"; };
-		9B78BD9A1C5A660B002D3CE4 /* UITableViewHeaderFooterView+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UITableViewHeaderFooterView+Extensions.swift"; sourceTree = "<group>"; };
 		9B78BDA91C5A66A3002D3CE4 /* UBRDelta.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UBRDelta.framework; path = Carthage/Build/iOS/UBRDelta.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -94,7 +92,6 @@
 				9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */,
 				9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */,
 				9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */,
-				9B78BD9A1C5A660B002D3CE4 /* UITableViewHeaderFooterView+Extensions.swift */,
 			);
 			path = TableViewController;
 			sourceTree = "<group>";
@@ -210,7 +207,6 @@
 				9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */,
 				9B78BD9E1C5A660B002D3CE4 /* StaticValueTableViewCell.swift in Sources */,
 				9B78BD9D1C5A660B002D3CE4 /* StaticValueItem.swift in Sources */,
-				9B78BDA41C5A660B002D3CE4 /* UITableViewHeaderFooterView+Extensions.swift in Sources */,
 				9B78BDA31C5A660B002D3CE4 /* TableViewSectionItem.swift in Sources */,
 				9B78BDA01C5A660B002D3CE4 /* SwitchTableViewCell.swift in Sources */,
 			);

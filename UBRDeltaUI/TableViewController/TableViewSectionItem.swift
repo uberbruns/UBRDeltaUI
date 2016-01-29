@@ -13,13 +13,14 @@ public struct TableViewSectionItem : ComparableSectionItem {
     
     public var uniqueIdentifier: Int { return id.hash }
     public var items: [ComparableItem] = []
+    public var headerItem: ComparableItem?
+    public var footerItem: ComparableItem?
     
     public let id: String
     public var title: String?
     public var footer: String? = nil
-    public var representingRole: [String:AnyObject]? = nil
     
-    public init(id: String, title: String?) {
+    public init(id: String, title: String? = nil) {
         self.id = id
         self.title = title
     }
@@ -31,11 +32,21 @@ public struct TableViewSectionItem : ComparableSectionItem {
         
         let titleChanged = other.title != title
         let footerChanged = other.footer != footer
+
+        var headerItemChanged = (headerItem == nil) != (other.headerItem == nil)
+        if let headerItem = headerItem, otherheaderItem = other.headerItem {
+            headerItemChanged = headerItem.compareTo(otherheaderItem) != .Same
+        }
+
+        var footerItemChanged = (footerItem == nil) != (other.footerItem == nil)
+        if let footerItem = footerItem, otherFooterItem = other.footerItem {
+            footerItemChanged = footerItem.compareTo(otherFooterItem) != .Same
+        }
         
-        if  !titleChanged && !footerChanged {
+        if  !titleChanged && !footerChanged && !headerItemChanged && !footerItemChanged {
             return .Same
         } else {
-            return .Changed(["title":titleChanged, "footer": footerChanged])
+            return .Changed(["title":titleChanged, "footer": footerChanged, "headerItem":headerItemChanged, "footerItem": footerItemChanged])
         }
     }
     
