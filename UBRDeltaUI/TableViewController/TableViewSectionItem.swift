@@ -17,12 +17,9 @@ public struct TableViewSectionItem : ComparableSectionItem {
     public var footerItem: ComparableItem?
     
     public let id: String
-    public var title: String?
-    public var footer: String? = nil
     
-    public init(id: String, title: String? = nil) {
+    public init(id: String) {
         self.id = id
-        self.title = title
     }
     
     
@@ -30,9 +27,6 @@ public struct TableViewSectionItem : ComparableSectionItem {
         guard let other = other as? TableViewSectionItem else { return .Different }
         guard other.id == self.id else { return .Different }
         
-        let titleChanged = other.title != title
-        let footerChanged = other.footer != footer
-
         var headerItemChanged = (headerItem == nil) != (other.headerItem == nil)
         if let headerItem = headerItem, otherheaderItem = other.headerItem {
             headerItemChanged = headerItem.compareTo(otherheaderItem) != .Same
@@ -43,10 +37,10 @@ public struct TableViewSectionItem : ComparableSectionItem {
             footerItemChanged = footerItem.compareTo(otherFooterItem) != .Same
         }
         
-        if  !titleChanged && !footerChanged && !headerItemChanged && !footerItemChanged {
+        if  !headerItemChanged && !footerItemChanged {
             return .Same
         } else {
-            return .Changed(["title":titleChanged, "footer": footerChanged, "headerItem":headerItemChanged, "footerItem": footerItemChanged])
+            return .Changed(["headerItem":headerItemChanged, "footerItem": footerItemChanged])
         }
     }
     
