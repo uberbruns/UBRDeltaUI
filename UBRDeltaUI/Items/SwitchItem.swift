@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import UBRDelta
+
 
 
 public struct SwitchItem : DeltaTableViewItem, SelectableTableViewItem  {

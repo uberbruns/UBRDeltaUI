@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import UBRDelta
+
 
 
 public class DeltaTableView : UITableView {}
