@@ -112,8 +112,7 @@
 				9B8FF2E11C5D1127002B105A /* UBRDeltaContent.swift */,
 				9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */,
 			);
-			name = DeltaLib;
-			path = ..;
+			path = DeltaLib;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
