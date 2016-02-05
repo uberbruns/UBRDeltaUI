@@ -274,9 +274,9 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     public func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let item = sections[section]
         if item.headerItem is DeltaTableViewHeaderFooterItem {
-            return UITableViewAutomaticDimension // Default Behaviour (Auto Layout)
+            return UITableViewAutomaticDimension // Auto Layout Height
         } else {
-            return CGFloat.min // Zero Height
+            return 33 // Default Height
         }
     }
     
@@ -300,11 +300,11 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     public func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         let item = sections[section]
         if item.footerItem is DeltaTableViewHeaderFooterItem {
-            return UITableViewAutomaticDimension // Default Behaviour (Auto Layout)
+            return UITableViewAutomaticDimension // Auto Layout Height
         } else if section == sections.count-1 {
-            return UITableViewAutomaticDimension
+            return UITableViewAutomaticDimension // Last cell should have a space to the end of the tableView
         } else {
-            return CGFloat.min // Zero Height
+            return 0.0 // Zero Height so there is no space between header and last cell
         }
     }
 
