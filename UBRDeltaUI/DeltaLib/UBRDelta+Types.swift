@@ -16,25 +16,11 @@ public enum ComparisonLevel {
     case Same, Different, Changed(ComparisonChanges)
     
     public var isSame: Bool {
-        switch self {
-        case .Same :
-            return true
-        case .Different :
-            return false
-        case .Changed(_) :
-            return true
-        }
+        return self != .Different
     }
     
     public var isChanged: Bool {
-        switch self {
-        case .Same :
-            return false
-        case .Different :
-            return false
-        case .Changed(_) :
-            return true
-        }
+        return self != .Different && self != .Same
     }
 }
 
