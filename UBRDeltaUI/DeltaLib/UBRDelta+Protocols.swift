@@ -22,3 +22,24 @@ public protocol ComparableItem {
     func compareTo(other: ComparableItem) -> ComparisonLevel
     
 }
+
+
+extension ComparableItem {
+    
+    /// Determines if a property of an item changed compared to another by calling `compareTo(other:)`
+    /// The default returned value is `true` if `other` is nil, the result of compareTo is `.Different`
+    /// or the property is missed in the dict of `.Changed`
+    public func comparedTo(other: ComparableItem?, didPropertyChange property: String) -> Bool {
+        guard let other = other else { return true }
+        let comparisonLevel = self.compareTo(other)
+        switch comparisonLevel {
+        case .Same :
+            return false
+        case .Changed(let changes) :
+            return changes[property] ?? true
+        default :
+            return true
+        }
+    }
+    
+}
