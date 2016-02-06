@@ -65,3 +65,23 @@ public struct ComparisonResult {
     }
     
 }
+
+
+public struct DeltaMatrix<T> {
+    
+    var rows = [Int:[Int:T]]()
+
+    subscript(row: Int, col: Int) -> T? {
+        get {
+            guard let cols = rows[row] else { return nil }
+            return cols[col]
+        }
+        set(newValue) {
+            var cols = rows[row] ?? [Int:T]()
+            cols[col] = newValue
+            rows[row] = cols
+        }
+    }
+    
+    init() {}
+}
