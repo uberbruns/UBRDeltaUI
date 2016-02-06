@@ -126,13 +126,13 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
 
     
-    
     // MARK: Configuration
     
     private func configureContentDiffer() {
         
         contentDiffer.userInterfaceUpdateTime = 0.16667
         
+        // Start updating table view
         contentDiffer.start = { [weak self] in
             guard let weakSelf = self else { return }
             if weakSelf.deltaDebugOutput {
@@ -143,6 +143,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             }
         }
         
+        // Insert, reload and delete table view rows
         contentDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
@@ -171,6 +172,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             }
             
             weakSelf.tableView.beginUpdates()
+            
             if manualReloadMap.count > 0 {
                 for (itemIndexBefore, _) in manualReloadMap {
                     let indexPathBefore = NSIndexPath(forRow: itemIndexBefore, inSection: section)
@@ -187,9 +189,9 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             }
 
             weakSelf.tableView.endUpdates()
-
         }
         
+        // Reorder table view rows
         contentDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let weakSelf = self else { return }
 
@@ -212,6 +214,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             weakSelf.tableView.endUpdates()
         }
         
+        // Insert, reload and delete table view sections
         contentDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
 
@@ -256,6 +259,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             weakSelf.tableView.endUpdates()
         }
         
+        // Reorder table view sections
         contentDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
             guard let weakSelf = self else { return }
             
@@ -276,6 +280,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             weakSelf.tableView.endUpdates()
         }
         
+        // Updating table view did end
         contentDiffer.completion = { [weak self] in
             guard let weakSelf = self else { return }
             
