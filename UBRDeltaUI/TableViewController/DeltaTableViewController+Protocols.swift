@@ -43,3 +43,22 @@ public enum HeaderFooterType {
 public protocol SelectableTableViewItem {
     var selectionHandler: SelectionHandler? { get }
 }
+
+
+/// A helper function to avoid reference cycles in action handler
+public func weakActionHandler<Target: AnyObject, Result>(target: Target, handler: (Target) -> ((Result) -> Void)) -> ((Result) -> Void) {
+    return { [weak target] result in
+        guard let t = target else { return }
+        handler(t)(result)
+    }
+}
+
+
+/// A helper function to avoid reference cycles in action handler
+public func weakActionHandler<Target: AnyObject>(target: Target, handler: (Target) -> (() -> Void)) -> (() -> Void) {
+    return { [weak target] in
+        guard let t = target else { return }
+        handler(t)()
+    }
+}
+
