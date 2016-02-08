@@ -8,10 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		9B78BD851C5A5D59002D3CE4 /* UBRDeltaUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9B78BD9D1C5A660B002D3CE4 /* StaticValueItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD921C5A660B002D3CE4 /* StaticValueItem.swift */; };
-		9B78BD9E1C5A660B002D3CE4 /* StaticValueTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD931C5A660B002D3CE4 /* StaticValueTableViewCell.swift */; };
-		9B78BD9F1C5A660B002D3CE4 /* SwitchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD941C5A660B002D3CE4 /* SwitchItem.swift */; };
-		9B78BDA01C5A660B002D3CE4 /* SwitchTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD951C5A660B002D3CE4 /* SwitchTableViewCell.swift */; };
 		9B78BDA11C5A660B002D3CE4 /* DeltaTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */; };
 		9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */; };
 		9B78BDA31C5A660B002D3CE4 /* TableViewSectionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */; };
@@ -27,10 +23,6 @@
 		9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = UBRDeltaUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRDeltaUI.h; sourceTree = "<group>"; };
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B78BD921C5A660B002D3CE4 /* StaticValueItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticValueItem.swift; sourceTree = "<group>"; };
-		9B78BD931C5A660B002D3CE4 /* StaticValueTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticValueTableViewCell.swift; sourceTree = "<group>"; };
-		9B78BD941C5A660B002D3CE4 /* SwitchItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchItem.swift; sourceTree = "<group>"; };
-		9B78BD951C5A660B002D3CE4 /* SwitchTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwitchTableViewCell.swift; sourceTree = "<group>"; };
 		9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeltaTableViewController.swift; sourceTree = "<group>"; };
 		9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DeltaTableViewController+Protocols.swift"; sourceTree = "<group>"; };
 		9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewSectionItem.swift; sourceTree = "<group>"; };
@@ -73,23 +65,11 @@
 			isa = PBXGroup;
 			children = (
 				9B78BDAB1C5A66AD002D3CE4 /* DeltaLib */,
-				9B78BD8F1C5A660B002D3CE4 /* Items */,
 				9B78BD961C5A660B002D3CE4 /* TableViewController */,
 				9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */,
 				9B78BD861C5A5D59002D3CE4 /* Info.plist */,
 			);
 			path = UBRDeltaUI;
-			sourceTree = "<group>";
-		};
-		9B78BD8F1C5A660B002D3CE4 /* Items */ = {
-			isa = PBXGroup;
-			children = (
-				9B78BD921C5A660B002D3CE4 /* StaticValueItem.swift */,
-				9B78BD931C5A660B002D3CE4 /* StaticValueTableViewCell.swift */,
-				9B78BD941C5A660B002D3CE4 /* SwitchItem.swift */,
-				9B78BD951C5A660B002D3CE4 /* SwitchTableViewCell.swift */,
-			);
-			path = Items;
 			sourceTree = "<group>";
 		};
 		9B78BD961C5A660B002D3CE4 /* TableViewController */ = {
@@ -194,18 +174,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B78BDA11C5A660B002D3CE4 /* DeltaTableViewController.swift in Sources */,
-				9B78BD9F1C5A660B002D3CE4 /* SwitchItem.swift in Sources */,
 				9B8FF2E71C5D1127002B105A /* UBRDeltaContent.swift in Sources */,
 				9B8FF2E51C5D1127002B105A /* UBRDelta+Protocols.swift in Sources */,
 				9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */,
 				9B8FF2E81C5D1127002B105A /* UBRDeltaContent+Protocols.swift in Sources */,
 				9B8FF2E41C5D1127002B105A /* UBRDelta.swift in Sources */,
 				9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */,
-				9B78BD9E1C5A660B002D3CE4 /* StaticValueTableViewCell.swift in Sources */,
-				9B78BD9D1C5A660B002D3CE4 /* StaticValueItem.swift in Sources */,
 				9B8FF2E61C5D1127002B105A /* UBRDelta+Types.swift in Sources */,
 				9B78BDA31C5A660B002D3CE4 /* TableViewSectionItem.swift in Sources */,
-				9B78BDA01C5A660B002D3CE4 /* SwitchTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
