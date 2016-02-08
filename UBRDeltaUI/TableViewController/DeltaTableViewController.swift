@@ -141,6 +141,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             if weakSelf.animateViews == false {
                 UIView.setAnimationsEnabled(false)
             }
+            weakSelf.tableViewWillUpdateCells(weakSelf.animateViews)
         }
         
         // Insert, reload and delete table view rows
@@ -289,6 +290,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             }
             
             UIView.setAnimationsEnabled(true)
+            weakSelf.tableViewDidUpdateCells(weakSelf.animateViews)
             weakSelf.animateViews = true
             weakSelf.updateLearnedHeights()
         }
@@ -304,6 +306,11 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         return []
     }
     
+    
+    public func tableViewWillUpdateCells(animated: Bool) {}
+
+    public func tableViewDidUpdateCells(animated: Bool) {}
+
     
     // MARK: - Protocols -
     // MARK: UITableViewDataSource
