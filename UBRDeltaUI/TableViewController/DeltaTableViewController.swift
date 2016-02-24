@@ -17,21 +17,17 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: - Controller -
     
-    public var reusableCellNibs = [String:UINib]()
     public var reusableCellClasses = [String:UITableViewCell.Type]()
-    
-    public var reusableHeaderFooterNibs = [String:UINib]()
     public var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
     public private(set) var sections: [TableViewSectionItem] = []
     private let contentDiffer = UBRDeltaContent()
     private var animateViews = true
     public var deltaDebugOutput = false
-
-    private var learnedRowHeights = DeltaMatrix<CGFloat>()
-    private var learnedHeaderHeights = [Int:CGFloat]()
-    private var learnedFooterHeights = [Int:CGFloat]()
-
+    
+    private var estimatedCellHeights = DeltaMatrix<CGFloat>()
+    private var learnedCellHeights = DeltaMatrix<CGFloat>()
+    private var headerFooterPrototypes = [String:UITableViewHeaderFooterView]()
     public let tableView = DeltaTableView(frame: CGRectZero, style: .Grouped)
     
     
@@ -42,6 +38,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         super.viewDidLoad()
         configureContentDiffer()
         prepareReusableTableViewCells()
+        loadHeaderFooterViewPrototypes()
         addTableView()
         updateTableView()
     }
@@ -63,21 +60,17 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         tableView.delegate = self
         tableView.dataSource = self
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.rowHeight = UITableViewAutomaticDimension
-        tableView.sectionHeaderHeight = UITableViewAutomaticDimension
-        tableView.sectionFooterHeight = UITableViewAutomaticDimension
-        tableView.estimatedRowHeight = 44.0
-        tableView.estimatedSectionHeaderHeight = 66.0
-        tableView.estimatedSectionFooterHeight = 22.0
         
-        // Removes an unwanted top padding
-        tableView.tableHeaderView = UIView(frame: CGRect(x: 0,y: 0,width: 0,height: CGFloat.min))
-
+        // Configuring rows for auto layout
+        // Note: Header and footer views are calculated usnig protoype views, because
+        // using UITableViewAutomaticDimension for header and footer views leads to broken
+        // animated table view updates
+        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 44.0
+        
         // Add reusable cells
         prepareReusableTableViewCells()
-        reusableCellNibs.forEach { (identifier, nib) -> () in tableView.registerNib(nib, forCellReuseIdentifier: identifier) }
         reusableCellClasses.forEach { (identifier, cellClass) -> () in tableView.registerClass(cellClass, forCellReuseIdentifier: identifier) }
-        reusableHeaderFooterNibs.forEach { (identifier, nib) -> () in tableView.registerNib(nib, forHeaderFooterViewReuseIdentifier: identifier) }
         reusableHeaderFooterClasses.forEach { (identifier, hfClass) -> () in tableView.registerClass(hfClass, forHeaderFooterViewReuseIdentifier: identifier) }
         
         // Constraints
@@ -99,9 +92,12 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     public func updateTableView() {
         let newSections: [TableViewSectionItem] = generateItems()
         
+        learnedCellHeights.removeAll(true)
+        
         if sections.count == 0 {
             sections = newSections
             tableView.reloadData()
+            updateLearnedHeights()
         } else {
             let oldSections = sections.map({ $0 as ComparableSectionItem })
             let newSections = newSections.map({ $0 as ComparableSectionItem })
@@ -110,21 +106,23 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public func updateLearnedHeights() {
+    private func updateLearnedHeights() {
         for indexPath in tableView.indexPathsForVisibleRows ?? [] {
             guard let cell = tableView.cellForRowAtIndexPath(indexPath) else { continue }
-            learnedRowHeights[indexPath.section, indexPath.row] = cell.bounds.height
-        }
-        for section in 0..<tableView.numberOfSections {
-            if let headerView = tableView.headerViewForSection(section) {
-                learnedHeaderHeights[section] = headerView.bounds.height
-            }
-            if let footerView = tableView.footerViewForSection(section) {
-                learnedFooterHeights[section] = footerView.bounds.height
-            }
+            estimatedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
+            learnedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
         }
     }
-
+    
+    
+    private func loadHeaderFooterViewPrototypes() {
+        headerFooterPrototypes.removeAll()
+        for (reuseIdentifier, HeaderFooterClass) in reusableHeaderFooterClasses {
+            let headerFooterPrototype = HeaderFooterClass.init(reuseIdentifier: reuseIdentifier)
+            headerFooterPrototypes[reuseIdentifier] = headerFooterPrototype
+        }
+    }
+    
     
     // MARK: Configuration
     
@@ -153,11 +151,11 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
             }
-
+            
             if weakSelf.deltaDebugOutput {
                 print("Updating rows in section \(section)", "items: \(items.map({ $0.uniqueIdentifier }))", "insertIndexes: \(insertIndexes)", "reloadIndexMap: \(reloadIndexMap)", "deleteIndexes: \(deleteIndexes)", separator: "\n", terminator: "\n\n")
             }
-
+            
             var manualReloadMap = reloadIndexMap
             
             for (itemIndexBefore, itemIndexAfter) in reloadIndexMap {
@@ -180,32 +178,32 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                     weakSelf.tableView.reloadRowsAtIndexPaths([indexPathBefore], withRowAnimation: .Automatic)
                 }
             }
-
+            
             if deleteIndexes.count > 0 {
                 weakSelf.tableView.deleteRowsAtIndexPaths(deleteIndexes.map({ NSIndexPath(forRow: $0, inSection: section) }), withRowAnimation: .Top)
             }
-
+            
             if insertIndexes.count > 0 {
                 weakSelf.tableView.insertRowsAtIndexPaths(insertIndexes.map({ NSIndexPath(forRow: $0, inSection: section) }), withRowAnimation: .Top)
             }
-
+            
             weakSelf.tableView.endUpdates()
         }
         
         // Reorder table view rows
         contentDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let weakSelf = self else { return }
-
+            
             weakSelf.sections[section].items = items
             
             if reorderMap.count == 0 {
                 return
             }
-
+            
             if weakSelf.deltaDebugOutput {
                 print("Reorder rows in section \(section)", "items: \(items.map({ $0.uniqueIdentifier }))", "reorderMap: \(reorderMap)", separator: "\n", terminator: "\n\n")
             }
-
+            
             weakSelf.tableView.beginUpdates()
             for (from, to) in reorderMap {
                 let fromIndexPath = NSIndexPath(forRow: from, inSection: section)
@@ -218,17 +216,17 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         // Insert, reload and delete table view sections
         contentDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
-
+            
             weakSelf.sections = sections.flatMap({ $0 as? TableViewSectionItem })
-
+            
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
             }
-
+            
             if weakSelf.deltaDebugOutput {
                 print("Updating sections", "sections: \(sections.map({ $0.uniqueIdentifier }))", "insertIndexes: \(insertIndexes)", "reloadIndexMap: \(reloadIndexMap)", "deleteIndexes: \(deleteIndexes)", separator: "\n", terminator: "\n\n")
             }
-
+            
             weakSelf.tableView.beginUpdates()
             
             let insertSet = NSMutableIndexSet()
@@ -251,7 +249,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                     if let footerView = weakSelf.tableView.footerViewForSection(sectionIndexBefore) as? UpdateableTableViewHeaderFooterView {
                         footerView.updateViewWithItem(sectionItem.footerItem ?? sectionItem, animated: true, type: .Footer)
                     }
-
+                    
                 } else {
                     weakSelf.tableView.reloadSections(NSIndexSet(index: sectionIndexBefore), withRowAnimation: .Automatic)
                 }
@@ -265,15 +263,15 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             guard let weakSelf = self else { return }
             
             weakSelf.sections = sections.flatMap({ $0 as? TableViewSectionItem })
-
+            
             if reorderMap.count == 0 {
                 return
             }
-
+            
             if weakSelf.deltaDebugOutput {
                 print("Reorder sections", "sections: \(sections.map({ $0.uniqueIdentifier }))", "reorderMap: \(reorderMap)", separator: "\n", terminator: "\n\n")
             }
-
+            
             weakSelf.tableView.beginUpdates()
             for (from, to) in reorderMap {
                 weakSelf.tableView.moveSection(from, toSection: to)
@@ -308,9 +306,9 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     
     public func tableViewWillUpdateCells(animated: Bool) {}
-
+    
     public func tableViewDidUpdateCells(animated: Bool) {}
-
+    
     
     // MARK: - Protocols -
     // MARK: UITableViewDataSource
@@ -358,111 +356,124 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Row
     
     public func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
+        if let learnedHeight = learnedCellHeights[indexPath.section, indexPath.row] {
+            return learnedHeight
+        } else {
+            return UITableViewAutomaticDimension
+        }
     }
     
-
+    
     public func tableView(tableView: UITableView, estimatedHeightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return learnedRowHeights[indexPath.section, indexPath.row] ?? tableView.estimatedRowHeight
+        return estimatedCellHeights[indexPath.section, indexPath.row] ?? tableView.estimatedRowHeight
     }
     
-
+    
     public func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-        learnedRowHeights[indexPath.section, indexPath.row] = cell.bounds.height
+        estimatedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
+        learnedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
     }
     
-
-    public func tableView(tableView: UITableView, didEndDisplayingCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-        learnedRowHeights[indexPath.section, indexPath.row] = cell.bounds.height
-    }
-
-
+    
     // MARK: Header
     
     public func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let item = sections[section]
-        if let headerItem = item.headerItem as? DeltaTableViewHeaderFooterItem {
-            let view = tableView.dequeueReusableHeaderFooterViewWithIdentifier(headerItem.reuseIdentifier)
-            if let updateableView = view as? UpdateableTableViewHeaderFooterView {
+        var view: UIView?
+        
+        configureView : do {
+            guard let headerItem = item.headerItem as? DeltaTableViewHeaderFooterItem else { break configureView }
+            guard let headerView = tableView.dequeueReusableHeaderFooterViewWithIdentifier(headerItem.reuseIdentifier) else { break configureView }
+            // Update View
+            headerView.prepareForReuse()
+            if let updateableView = headerView as? UpdateableTableViewHeaderFooterView {
                 updateableView.updateViewWithItem(headerItem as ComparableItem, animated: false, type: .Header)
             }
-            return view
-        } else {
-            return nil
+            view = headerView
         }
+    
+        return view
     }
     
     
     public func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let item = sections[section]
-        if item.headerItem is DeltaTableViewHeaderFooterItem {
-            return UITableViewAutomaticDimension // Auto Layout Height
-        } else {
-            return 33 // Default Height
+        var height: CGFloat = tableView.sectionHeaderHeight
+        
+        calculateHeight : do {
+            guard let headerItem = item.headerItem as? DeltaTableViewHeaderFooterItem else { break calculateHeight }
+            guard let prototype = headerFooterPrototypes[headerItem.reuseIdentifier] else { break calculateHeight }
+            // Update Prototype
+            prototype.prepareForReuse()
+            if let updatableView = prototype as? UpdateableTableViewHeaderFooterView {
+                updatableView.updateViewWithItem(headerItem as ComparableItem, animated: false, type: .Header)
+            }
+            // Get Height
+            let fittedWidth = tableView.bounds.width
+            let fittedHeight = UILayoutFittingCompressedSize.height
+            let fittingSize = CGSize(width: fittedWidth, height: fittedHeight)
+            let size = prototype.contentView.systemLayoutSizeFittingSize(fittingSize, withHorizontalFittingPriority: 999, verticalFittingPriority: UILayoutPriorityFittingSizeLevel)
+            height = size.height
         }
+        
+        return height
     }
     
-    
-    public func tableView(tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
-        return learnedHeaderHeights[section] ?? tableView.estimatedSectionHeaderHeight
-    }
-    
-    
-    public func tableView(tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        learnedHeaderHeights[section] = view.bounds.height
-    }
-    
-    
-    public func tableView(tableView: UITableView, didEndDisplayingHeaderView view: UIView, forSection section: Int) {
-        learnedHeaderHeights[section] = view.bounds.height
-    }
-
     
     
     // MARK: Footer
-    
+
     public func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let item = sections[section]
-        if let footerItem = item.footerItem as? DeltaTableViewHeaderFooterItem {
-            let view = tableView.dequeueReusableHeaderFooterViewWithIdentifier(footerItem.reuseIdentifier)
-            if let updateableView = view as? UpdateableTableViewHeaderFooterView {
+        var view: UIView?
+        
+        configureView : do {
+            guard let footerItem = item.footerItem as? DeltaTableViewHeaderFooterItem else { break configureView }
+            guard let footerView = tableView.dequeueReusableHeaderFooterViewWithIdentifier(footerItem.reuseIdentifier) else { break configureView }
+            // Update View
+            footerView.prepareForReuse()
+            if let updateableView = footerView as? UpdateableTableViewHeaderFooterView {
                 updateableView.updateViewWithItem(footerItem as ComparableItem, animated: false, type: .Footer)
             }
-            return view
-        } else {
-            return nil
+            view = footerView
         }
+        
+        return view
     }
     
     
     public func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         let item = sections[section]
-        if item.footerItem is DeltaTableViewHeaderFooterItem {
-            return UITableViewAutomaticDimension // Auto Layout Height
-        } else if section == sections.count-1 {
-            return UITableViewAutomaticDimension // Last cell should have a space to the end of the tableView
-        } else {
-            return 0.0 // Zero Height so there is no space between header and last cell
+        var height: CGFloat = CGFloat.min
+        
+        calculateHeight : do {
+            guard let footerItem = item.footerItem as? DeltaTableViewHeaderFooterItem else { break calculateHeight }
+            guard let prototype = headerFooterPrototypes[footerItem.reuseIdentifier] else { break calculateHeight }
+            // Update Prototype
+            prototype.prepareForReuse()
+            if let updatableView = prototype as? UpdateableTableViewHeaderFooterView {
+                updatableView.updateViewWithItem(footerItem as ComparableItem, animated: false, type: .Footer)
+            }
+            // Get Height
+            let fittedWidth = tableView.bounds.width
+            let fittedHeight = UILayoutFittingCompressedSize.height
+            let fittingSize = CGSize(width: fittedWidth, height: fittedHeight)
+            let size = prototype.contentView.systemLayoutSizeFittingSize(fittingSize, withHorizontalFittingPriority: 999, verticalFittingPriority: UILayoutPriorityFittingSizeLevel)
+            height = size.height
         }
+        
+        lastFooterHeight : do {
+            guard section == tableView.numberOfSections - 1 else { break lastFooterHeight }
+            guard item.footerItem == nil else { break lastFooterHeight }
+            height = tableView.sectionFooterHeight
+        }
+        
+        return height
     }
-    
-    
-    public func tableView(tableView: UITableView, estimatedHeightForFooterInSection section: Int) -> CGFloat {
-        return learnedFooterHeights[section] ?? tableView.estimatedSectionFooterHeight
-    }
-    
-    
-    public func tableView(tableView: UITableView, willDisplayFooterView view: UIView, forSection section: Int) {
-        learnedFooterHeights[section] = view.bounds.height
-    }
-    
-    
-    public func tableView(tableView: UITableView, didEndDisplayingFooterView view: UIView, forSection section: Int) {
-        learnedFooterHeights[section] = view.bounds.height
-    }
+
     
     // MARK: Selection
-
+    
     public func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let item = sections[indexPath.section].items[indexPath.row]
         

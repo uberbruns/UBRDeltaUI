@@ -84,4 +84,8 @@ public struct DeltaMatrix<T> {
     }
     
     init() {}
+    
+    mutating func removeAll(keepCapicity: Bool) {
+        rows.removeAll(keepCapacity: keepCapicity)
+    }
 }
