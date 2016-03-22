@@ -89,12 +89,12 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public func updateTableView() {
+    public func updateTableView(forcedUpdate: Bool = false) {
         let newSections: [TableViewSectionItem] = generateItems()
         
         learnedCellHeights.removeAll(true)
         
-        if sections.count == 0 {
+        if sections.count == 0 || forcedUpdate == true {
             sections = newSections
             tableView.reloadData()
             updateLearnedHeights()
