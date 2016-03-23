@@ -9,6 +9,10 @@
 import UIKit
 
 
+public enum DeltaUpdateOptions {
+    case Default, HardReload, ReloadVisibleCells
+}
+
 
 public class DeltaTableView : UITableView {}
 
@@ -23,12 +27,23 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     public private(set) var sections: [TableViewSectionItem] = []
     private let contentDiffer = UBRDeltaContent()
     private var animateViews = true
+    private var deltaUpdateOptions = DeltaUpdateOptions.Default
     public var deltaDebugOutput = false
     
     private var estimatedCellHeights = DeltaMatrix<CGFloat>()
     private var learnedCellHeights = DeltaMatrix<CGFloat>()
     private var headerFooterPrototypes = [String:UITableViewHeaderFooterView]()
     public let tableView = DeltaTableView(frame: CGRectZero, style: .Grouped)
+    
+    
+    // Table View API
+    
+    public var rowDeletionAnimation = UITableViewRowAnimation.Automatic
+    public var rowInsertionAnimation = UITableViewRowAnimation.Automatic
+    public var rowReloadAnimation = UITableViewRowAnimation.Automatic
+    public var sectionDeletionAnimation = UITableViewRowAnimation.Automatic
+    public var sectionInsertionAnimation = UITableViewRowAnimation.Automatic
+    public var sectionReloadAnimation = UITableViewRowAnimation.Automatic
     
     
     // MARK: - View -
@@ -89,12 +104,13 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public func updateTableView(forcedUpdate: Bool = false) {
+    public func updateTableView(options: DeltaUpdateOptions = .Default) {
         let newSections: [TableViewSectionItem] = generateItems()
         
+        deltaUpdateOptions = options
         learnedCellHeights.removeAll(true)
         
-        if sections.count == 0 || forcedUpdate == true {
+        if sections.count == 0 || options == .HardReload {
             sections = newSections
             tableView.reloadData()
             updateLearnedHeights()
@@ -158,33 +174,35 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             
             var manualReloadMap = reloadIndexMap
             
-            for (itemIndexBefore, itemIndexAfter) in reloadIndexMap {
-                let indexPathBefore = NSIndexPath(forRow: itemIndexBefore, inSection: section)
-                guard let cell = weakSelf.tableView.cellForRowAtIndexPath(indexPathBefore) else {
+            if weakSelf.deltaUpdateOptions != .ReloadVisibleCells {
+                for (itemIndexBefore, itemIndexAfter) in reloadIndexMap {
+                    let indexPathBefore = NSIndexPath(forRow: itemIndexBefore, inSection: section)
+                    guard let cell = weakSelf.tableView.cellForRowAtIndexPath(indexPathBefore) else {
+                        manualReloadMap.removeValueForKey(itemIndexBefore)
+                        continue
+                    }
+                    guard let updateableCell = cell as? UpdateableTableViewCell else { continue }
+                    let item: ComparableItem = items[itemIndexAfter]
+                    updateableCell.updateCellWithItem(item, animated: true)
                     manualReloadMap.removeValueForKey(itemIndexBefore)
-                    continue
                 }
-                guard let updateableCell = cell as? UpdateableTableViewCell else { continue }
-                let item: ComparableItem = items[itemIndexAfter]
-                updateableCell.updateCellWithItem(item, animated: true)
-                manualReloadMap.removeValueForKey(itemIndexBefore)
             }
             
             weakSelf.tableView.beginUpdates()
             
-            if manualReloadMap.count > 0 {
+            if manualReloadMap.count > 0 && weakSelf.deltaUpdateOptions != .ReloadVisibleCells {
                 for (itemIndexBefore, _) in manualReloadMap {
                     let indexPathBefore = NSIndexPath(forRow: itemIndexBefore, inSection: section)
-                    weakSelf.tableView.reloadRowsAtIndexPaths([indexPathBefore], withRowAnimation: .Automatic)
+                    weakSelf.tableView.reloadRowsAtIndexPaths([indexPathBefore], withRowAnimation: weakSelf.rowReloadAnimation)
                 }
             }
             
             if deleteIndexes.count > 0 {
-                weakSelf.tableView.deleteRowsAtIndexPaths(deleteIndexes.map({ NSIndexPath(forRow: $0, inSection: section) }), withRowAnimation: .Top)
+                weakSelf.tableView.deleteRowsAtIndexPaths(deleteIndexes.map({ NSIndexPath(forRow: $0, inSection: section) }), withRowAnimation: weakSelf.rowDeletionAnimation)
             }
             
             if insertIndexes.count > 0 {
-                weakSelf.tableView.insertRowsAtIndexPaths(insertIndexes.map({ NSIndexPath(forRow: $0, inSection: section) }), withRowAnimation: .Top)
+                weakSelf.tableView.insertRowsAtIndexPaths(insertIndexes.map({ NSIndexPath(forRow: $0, inSection: section) }), withRowAnimation: weakSelf.rowInsertionAnimation)
             }
             
             weakSelf.tableView.endUpdates()
@@ -235,8 +253,8 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             let deleteSet = NSMutableIndexSet()
             deleteIndexes.forEach({ deleteSet.addIndex($0) })
             
-            weakSelf.tableView.insertSections(insertSet, withRowAnimation: .Automatic)
-            weakSelf.tableView.deleteSections(deleteSet, withRowAnimation: .Automatic)
+            weakSelf.tableView.insertSections(insertSet, withRowAnimation: weakSelf.sectionInsertionAnimation)
+            weakSelf.tableView.deleteSections(deleteSet, withRowAnimation: weakSelf.sectionDeletionAnimation)
             
             for (sectionIndexBefore, sectionIndexAfter) in reloadIndexMap {
                 
@@ -251,7 +269,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                     }
                     
                 } else {
-                    weakSelf.tableView.reloadSections(NSIndexSet(index: sectionIndexBefore), withRowAnimation: .Automatic)
+                    weakSelf.tableView.reloadSections(NSIndexSet(index: sectionIndexBefore), withRowAnimation: weakSelf.sectionDeletionAnimation)
                 }
             }
             
@@ -282,6 +300,23 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         // Updating table view did end
         contentDiffer.completion = { [weak self] in
             guard let weakSelf = self else { return }
+            
+            if weakSelf.deltaUpdateOptions == .ReloadVisibleCells {
+                var manualReloads = [NSIndexPath]()
+                for indexPath in weakSelf.tableView.indexPathsForVisibleRows ?? [] {
+                    if let updateableCell = weakSelf.tableView.cellForRowAtIndexPath(indexPath) as? UpdateableTableViewCell {
+                        let item: ComparableItem = weakSelf.sections[indexPath.section].items[indexPath.row]
+                        updateableCell.updateCellWithItem(item, animated: false)
+                    } else {
+                        manualReloads.append(indexPath)
+                    }
+                }
+                if manualReloads.count > 0 {
+                    weakSelf.tableView.beginUpdates()
+                    weakSelf.tableView.reloadRowsAtIndexPaths(manualReloads, withRowAnimation: weakSelf.rowReloadAnimation)
+                    weakSelf.tableView.endUpdates()
+                }
+            }
             
             if weakSelf.deltaDebugOutput {
                 print("Updating table view ended", separator: "\n", terminator: "\n\n")
