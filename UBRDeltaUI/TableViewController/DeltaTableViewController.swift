@@ -8,9 +8,19 @@
 
 import UIKit
 
-
+/// Options to finetune the update process
 public enum DeltaUpdateOptions {
-    case Default, HardReload, ReloadVisibleCells
+    /// Default incremental update
+    case Default
+
+    /// Non incremental update, like calling tableView.reloadData
+    case HardReload
+    
+    /// Like default, but all visible cells will be updated
+    case UpdateVisibleCells
+    
+    /// Use this if you know the table view is in a valid, but the data is in an invalid state
+    case DataOnly
 }
 
 
@@ -110,7 +120,9 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         deltaUpdateOptions = options
         learnedCellHeights.removeAll(true)
         
-        if sections.count == 0 || options == .HardReload {
+        if options == .DataOnly {
+            sections = newSections
+        } else if sections.count == 0 || options == .HardReload {
             sections = newSections
             tableView.reloadData()
             updateLearnedHeights()
@@ -174,7 +186,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             
             var manualReloadMap = reloadIndexMap
             
-            if weakSelf.deltaUpdateOptions != .ReloadVisibleCells {
+            if weakSelf.deltaUpdateOptions != .UpdateVisibleCells {
                 for (itemIndexBefore, itemIndexAfter) in reloadIndexMap {
                     let indexPathBefore = NSIndexPath(forRow: itemIndexBefore, inSection: section)
                     guard let cell = weakSelf.tableView.cellForRowAtIndexPath(indexPathBefore) else {
@@ -190,7 +202,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             
             weakSelf.tableView.beginUpdates()
             
-            if manualReloadMap.count > 0 && weakSelf.deltaUpdateOptions != .ReloadVisibleCells {
+            if manualReloadMap.count > 0 && weakSelf.deltaUpdateOptions != .UpdateVisibleCells {
                 for (itemIndexBefore, _) in manualReloadMap {
                     let indexPathBefore = NSIndexPath(forRow: itemIndexBefore, inSection: section)
                     weakSelf.tableView.reloadRowsAtIndexPaths([indexPathBefore], withRowAnimation: weakSelf.rowReloadAnimation)
@@ -301,7 +313,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         contentDiffer.completion = { [weak self] in
             guard let weakSelf = self else { return }
             
-            if weakSelf.deltaUpdateOptions == .ReloadVisibleCells {
+            if weakSelf.deltaUpdateOptions == .UpdateVisibleCells {
                 var manualReloads = [NSIndexPath]()
                 for indexPath in weakSelf.tableView.indexPathsForVisibleRows ?? [] {
                     if let updateableCell = weakSelf.tableView.cellForRowAtIndexPath(indexPath) as? UpdateableTableViewCell {
