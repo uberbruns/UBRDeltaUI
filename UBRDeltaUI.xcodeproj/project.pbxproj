@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9B2DD3B41CB6944F00005992 /* UBRDeltaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3B31CB6944F00005992 /* UBRDeltaUITests.swift */; };
+		9B2DD3B61CB6944F00005992 /* UBRDeltaUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */; };
+		9B2DD3BD1CB6945C00005992 /* UBRDeltaUITests+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3BC1CB6945C00005992 /* UBRDeltaUITests+Types.swift */; };
 		9B78BD851C5A5D59002D3CE4 /* UBRDeltaUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9B78BDA11C5A660B002D3CE4 /* DeltaTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */; };
 		9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */; };
@@ -19,7 +22,21 @@
 		9B8FF2E81C5D1127002B105A /* UBRDeltaContent+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		9B2DD3B71CB6944F00005992 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B78BD781C5A5D59002D3CE4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B78BD801C5A5D59002D3CE4;
+			remoteInfo = UBRDeltaUI;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		9B2DD3B11CB6944F00005992 /* UBRDeltaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UBRDeltaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B2DD3B31CB6944F00005992 /* UBRDeltaUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UBRDeltaUITests.swift; sourceTree = "<group>"; };
+		9B2DD3B51CB6944F00005992 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B2DD3BC1CB6945C00005992 /* UBRDeltaUITests+Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UBRDeltaUITests+Types.swift"; sourceTree = "<group>"; };
 		9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = UBRDeltaUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRDeltaUI.h; sourceTree = "<group>"; };
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -35,6 +52,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		9B2DD3AE1CB6944F00005992 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B2DD3B61CB6944F00005992 /* UBRDeltaUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B78BD7D1C5A5D59002D3CE4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -45,10 +70,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9B2DD3B21CB6944F00005992 /* UBRDeltaUITests */ = {
+			isa = PBXGroup;
+			children = (
+				9B2DD3BC1CB6945C00005992 /* UBRDeltaUITests+Types.swift */,
+				9B2DD3B31CB6944F00005992 /* UBRDeltaUITests.swift */,
+				9B2DD3B51CB6944F00005992 /* Info.plist */,
+			);
+			path = UBRDeltaUITests;
+			sourceTree = "<group>";
+		};
 		9B78BD771C5A5D59002D3CE4 = {
 			isa = PBXGroup;
 			children = (
 				9B78BD831C5A5D59002D3CE4 /* UBRDeltaUI */,
+				9B2DD3B21CB6944F00005992 /* UBRDeltaUITests */,
 				9B78BD821C5A5D59002D3CE4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -57,6 +93,7 @@
 			isa = PBXGroup;
 			children = (
 				9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */,
+				9B2DD3B11CB6944F00005992 /* UBRDeltaUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -109,6 +146,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		9B2DD3B01CB6944F00005992 /* UBRDeltaUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B2DD3B91CB6944F00005992 /* Build configuration list for PBXNativeTarget "UBRDeltaUITests" */;
+			buildPhases = (
+				9B2DD3AD1CB6944F00005992 /* Sources */,
+				9B2DD3AE1CB6944F00005992 /* Frameworks */,
+				9B2DD3AF1CB6944F00005992 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B2DD3B81CB6944F00005992 /* PBXTargetDependency */,
+			);
+			name = UBRDeltaUITests;
+			productName = UBRDeltaUITests;
+			productReference = 9B2DD3B11CB6944F00005992 /* UBRDeltaUITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		9B78BD801C5A5D59002D3CE4 /* UBRDeltaUI */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9B78BD891C5A5D59002D3CE4 /* Build configuration list for PBXNativeTarget "UBRDeltaUI" */;
@@ -133,9 +188,13 @@
 		9B78BD781C5A5D59002D3CE4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = bruns.me;
 				TargetAttributes = {
+					9B2DD3B01CB6944F00005992 = {
+						CreatedOnToolsVersion = 7.3;
+					};
 					9B78BD801C5A5D59002D3CE4 = {
 						CreatedOnToolsVersion = 7.2;
 					};
@@ -154,11 +213,19 @@
 			projectRoot = "";
 			targets = (
 				9B78BD801C5A5D59002D3CE4 /* UBRDeltaUI */,
+				9B2DD3B01CB6944F00005992 /* UBRDeltaUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		9B2DD3AF1CB6944F00005992 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B78BD7F1C5A5D59002D3CE4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -169,6 +236,15 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		9B2DD3AD1CB6944F00005992 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B2DD3BD1CB6945C00005992 /* UBRDeltaUITests+Types.swift in Sources */,
+				9B2DD3B41CB6944F00005992 /* UBRDeltaUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9B78BD7C1C5A5D59002D3CE4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -187,7 +263,39 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		9B2DD3B81CB6944F00005992 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B78BD801C5A5D59002D3CE4 /* UBRDeltaUI */;
+			targetProxy = 9B2DD3B71CB6944F00005992 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		9B2DD3BA1CB6944F00005992 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				INFOPLIST_FILE = UBRDeltaUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.bruns.UBRDeltaUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		9B2DD3BB1CB6944F00005992 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				INFOPLIST_FILE = UBRDeltaUITests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.bruns.UBRDeltaUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		9B78BD871C5A5D59002D3CE4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -312,6 +420,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		9B2DD3B91CB6944F00005992 /* Build configuration list for PBXNativeTarget "UBRDeltaUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B2DD3BA1CB6944F00005992 /* Debug */,
+				9B2DD3BB1CB6944F00005992 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		9B78BD7B1C5A5D59002D3CE4 /* Build configuration list for PBXProject "UBRDeltaUI" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

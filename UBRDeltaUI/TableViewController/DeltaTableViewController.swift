@@ -69,7 +69,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public  override func viewWillDisappear(animated: Bool) {
+    public override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         self.view.endEditing(true)
     }
@@ -109,8 +109,12 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Update Views
     
     public func updateView(animated: Bool = true) {
-        animateViews = animated
-        updateTableView()
+        if animated {
+            animateViews = animated
+            updateTableView()
+        } else {
+            updateTableView(.HardReload)
+        }
     }
     
     
@@ -123,9 +127,11 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         if options == .DataOnly {
             sections = newSections
         } else if sections.count == 0 || options == .HardReload {
+            tableViewWillUpdateCells(false)
             sections = newSections
             tableView.reloadData()
             updateLearnedHeights()
+            tableViewDidUpdateCells(false)
         } else {
             let oldSections = sections.map({ $0 as ComparableSectionItem })
             let newSections = newSections.map({ $0 as ComparableSectionItem })
@@ -354,6 +360,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     public func tableViewWillUpdateCells(animated: Bool) {}
     
+    
     public func tableViewDidUpdateCells(animated: Bool) {}
     
     
@@ -530,7 +537,4 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
-    
-    
-    
 }
