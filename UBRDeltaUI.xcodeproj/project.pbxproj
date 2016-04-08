@@ -427,6 +427,7 @@
 				9B2DD3BB1CB6944F00005992 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		9B78BD7B1C5A5D59002D3CE4 /* Build configuration list for PBXProject "UBRDeltaUI" */ = {
 			isa = XCConfigurationList;
