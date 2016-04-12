@@ -10,7 +10,7 @@ import Foundation
 
 public struct UBRDelta {
     
-    public static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem]) -> ComparisonResult
+    public static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> ComparisonResult
     {
         // Init return vars
         var insertionIndexes = [Int]()
@@ -18,6 +18,7 @@ public struct UBRDelta {
         var reloadIndexMap = [Int:Int]()
         var moveIndexMap = [Int:Int]()
         var unmovedItems = [ComparableItem]()
+        var duplicatedIndexes: [Int]? = findDuplicatedItems ? [Int]() : nil
         
         // Diffing
         var newIDs = [Int]()
@@ -25,6 +26,19 @@ public struct UBRDelta {
         var reloadIDs = Set<Int>()
         var oldIDMap = [Int:Int]()
         var newIDMap = [Int:Int]()
+        
+        // Test
+        if findDuplicatedItems {
+            var uniqueIndexes = Set<Int>()
+            for (newIndex, newItem) in newItems.enumerate() {
+                let newId = newItem.uniqueIdentifier
+                if uniqueIndexes.contains(newId) {
+                    duplicatedIndexes?.append(newIndex)
+                } else {
+                    uniqueIndexes.insert(newId)
+                }
+            }
+        }
         
         // Prepare mapping vars for new items
         for (newIndex, newItem) in newItems.enumerate() {
@@ -95,7 +109,8 @@ public struct UBRDelta {
             moveIndexMap: moveIndexMap,
             oldItems: newItems,
             unmovedItems: unmovedItems,
-            newItems: newItems
+            newItems: newItems,
+            duplicatedIndexes: duplicatedIndexes
         )
         
         return comparisonResult

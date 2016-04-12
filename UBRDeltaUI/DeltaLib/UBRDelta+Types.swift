@@ -45,6 +45,7 @@ public struct ComparisonResult {
     
     public let insertionIndexes: [Int]
     public let deletionIndexes: [Int]
+    public let duplicatedIndexes: [Int]?
     public let reloadIndexMap: [Int:Int] // Old Index, New Index
     public let moveIndexMap: [Int:Int]
 
@@ -52,7 +53,15 @@ public struct ComparisonResult {
     public let unmovedItems: [ComparableItem]
     public let newItems: [ComparableItem]
     
-    public init(insertionIndexes: [Int], deletionIndexes: [Int], reloadIndexMap: [Int:Int], moveIndexMap: [Int:Int], oldItems: [ComparableItem], unmovedItems: [ComparableItem], newItems: [ComparableItem])
+    
+    public init(insertionIndexes: [Int],
+                deletionIndexes: [Int],
+                reloadIndexMap: [Int:Int],
+                moveIndexMap: [Int:Int],
+                oldItems: [ComparableItem],
+                unmovedItems: [ComparableItem],
+                newItems: [ComparableItem],
+                duplicatedIndexes: [Int]? = nil)
     {
         self.insertionIndexes = insertionIndexes
         self.deletionIndexes = deletionIndexes
@@ -62,6 +71,7 @@ public struct ComparisonResult {
         self.oldItems = oldItems
         self.unmovedItems = unmovedItems
         self.newItems = newItems
+        self.duplicatedIndexes = duplicatedIndexes
     }
     
 }

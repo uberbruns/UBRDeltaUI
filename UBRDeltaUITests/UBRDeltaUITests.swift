@@ -12,12 +12,15 @@ import XCTest
 
 class UBRDeltaUITests: XCTestCase {
     
-    
-    let diff = UBRDelta.diff
     let kirk = Captain(name: "James T. Kirk", ships: ["USS Enterprise", "USS Enterprise-A"], fistFights: Int.max)
     let picard = Captain(name: "Jean-Luc Picard", ships: ["USS Stargazer", "USS Enterprise-D", "USS Enterprise-E"], fistFights: 8)
     let sisko = Captain(name: "Benjamin Sisko", ships: ["USS Defiant"], fistFights: 36)
     let janeway = Captain(name: "Kathrin Janeway", ships: ["USS Voxager"], fistFights: 12)
+
+    
+    func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> ComparisonResult {
+        return UBRDelta.diff(old: oldItems, new: newItems, findDuplicatedItems: findDuplicatedItems)
+    }
     
     override func setUp() {
         super.setUp()
@@ -325,4 +328,21 @@ class UBRDeltaUITests: XCTestCase {
         }
     }
     
+    
+    func testDuplicateWarning() {
+        do {
+            let result = diff(old: [kirk, sisko], new: [sisko, sisko], findDuplicatedItems: true)
+            XCTAssertEqual(result.duplicatedIndexes ?? [], [1], "Duplicate Warning")
+        }
+
+        do {
+            let result = diff(old: [kirk, sisko], new: [sisko, picard, janeway, kirk, sisko], findDuplicatedItems: true)
+            XCTAssertEqual(result.duplicatedIndexes ?? [], [4], "Duplicate Warning")
+        }
+
+        do {
+            let result = diff(old: [kirk, sisko], new: [kirk, sisko], findDuplicatedItems: true)
+            XCTAssertEqual(result.duplicatedIndexes ?? [], [], "Duplicate Warning")
+        }
+    }
 }

@@ -8,6 +8,15 @@
 
 import UIKit
 
+
+/// Options to fine tune the debug output. Please note, that the options .Debug and .Warnings have an impact on performance
+public enum DeltaDebugOutput {
+    case None
+    case Debug
+    case Warnings
+}
+
+
 /// Options to finetune the update process
 public enum DeltaUpdateOptions {
     /// Default incremental update
@@ -38,7 +47,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     private let contentDiffer = UBRDeltaContent()
     private var animateViews = true
     private var deltaUpdateOptions = DeltaUpdateOptions.Default
-    public var deltaDebugOutput = false
+    public var deltaDebugOutput = DeltaDebugOutput.None
     
     private var estimatedCellHeights = DeltaMatrix<CGFloat>()
     private var learnedCellHeights = DeltaMatrix<CGFloat>()
@@ -48,12 +57,24 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     // Table View API
     
+    /// The type of animation when rows are deleted.
     public var rowDeletionAnimation = UITableViewRowAnimation.Automatic
+    
+    /// The type of animation when rows are inserted.
     public var rowInsertionAnimation = UITableViewRowAnimation.Automatic
+    
+    /// The type of animation when rows are reloaded (not updated)
     public var rowReloadAnimation = UITableViewRowAnimation.Automatic
+    
+    /// The type of animation when sections are deleted.
     public var sectionDeletionAnimation = UITableViewRowAnimation.Automatic
+    
+    /// The type of animation when sections are inserted.
     public var sectionInsertionAnimation = UITableViewRowAnimation.Automatic
+    
+    /// The type of animation when sections are reloaded (not updated)
     public var sectionReloadAnimation = UITableViewRowAnimation.Automatic
+    
     
     
     // MARK: - View -
@@ -69,14 +90,9 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(animated)
-        self.view.endEditing(true)
-    }
-    
-    
     // MARK: Add Views
     
+    /// Adds and configures the table view to the controller
     private func addTableView() {
         // Add
         view.addSubview(tableView)
@@ -108,17 +124,31 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: Update Views
     
-    public func updateView(animated: Bool = true) {
+    /**
+     Default way of updating the table view
+     
+     - Parameter animated: if true (default) performs a partial table view that will only update changes cells
+     */
+    public func updateView(animated animated: Bool = true) {
         if animated {
             animateViews = animated
             updateTableView()
         } else {
-            updateTableView(.HardReload)
+            updateTableView(options: .HardReload)
         }
     }
     
     
-    public func updateTableView(options: DeltaUpdateOptions = .Default) {
+    /**
+     Advanced way of updating the table view
+
+     __Discussion:__ this functions and `updateView` should be replaced with another approach.
+     For example `setTableViewNeedsUpdate`
+
+     - Parameter options: Enum with instructions on how to update the table view. Default is `.default`
+     
+     */
+    public func updateTableView(options options: DeltaUpdateOptions = .Default) {
         let newSections: [TableViewSectionItem] = generateItems()
         
         deltaUpdateOptions = options
@@ -140,6 +170,10 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
+    /**
+     The better the estimated height, the better are animated table view updates. This function
+     updates the internal data set of rendered cell heights for every indexpath.
+     */
     private func updateLearnedHeights() {
         for indexPath in tableView.indexPathsForVisibleRows ?? [] {
             guard let cell = tableView.cellForRowAtIndexPath(indexPath) else { continue }
@@ -149,6 +183,12 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
+    /**
+     Because of aniamtion glitches with pure auto layout based table view headers and footers
+     the heights of those elements are determined by keeping a set of view prototypes that
+     is updated with real data upfront to learn the height of headers in footers in every sections.
+     This functions creates the prototype directory.
+     */
     private func loadHeaderFooterViewPrototypes() {
         headerFooterPrototypes.removeAll()
         for (reuseIdentifier, HeaderFooterClass) in reusableHeaderFooterClasses {
@@ -160,14 +200,20 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: Configuration
     
+    /**
+     `contentDiffer` is the heart of this class and determines what parts need to be updated.
+     This functions links the `tableView` and the `contentDiffer` by calling table views update
+     functions in the callback functions from the `contentDiffer`
+    */
     private func configureContentDiffer() {
         
         contentDiffer.userInterfaceUpdateTime = 0.16667
+        contentDiffer.debugOutput = deltaDebugOutput != .None
         
         // Start updating table view
         contentDiffer.start = { [weak self] in
             guard let weakSelf = self else { return }
-            if weakSelf.deltaDebugOutput {
+            if weakSelf.deltaDebugOutput == .Debug {
                 print("Start updating table view", separator: "\n", terminator: "\n\n")
             }
             if weakSelf.animateViews == false {
@@ -186,7 +232,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                 return
             }
             
-            if weakSelf.deltaDebugOutput {
+            if weakSelf.deltaDebugOutput == .Debug {
                 print("Updating rows in section \(section)", "items: \(items.map({ $0.uniqueIdentifier }))", "insertIndexes: \(insertIndexes)", "reloadIndexMap: \(reloadIndexMap)", "deleteIndexes: \(deleteIndexes)", separator: "\n", terminator: "\n\n")
             }
             
@@ -236,7 +282,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                 return
             }
             
-            if weakSelf.deltaDebugOutput {
+            if weakSelf.deltaDebugOutput == .Debug {
                 print("Reorder rows in section \(section)", "items: \(items.map({ $0.uniqueIdentifier }))", "reorderMap: \(reorderMap)", separator: "\n", terminator: "\n\n")
             }
             
@@ -259,7 +305,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                 return
             }
             
-            if weakSelf.deltaDebugOutput {
+            if weakSelf.deltaDebugOutput == .Debug {
                 print("Updating sections", "sections: \(sections.map({ $0.uniqueIdentifier }))", "insertIndexes: \(insertIndexes)", "reloadIndexMap: \(reloadIndexMap)", "deleteIndexes: \(deleteIndexes)", separator: "\n", terminator: "\n\n")
             }
             
@@ -304,7 +350,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                 return
             }
             
-            if weakSelf.deltaDebugOutput {
+            if weakSelf.deltaDebugOutput == .Debug {
                 print("Reorder sections", "sections: \(sections.map({ $0.uniqueIdentifier }))", "reorderMap: \(reorderMap)", separator: "\n", terminator: "\n\n")
             }
             
@@ -336,7 +382,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                 }
             }
             
-            if weakSelf.deltaDebugOutput {
+            if weakSelf.deltaDebugOutput == .Debug {
                 print("Updating table view ended", separator: "\n", terminator: "\n\n")
             }
             

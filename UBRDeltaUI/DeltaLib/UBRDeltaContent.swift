@@ -18,6 +18,7 @@ public class UBRDeltaContent {
     public typealias CompletionHandler = () -> ()
     
     public var userInterfaceUpdateTime: Double = 0.2
+    public var debugOutput = false
     
     // Update handler
     public var itemUpdate: ItemUpdateHandler? = nil
@@ -82,6 +83,8 @@ public class UBRDeltaContent {
         let backgroundQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
 
         dispatch_async(backgroundQueue) {
+
+            let findDuplicatedItems = self.debugOutput
             
             // Diffing Items
             var itemDiffs = [Int: ComparisonResult]()
@@ -96,8 +99,18 @@ public class UBRDeltaContent {
                     // Diffing
                     let oldItems = oldSection.items
                     let newItems = newSections[newIndex].items
-                    let itemDiff = UBRDelta.diff(old: oldItems, new: newItems)
+                    let itemDiff = UBRDelta.diff(old: oldItems, new: newItems, findDuplicatedItems: findDuplicatedItems)
                     itemDiffs[oldSectionIndex] = itemDiff
+                    
+                    if findDuplicatedItems {
+                        if let duplicatedIndexes = itemDiff.duplicatedIndexes where duplicatedIndexes.count > 0 {
+                            print("\n")
+                            print("WARNING: Duplicated items detected. App will probably crash.")
+                            print("Dublicated indexes:", duplicatedIndexes)
+                            print("Dublicated items:", duplicatedIndexes.map({ newItems[$0] }))
+                            print("\n")
+                        }
+                    }
                 }
                 
             }
@@ -107,8 +120,18 @@ public class UBRDeltaContent {
             let newSectionsAsItems = newSections.map({ $0 as ComparableItem })
             
             // Diffing sections
-            let sectionDiff = UBRDelta.diff(old: oldSectionAsItems, new: newSectionsAsItems)
+            let sectionDiff = UBRDelta.diff(old: oldSectionAsItems, new: newSectionsAsItems, findDuplicatedItems: findDuplicatedItems)
             
+            if findDuplicatedItems {
+                if let duplicatedIndexes = sectionDiff.duplicatedIndexes where duplicatedIndexes.count > 0 {
+                    print("\n")
+                    print("WARNING: Duplicated section items detected. App will probably crash.")
+                    print("Dublicated indexes:", duplicatedIndexes)
+                    print("Dublicated section items:", duplicatedIndexes.map({ newSections[$0] }))
+                    print("\n")
+                }
+            }
+
             // Diffing is done - doing UI updates on the main thread
             let mainQueue = dispatch_get_main_queue()
             dispatch_async(mainQueue) {
