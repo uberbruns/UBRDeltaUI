@@ -44,7 +44,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     public var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
     public private(set) var sections: [TableViewSectionItem] = []
-    private let contentDiffer = UBRDeltaContent()
+    private let contentDiffer = UBRDeltaContent<TableViewSectionItem>()
     private var animateViews = true
     private var deltaUpdateOptions = DeltaUpdateOptions.Default
     public var deltaDebugOutput = DeltaDebugOutput.None
@@ -163,8 +163,8 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             updateLearnedHeights()
             tableViewDidUpdateCells(false)
         } else {
-            let oldSections = sections.map({ $0 as ComparableSectionItem })
-            let newSections = newSections.map({ $0 as ComparableSectionItem })
+            let oldSections = sections
+            let newSections = newSections
             contentDiffer.queueComparison(oldSections: oldSections, newSections: newSections)
         }
     }

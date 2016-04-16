@@ -8,12 +8,12 @@
 import Foundation
 
 
-public class UBRDeltaContent {
+public final class UBRDeltaContent<S: ComparableSectionItem> {
     
-    public typealias ItemUpdateHandler = (items: [ComparableItem], section: Int, insertIndexPaths: [Int], reloadIndexPaths: [Int:Int], deleteIndexPaths: [Int]) -> ()
-    public typealias ItemReorderHandler = (items: [ComparableItem], section: Int, reorderMap: [Int:Int]) -> ()
-    public typealias SectionUpdateHandler = (sections: [ComparableSectionItem], insertIndexSet: [Int], reloadIndexSet: [Int:Int], deleteIndexSet: [Int]) -> ()
-    public typealias SectionReorderHandler = (sections: [ComparableSectionItem], reorderMap: [Int:Int]) -> ()
+    public typealias ItemUpdateHandler = (items: [S.I], section: Int, insertIndexPaths: [Int], reloadIndexPaths: [Int:Int], deleteIndexPaths: [Int]) -> ()
+    public typealias ItemReorderHandler = (items: [S.I], section: Int, reorderMap: [Int:Int]) -> ()
+    public typealias SectionUpdateHandler = (sections: [S], insertIndexSet: [Int], reloadIndexSet: [Int:Int], deleteIndexSet: [Int]) -> ()
+    public typealias SectionReorderHandler = (sections: [S], reorderMap: [Int:Int]) -> ()
     public typealias StartHandler = () -> ()
     public typealias CompletionHandler = () -> ()
     
@@ -38,14 +38,14 @@ public class UBRDeltaContent {
     private var lastUpdateTime: NSDate = NSDate(timeIntervalSince1970: 0)
     
     // Section data
-    private var oldSections: [ComparableSectionItem]? = nil
-    private var newSections: [ComparableSectionItem]? = nil
+    private var oldSections: [S]? = nil
+    private var newSections: [S]? = nil
     
     
     public init() {}
     
     
-    public func queueComparison(oldSections oldSections: [ComparableSectionItem], newSections: [ComparableSectionItem])
+    public func queueComparison(oldSections oldSections: [S], newSections: [S])
     {
         // Set Sections
         if self.oldSections == nil {
@@ -87,7 +87,7 @@ public class UBRDeltaContent {
             let findDuplicatedItems = self.debugOutput
             
             // Diffing Items
-            var itemDiffs = [Int: ComparisonResult]()
+            var itemDiffs = [Int: ComparisonResult<S.I>]()
             for (oldSectionIndex, oldSection) in oldSections.enumerate() {
                 
                 let newIndex = newSections.indexOf({ newSection -> Bool in
@@ -115,12 +115,8 @@ public class UBRDeltaContent {
                 
             }
             
-            // Satisfy argument requirements of UBRDelta.diff()
-            let oldSectionAsItems = oldSections.map({ $0 as ComparableItem })
-            let newSectionsAsItems = newSections.map({ $0 as ComparableItem })
-            
             // Diffing sections
-            let sectionDiff = UBRDelta.diff(old: oldSectionAsItems, new: newSectionsAsItems, findDuplicatedItems: findDuplicatedItems)
+            let sectionDiff = UBRDelta.diff(old: oldSections, new: newSections, findDuplicatedItems: findDuplicatedItems)
             
             if findDuplicatedItems {
                 if let duplicatedIndexes = sectionDiff.duplicatedIndexes where duplicatedIndexes.count > 0 {
@@ -181,10 +177,10 @@ public class UBRDeltaContent {
                     
                 }
                 
-                // Change type from ComparableItem to ComparableSectionItem.
+                // Change type from I to S.
                 // Since this is expected to succeed a force unwrap is justified
-                let updateItems = sectionDiff.unmovedItems.map({ $0 as! ComparableSectionItem })
-                let reorderItems = sectionDiff.newItems.map({ $0 as! ComparableSectionItem })
+                let updateItems = sectionDiff.unmovedItems
+                let reorderItems = sectionDiff.newItems
                 
                 // Call section handler functions
                 self.sectionUpdate?(sections: updateItems, insertIndexSet: sectionDiff.insertionIndexes, reloadIndexSet: sectionDiff.reloadIndexMap, deleteIndexSet: sectionDiff.deletionIndexes)

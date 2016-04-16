@@ -9,7 +9,6 @@
 import Foundation
 
 public protocol ComparableSectionItem : ComparableItem {
-    
-    var items: [ComparableItem] { get set }
-    
+    associatedtype I : ComparableItem
+    var items: [I] { get }
 }

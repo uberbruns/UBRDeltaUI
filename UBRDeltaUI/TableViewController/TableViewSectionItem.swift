@@ -9,10 +9,12 @@ import Foundation
 
 
 
-public struct TableViewSectionItem : ComparableSectionItem {
+public struct TableViewSectionItem<Items: DeltaTableViewItem> : ComparableSectionItem {
+
+    public typealias I = Items
     
     public var uniqueIdentifier: Int { return id.hash }
-    public var items: [ComparableItem] = []
+    public var items: [Items] = []
     public var headerItem: ComparableItem?
     public var footerItem: ComparableItem?
     

@@ -41,7 +41,7 @@ public func ==(lhs: ComparisonLevel, rhs: ComparisonLevel) -> Bool {
 }
 
 
-public struct ComparisonResult {
+public struct ComparisonResult<I: ComparableItem> {
     
     public let insertionIndexes: [Int]
     public let deletionIndexes: [Int]
@@ -49,18 +49,18 @@ public struct ComparisonResult {
     public let reloadIndexMap: [Int:Int] // Old Index, New Index
     public let moveIndexMap: [Int:Int]
 
-    public let oldItems: [ComparableItem]
-    public let unmovedItems: [ComparableItem]
-    public let newItems: [ComparableItem]
+    public let oldItems: [I]
+    public let unmovedItems: [I]
+    public let newItems: [I]
     
     
     public init(insertionIndexes: [Int],
                 deletionIndexes: [Int],
                 reloadIndexMap: [Int:Int],
                 moveIndexMap: [Int:Int],
-                oldItems: [ComparableItem],
-                unmovedItems: [ComparableItem],
-                newItems: [ComparableItem],
+                oldItems: [I],
+                unmovedItems: [I],
+                newItems: [I],
                 duplicatedIndexes: [Int]? = nil)
     {
         self.insertionIndexes = insertionIndexes

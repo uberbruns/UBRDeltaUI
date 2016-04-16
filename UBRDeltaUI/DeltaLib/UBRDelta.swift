@@ -10,14 +10,14 @@ import Foundation
 
 public struct UBRDelta {
     
-    public static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> ComparisonResult
+    public static func diff<I: ComparableItem>(old oldItems: [I], new newItems: [I], findDuplicatedItems: Bool = false) -> ComparisonResult<I>
     {
         // Init return vars
         var insertionIndexes = [Int]()
         var deletionIndexes = [Int]()
         var reloadIndexMap = [Int:Int]()
         var moveIndexMap = [Int:Int]()
-        var unmovedItems = [ComparableItem]()
+        var unmovedItems = [I]()
         var duplicatedIndexes: [Int]? = findDuplicatedItems ? [Int]() : nil
         
         // Diffing
