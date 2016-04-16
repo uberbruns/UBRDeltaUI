@@ -143,9 +143,9 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      Advanced way of updating the table view
 
      __Discussion:__ this functions and `updateView` should be replaced with another approach.
-     For example `setTableViewNeedsUpdate`
+     For example `setTableViewNeedsUpdate`.
 
-     - Parameter options: Enum with instructions on how to update the table view. Default is `.default`
+     - Parameter options: Enum with instructions on how to update the table view. Default is `.Default`.
      
      */
     public func updateTableView(options options: DeltaUpdateOptions = .Default) {
@@ -172,7 +172,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     /**
      The better the estimated height, the better are animated table view updates. This function
-     updates the internal data set of rendered cell heights for every indexpath.
+     updates the internal data set of rendered cell heights for every index path.
      */
     private func updateLearnedHeights() {
         for indexPath in tableView.indexPathsForVisibleRows ?? [] {
@@ -203,7 +203,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     /**
      `contentDiffer` is the heart of this class and determines what parts need to be updated.
      This functions links the `tableView` and the `contentDiffer` by calling table views update
-     functions in the callback functions from the `contentDiffer`
+     functions in the callback functions from the `contentDiffer`.
     */
     private func configureContentDiffer() {
         
@@ -395,19 +395,71 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     
     // MARK: - API -
+    // MARK: - Content -
     
-    public func prepareReusableTableViewCells() { }
-    
-    
+    /// Use this function in subclasses to provide section and rows items you want to display
+    /// as table view cells.
     public func generateItems() -> [TableViewSectionItem] {
         return []
     }
+
+    
+    /// Returns the `TableViewSectionItem` that belongs to the provided section index.
+    public func sectionItemForSection(section: Int) -> TableViewSectionItem {
+        return sections[section]
+    }
+    
+
+    /// Returns the `ComparableItem` that belongs to the provided index path.
+    public func itemForIndexPath(indexPath: NSIndexPath) -> ComparableItem {
+        return sections[indexPath.section].items[indexPath.row]
+    }
+
+    
+    // MARK: - Table View -
+    
+    /// Use this function in your subclass to update `reusableCellClasses` and `reusableHeaderFooterClasses`.
+    public func prepareReusableTableViewCells() { }
     
     
+    /// Subclass this function in your subclass to execute code when a table view will update.
     public func tableViewWillUpdateCells(animated: Bool) {}
     
     
+    /// Subclass this function in your subclass to execute code when a table view did update.
     public func tableViewDidUpdateCells(animated: Bool) {}
+    
+    
+    /**
+     Dequeues a reusable cell from table view as long the item for this index path is of type `DeltaTableViewItem`
+     and DeltaTableViewItem's `reuseIdentifier` property was registered in `prepareReusableTableViewCells()`.
+     
+     Use this method if you want to provide your own implementation of `tableView(tableView:cellForRowAtIndexPath:)` but
+     you still want to be able to return cells provided by this class if needed.
+     
+     In most cases this function is only used internally and a custom implementation of `tableView(tableView:cellForRowAtIndexPath:)`
+     is not needed.
+     */
+    public func tableViewCellForRowAtIndexPath(indexPath: NSIndexPath) -> UITableViewCell? {
+        let item = sections[indexPath.section].items[indexPath.row]
+        
+        getTableViewCell : do {
+            guard let tableViewItem = item as? DeltaTableViewItem else { break getTableViewCell }
+            guard let cell = tableView.dequeueReusableCellWithIdentifier(tableViewItem.reuseIdentifier) else { break getTableViewCell }
+
+            if let updateableCell = cell as? UpdateableTableViewCell {
+                updateableCell.updateCellWithItem(item, animated: false)
+            }
+            
+            if let selectableItem = item as? SelectableTableViewItem {
+                cell.selectionStyle = selectableItem.selectionHandler != nil ? .Default : .None
+            }
+
+            return cell
+        }
+        
+        return nil
+    }
     
     
     // MARK: - Protocols -
@@ -424,31 +476,11 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     
     public func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        
-        let item = sections[indexPath.section].items[indexPath.row]
-        
-        if let tableViewItem = item as? DeltaTableViewItem,
-            let cell = tableView.dequeueReusableCellWithIdentifier(tableViewItem.reuseIdentifier){
-                
-                if let updateableCell = cell as? UpdateableTableViewCell {
-                    updateableCell.updateCellWithItem(item, animated: false)
-                }
-                
-                if let selectableItem = item as? SelectableTableViewItem {
-                    cell.selectionStyle = selectableItem.selectionHandler != nil ? .Default : .None
-                }
-                
-                return cell
-                
-        } else {
-            
-            let cell = tableView.dequeueReusableCellWithIdentifier("Cell")!
-            cell.textLabel?.text = nil
-            cell.detailTextLabel?.text = nil
+        if let cell = tableViewCellForRowAtIndexPath(indexPath) {
             return cell
-            
+        } else {
+            fatalError("No cell provided for index path: \(indexPath)")
         }
-        
     }
     
     
