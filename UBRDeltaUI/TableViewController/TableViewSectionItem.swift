@@ -43,5 +43,4 @@ public struct TableViewSectionItem : ComparableSectionItem {
             return .Changed(["headerItem":headerItemChanged, "footerItem": footerItemChanged])
         }
     }
-    
 }
