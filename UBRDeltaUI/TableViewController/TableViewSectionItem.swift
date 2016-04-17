@@ -12,7 +12,10 @@ import Foundation
 public struct TableViewSectionItem : ComparableSectionItem {
     
     public var uniqueIdentifier: Int { return id.hash }
-    public var items: [ComparableItem] = []
+    
+    public var subitems: [ComparableItem] { return items.map { $0 as ComparableItem } }
+    public var items: [DeltaTableViewItem] = []
+    
     public var headerItem: ComparableItem?
     public var footerItem: ComparableItem?
     

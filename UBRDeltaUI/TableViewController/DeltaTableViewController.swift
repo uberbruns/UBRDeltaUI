@@ -226,7 +226,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         contentDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
-            weakSelf.sections[section].items = items
+            weakSelf.sections[section].items = items.flatMap { $0 as? DeltaTableViewItem }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -276,7 +276,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         contentDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let weakSelf = self else { return }
             
-            weakSelf.sections[section].items = items
+            weakSelf.sections[section].items = items.flatMap { $0 as? DeltaTableViewItem }
             
             if reorderMap.count == 0 {
                 return
@@ -444,8 +444,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         let item = sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
-            guard let tableViewItem = item as? DeltaTableViewItem else { break getTableViewCell }
-            guard let cell = tableView.dequeueReusableCellWithIdentifier(tableViewItem.reuseIdentifier) else { break getTableViewCell }
+            guard let cell = tableView.dequeueReusableCellWithIdentifier(item.reuseIdentifier) else { break getTableViewCell }
 
             if let updateableCell = cell as? UpdateableTableViewCell {
                 updateableCell.updateCellWithItem(item, animated: false)

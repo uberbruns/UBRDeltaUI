@@ -97,8 +97,8 @@ public class UBRDeltaContent {
                 
                 if let newIndex = newIndex {
                     // Diffing
-                    let oldItems = oldSection.items
-                    let newItems = newSections[newIndex].items
+                    let oldItems = oldSection.subitems
+                    let newItems = newSections[newIndex].subitems
                     let itemDiff = UBRDelta.diff(old: oldItems, new: newItems, findDuplicatedItems: findDuplicatedItems)
                     itemDiffs[oldSectionIndex] = itemDiff
                     
