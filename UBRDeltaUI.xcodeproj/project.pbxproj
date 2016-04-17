@@ -13,7 +13,7 @@
 		9B78BD851C5A5D59002D3CE4 /* UBRDeltaUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9B78BDA11C5A660B002D3CE4 /* DeltaTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */; };
 		9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */; };
-		9B78BDA31C5A660B002D3CE4 /* TableViewSectionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */; };
+		9B78BDA31C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift */; };
 		9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DD1C5D1127002B105A /* Dwifft.swift */; };
 		9B8FF2E41C5D1127002B105A /* UBRDelta.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */; };
 		9B8FF2E51C5D1127002B105A /* UBRDelta+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */; };
@@ -42,7 +42,7 @@
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = DeltaTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "DeltaTableViewController+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = TableViewSectionItem.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD991C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = DeltaTableViewSectionItem.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DD1C5D1127002B105A /* Dwifft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dwifft.swift; sourceTree = "<group>"; };
 		9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = UBRDelta.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDelta+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -114,7 +114,7 @@
 			children = (
 				9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */,
 				9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */,
-				9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */,
+				9B78BD991C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift */,
 			);
 			path = TableViewController;
 			sourceTree = "<group>";
@@ -257,7 +257,7 @@
 				9B8FF2E41C5D1127002B105A /* UBRDelta.swift in Sources */,
 				9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */,
 				9B8FF2E61C5D1127002B105A /* UBRDelta+Types.swift in Sources */,
-				9B78BDA31C5A660B002D3CE4 /* TableViewSectionItem.swift in Sources */,
+				9B78BDA31C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

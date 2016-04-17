@@ -1,5 +1,5 @@
 //
-//  TableViewSectionItem.swift
+//  DeltaTableViewSectionItem.swift
 //
 //  Created by Karsten Bruns on 28/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -9,7 +9,7 @@ import Foundation
 
 
 
-public struct TableViewSectionItem : ComparableSectionItem {
+public struct DeltaTableViewSectionItem : ComparableSectionItem {
     
     public var uniqueIdentifier: Int { return id.hash }
     
@@ -27,7 +27,7 @@ public struct TableViewSectionItem : ComparableSectionItem {
     
     
     public func compareTo(other: ComparableItem) -> ComparisonLevel {
-        guard let other = other as? TableViewSectionItem else { return .Different }
+        guard let other = other as? DeltaTableViewSectionItem else { return .Different }
         guard other.id == self.id else { return .Different }
         
         var headerItemChanged = (headerItem == nil) != (other.headerItem == nil)
