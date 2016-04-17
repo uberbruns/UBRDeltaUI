@@ -13,11 +13,11 @@ public struct TableViewSectionItem : ComparableSectionItem {
     
     public var uniqueIdentifier: Int { return id.hash }
     
-    public var subitems: [ComparableItem] { return items.map { $0 as ComparableItem } }
+    internal var subitems: [ComparableItem] { return items.map { $0 as ComparableItem } }
     public var items: [DeltaTableViewItem] = []
     
-    public var headerItem: ComparableItem?
-    public var footerItem: ComparableItem?
+    public var headerItem: DeltaTableViewHeaderFooterItem?
+    public var footerItem: DeltaTableViewHeaderFooterItem?
     
     public let id: String
     
@@ -40,10 +40,10 @@ public struct TableViewSectionItem : ComparableSectionItem {
             footerItemChanged = footerItem.compareTo(otherFooterItem) != .Same
         }
         
-        if  !headerItemChanged && !footerItemChanged {
-            return .Same
+        if  headerItemChanged || footerItemChanged {
+            return .Changed(["headerItem": headerItemChanged, "footerItem": footerItemChanged])
         } else {
-            return .Changed(["headerItem":headerItemChanged, "footerItem": footerItemChanged])
+            return .Same
         }
     }
 }

@@ -8,9 +8,9 @@
 import Foundation
 
 
-public struct UBRDelta {
+struct UBRDelta {
     
-    public static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> ComparisonResult
+    static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> ComparisonResult
     {
         // Init return vars
         var insertionIndexes = [Int]()

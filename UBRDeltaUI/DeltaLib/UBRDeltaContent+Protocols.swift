@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol ComparableSectionItem : ComparableItem {
+protocol ComparableSectionItem : ComparableItem {
     
     var subitems: [ComparableItem] { get }
     

@@ -513,7 +513,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var view: UIView?
         
         configureView : do {
-            guard let headerItem = item.headerItem as? DeltaTableViewHeaderFooterItem else { break configureView }
+            guard let headerItem = item.headerItem else { break configureView }
             guard let headerView = tableView.dequeueReusableHeaderFooterViewWithIdentifier(headerItem.reuseIdentifier) else { break configureView }
             // Update View
             headerView.prepareForReuse()
@@ -532,7 +532,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var height: CGFloat = tableView.sectionHeaderHeight
         
         calculateHeight : do {
-            guard let headerItem = item.headerItem as? DeltaTableViewHeaderFooterItem else { break calculateHeight }
+            guard let headerItem = item.headerItem else { break calculateHeight }
             guard let prototype = headerFooterPrototypes[headerItem.reuseIdentifier] else { break calculateHeight }
             // Update Prototype
             prototype.prepareForReuse()
@@ -559,7 +559,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var view: UIView?
         
         configureView : do {
-            guard let footerItem = item.footerItem as? DeltaTableViewHeaderFooterItem else { break configureView }
+            guard let footerItem = item.footerItem else { break configureView }
             guard let footerView = tableView.dequeueReusableHeaderFooterViewWithIdentifier(footerItem.reuseIdentifier) else { break configureView }
             // Update View
             footerView.prepareForReuse()
@@ -578,7 +578,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var height: CGFloat = CGFloat.min
         
         calculateHeight : do {
-            guard let footerItem = item.footerItem as? DeltaTableViewHeaderFooterItem else { break calculateHeight }
+            guard let footerItem = item.footerItem else { break calculateHeight }
             guard let prototype = headerFooterPrototypes[footerItem.reuseIdentifier] else { break calculateHeight }
             // Update Prototype
             prototype.prepareForReuse()

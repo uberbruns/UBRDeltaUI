@@ -40,15 +40,15 @@
 		9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = UBRDeltaUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRDeltaUI.h; sourceTree = "<group>"; };
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeltaTableViewController.swift; sourceTree = "<group>"; };
-		9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DeltaTableViewController+Protocols.swift"; sourceTree = "<group>"; };
-		9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewSectionItem.swift; sourceTree = "<group>"; };
+		9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = DeltaTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "DeltaTableViewController+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD991C5A660B002D3CE4 /* TableViewSectionItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = TableViewSectionItem.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DD1C5D1127002B105A /* Dwifft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dwifft.swift; sourceTree = "<group>"; };
-		9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UBRDelta.swift; sourceTree = "<group>"; };
-		9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UBRDelta+Protocols.swift"; sourceTree = "<group>"; };
-		9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UBRDelta+Types.swift"; sourceTree = "<group>"; };
-		9B8FF2E11C5D1127002B105A /* UBRDeltaContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UBRDeltaContent.swift; sourceTree = "<group>"; };
-		9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UBRDeltaContent+Protocols.swift"; sourceTree = "<group>"; };
+		9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = UBRDelta.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDelta+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDelta+Types.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B8FF2E11C5D1127002B105A /* UBRDeltaContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = UBRDeltaContent.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDeltaContent+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

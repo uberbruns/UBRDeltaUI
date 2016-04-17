@@ -8,26 +8,26 @@
 import Foundation
 
 
-public class UBRDeltaContent {
+class UBRDeltaContent {
     
-    public typealias ItemUpdateHandler = (items: [ComparableItem], section: Int, insertIndexPaths: [Int], reloadIndexPaths: [Int:Int], deleteIndexPaths: [Int]) -> ()
-    public typealias ItemReorderHandler = (items: [ComparableItem], section: Int, reorderMap: [Int:Int]) -> ()
-    public typealias SectionUpdateHandler = (sections: [ComparableSectionItem], insertIndexSet: [Int], reloadIndexSet: [Int:Int], deleteIndexSet: [Int]) -> ()
-    public typealias SectionReorderHandler = (sections: [ComparableSectionItem], reorderMap: [Int:Int]) -> ()
-    public typealias StartHandler = () -> ()
-    public typealias CompletionHandler = () -> ()
+    typealias ItemUpdateHandler = (items: [ComparableItem], section: Int, insertIndexPaths: [Int], reloadIndexPaths: [Int:Int], deleteIndexPaths: [Int]) -> ()
+    typealias ItemReorderHandler = (items: [ComparableItem], section: Int, reorderMap: [Int:Int]) -> ()
+    typealias SectionUpdateHandler = (sections: [ComparableSectionItem], insertIndexSet: [Int], reloadIndexSet: [Int:Int], deleteIndexSet: [Int]) -> ()
+    typealias SectionReorderHandler = (sections: [ComparableSectionItem], reorderMap: [Int:Int]) -> ()
+    typealias StartHandler = () -> ()
+    typealias CompletionHandler = () -> ()
     
-    public var userInterfaceUpdateTime: Double = 0.2
-    public var debugOutput = false
+    var userInterfaceUpdateTime: Double = 0.2
+    var debugOutput = false
     
     // Update handler
-    public var itemUpdate: ItemUpdateHandler? = nil
-    public var itemReorder: ItemReorderHandler? = nil
-    public var sectionUpdate: SectionUpdateHandler? = nil
-    public var sectionReorder: SectionReorderHandler? = nil
+    var itemUpdate: ItemUpdateHandler? = nil
+    var itemReorder: ItemReorderHandler? = nil
+    var sectionUpdate: SectionUpdateHandler? = nil
+    var sectionReorder: SectionReorderHandler? = nil
     
-    public var start: StartHandler? = nil
-    public var completion: CompletionHandler? = nil
+    var start: StartHandler? = nil
+    var completion: CompletionHandler? = nil
     
     // State vars for background operations
     private var isDiffing: Bool = false
@@ -42,10 +42,10 @@ public class UBRDeltaContent {
     private var newSections: [ComparableSectionItem]? = nil
     
     
-    public init() {}
+    init() {}
     
     
-    public func queueComparison(oldSections oldSections: [ComparableSectionItem], newSections: [ComparableSectionItem])
+    func queueComparison(oldSections oldSections: [ComparableSectionItem], newSections: [ComparableSectionItem])
     {
         // Set Sections
         if self.oldSections == nil {

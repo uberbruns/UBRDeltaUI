@@ -15,11 +15,11 @@ public enum ComparisonLevel {
     
     case Same, Different, Changed(ComparisonChanges)
     
-    public var isSame: Bool {
+    var isSame: Bool {
         return self != .Different
     }
     
-    public var isChanged: Bool {
+    var isChanged: Bool {
         return self != .Different && self != .Same
     }
 }
@@ -41,20 +41,20 @@ public func ==(lhs: ComparisonLevel, rhs: ComparisonLevel) -> Bool {
 }
 
 
-public struct ComparisonResult {
+struct ComparisonResult {
     
-    public let insertionIndexes: [Int]
-    public let deletionIndexes: [Int]
-    public let duplicatedIndexes: [Int]?
-    public let reloadIndexMap: [Int:Int] // Old Index, New Index
-    public let moveIndexMap: [Int:Int]
+    let insertionIndexes: [Int]
+    let deletionIndexes: [Int]
+    let duplicatedIndexes: [Int]?
+    let reloadIndexMap: [Int:Int] // Old Index, New Index
+    let moveIndexMap: [Int:Int]
 
-    public let oldItems: [ComparableItem]
-    public let unmovedItems: [ComparableItem]
-    public let newItems: [ComparableItem]
+    let oldItems: [ComparableItem]
+    let unmovedItems: [ComparableItem]
+    let newItems: [ComparableItem]
     
     
-    public init(insertionIndexes: [Int],
+    init(insertionIndexes: [Int],
                 deletionIndexes: [Int],
                 reloadIndexMap: [Int:Int],
                 moveIndexMap: [Int:Int],
@@ -77,7 +77,7 @@ public struct ComparisonResult {
 }
 
 
-public struct DeltaMatrix<T> {
+struct DeltaMatrix<T> {
     
     var rows = [Int:[Int:T]]()
 
