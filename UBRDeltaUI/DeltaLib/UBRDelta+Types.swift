@@ -41,7 +41,7 @@ public func ==(lhs: ComparisonLevel, rhs: ComparisonLevel) -> Bool {
 }
 
 
-struct ComparisonResult {
+public struct ComparisonResult {
     
     let insertionIndexes: [Int]
     let deletionIndexes: [Int]
