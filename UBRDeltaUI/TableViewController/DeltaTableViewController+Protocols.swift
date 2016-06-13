@@ -71,3 +71,15 @@ public func weakActionHandler<Target: AnyObject, Context, Result>(target: Target
         handler(t)(result, context)
     }
 }
+
+
+/**
+ A helper function to avoid reference cycles in action handler.
+ This version allows to provide extra context, but does not take a value
+ */
+public func weakActionHandler<Target: AnyObject, Context>(target: Target, handler: (Target) -> ((Context) -> Void), context: Context) -> (() -> Void) {
+    return { [weak target] in
+        guard let t = target else { return }
+        handler(t)(context)
+    }
+}

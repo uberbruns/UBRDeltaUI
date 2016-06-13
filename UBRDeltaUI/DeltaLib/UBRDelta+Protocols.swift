@@ -41,5 +41,10 @@ public extension ComparableItem {
             return true
         }
     }
-    
+
+    /// Convenience function that allows you to compare against an optional item
+    func compareTo(other: ComparableItem?) -> ComparisonLevel {
+        guard let other = other else { return ComparisonLevel.Different }
+        return self.compareTo(other)
+    }
 }

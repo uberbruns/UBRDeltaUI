@@ -41,6 +41,31 @@ public func ==(lhs: ComparisonLevel, rhs: ComparisonLevel) -> Bool {
 }
 
 
+extension ComparisonLevel {
+    
+    /**
+     Convenience function that allows you to check if a property did change.
+     The default return value is `true`.
+     Usage:
+     ```
+     let comparison = anItem.compareTo(anotherItem)
+     let valueDidChange = comparison.propertyDidChange("value")
+     ```
+     */
+    public func propertyDidChange(property: String) -> Bool {
+        switch self {
+        case .Same :
+            return false
+        case .Changed(let changes) :
+            return changes[property] ?? true
+        default :
+            return true
+        }
+    }
+    
+}
+
+
 public struct ComparisonResult {
     
     public let insertionIndexes: [Int]
