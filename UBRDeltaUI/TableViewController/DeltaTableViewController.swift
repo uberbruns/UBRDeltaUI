@@ -129,7 +129,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      
      - Parameter animated: if true (default) performs a partial table view that will only update changes cells
      */
-    public func updateView(_ animated: Bool = true) {
+    public func updateView(animated: Bool = true) {
         if animated {
             animateViews = animated
             updateTableView()
@@ -177,8 +177,8 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     private func updateLearnedHeights() {
         for indexPath in tableView.indexPathsForVisibleRows ?? [] {
             guard let cell = tableView.cellForRow(at: indexPath) else { continue }
-            estimatedCellHeights[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).row] = cell.bounds.height
-            learnedCellHeights[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).row] = cell.bounds.height
+            estimatedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
+            learnedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
         }
     }
     
@@ -369,7 +369,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
                 var manualReloads = [IndexPath]()
                 for indexPath in weakSelf.tableView.indexPathsForVisibleRows ?? [] {
                     if let updateableCell = weakSelf.tableView.cellForRow(at: indexPath) as? UpdateableTableViewCell {
-                        let item: ComparableItem = weakSelf.sections[(indexPath as NSIndexPath).section].items[(indexPath as NSIndexPath).row]
+                        let item: ComparableItem = weakSelf.sections[indexPath.section].items[indexPath.row]
                         updateableCell.updateCellWithItem(item, animated: false)
                     } else {
                         manualReloads.append(indexPath)
@@ -412,7 +412,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
 
     /// Returns the `ComparableItem` that belongs to the provided index path.
     public func tableViewItem(indexPath: IndexPath) -> DeltaTableViewItem {
-        return sections[(indexPath as NSIndexPath).section].items[(indexPath as NSIndexPath).row]
+        return sections[indexPath.section].items[indexPath.row]
     }
 
     
@@ -441,7 +441,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      is not needed.
      */
     public func tableViewCellForRowAtIndexPath(_ indexPath: IndexPath) -> UITableViewCell? {
-        let item = sections[(indexPath as NSIndexPath).section].items[(indexPath as NSIndexPath).row]
+        let item = sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: item.reuseIdentifier) else { break getTableViewCell }
@@ -487,7 +487,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Row
     
     public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if let learnedHeight = learnedCellHeights[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).row] {
+        if let learnedHeight = learnedCellHeights[indexPath.section, indexPath.row] {
             return learnedHeight
         } else {
             return UITableViewAutomaticDimension
@@ -496,13 +496,13 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     
     public func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return estimatedCellHeights[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).row] ?? tableView.estimatedRowHeight
+        return estimatedCellHeights[indexPath.section, indexPath.row] ?? tableView.estimatedRowHeight
     }
     
     
     public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        estimatedCellHeights[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).row] = cell.bounds.height
-        learnedCellHeights[(indexPath as NSIndexPath).section, (indexPath as NSIndexPath).row] = cell.bounds.height
+        estimatedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
+        learnedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
     }
     
     
@@ -606,7 +606,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Selection
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let item = sections[(indexPath as NSIndexPath).section].items[(indexPath as NSIndexPath).row]
+        let item = sections[indexPath.section].items[indexPath.row]
         
         if let selectableItem = item as? SelectableTableViewItem {
             selectableItem.selectionHandler?()
