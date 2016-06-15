@@ -35,7 +35,7 @@ class UBRDeltaContent {
     
     // State vars to throttle UI update
     private var timeLockEnabled: Bool = false
-    private var lastUpdateTime: NSDate = NSDate(timeIntervalSince1970: 0)
+    private var lastUpdateTime: Date = Date(timeIntervalSince1970: 0)
     
     // Section data
     private var oldSections: [ComparableSectionItem]? = nil
@@ -45,7 +45,7 @@ class UBRDeltaContent {
     init() {}
     
     
-    func queueComparison(oldSections oldSections: [ComparableSectionItem], newSections: [ComparableSectionItem])
+    func queueComparison(oldSections: [ComparableSectionItem], newSections: [ComparableSectionItem])
     {
         // Set Sections
         if self.oldSections == nil {
@@ -80,17 +80,17 @@ class UBRDeltaContent {
         self.resultIsOutOfDate = false
 
         // Do the diffing on a background thread
-        let backgroundQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
+        let backgroundQueue = DispatchQueue.global(attributes: DispatchQueue.GlobalAttributes.qosBackground)
 
-        dispatch_async(backgroundQueue) {
+        backgroundQueue.async {
 
             let findDuplicatedItems = self.debugOutput
             
             // Diffing Items
             var itemDiffs = [Int: ComparisonResult]()
-            for (oldSectionIndex, oldSection) in oldSections.enumerate() {
+            for (oldSectionIndex, oldSection) in oldSections.enumerated() {
                 
-                let newIndex = newSections.indexOf({ newSection -> Bool in
+                let newIndex = newSections.index(where: { newSection -> Bool in
                     let comparisonLevel = newSection.compareTo(oldSection)
                     return comparisonLevel.isSame
                 })
@@ -133,8 +133,8 @@ class UBRDeltaContent {
             }
 
             // Diffing is done - doing UI updates on the main thread
-            let mainQueue = dispatch_get_main_queue()
-            dispatch_async(mainQueue) {
+            let mainQueue = DispatchQueue.main
+            mainQueue.async {
                 
                 // Guardings
                 if self.resultIsOutOfDate == true {
@@ -167,7 +167,7 @@ class UBRDeltaContent {
                 
                 // Item update for the old section order, because the sections
                 // are not moved yet
-                for (oldSectionIndex, itemDiff) in itemDiffs.sort({ $0.0 < $1.0 }) {
+                for (oldSectionIndex, itemDiff) in itemDiffs.sorted(isOrderedBefore: { $0.0 < $1.0 }) {
                     
                     // Call item handler functions
                     self.itemUpdate?(
@@ -194,7 +194,7 @@ class UBRDeltaContent {
                 self.completion?()
                 
                 // Reset state
-                self.lastUpdateTime = NSDate()
+                self.lastUpdateTime = Date()
                 self.oldSections = nil
                 self.newSections = nil
                 self.isDiffing = false
@@ -205,13 +205,13 @@ class UBRDeltaContent {
     }
     
     
-    static private func executeDelayed(time: Int, action: () -> ())
+    static private func executeDelayed(_ time: Int, action: () -> ())
     {
         self.executeDelayed(Double(time), action: action)
     }
     
     
-    static private func executeDelayed(time: Double, action: () -> ())
+    static private func executeDelayed(_ time: Double, action: () -> ())
     {
         if time == 0 {
             action()
@@ -219,8 +219,8 @@ class UBRDeltaContent {
         }
         
         let nanoSeconds: Int64 = Int64(Double(NSEC_PER_SEC) * time);
-        let when = dispatch_time(DISPATCH_TIME_NOW, nanoSeconds)
-        dispatch_after(when, dispatch_get_main_queue(), {
+        let when = DispatchTime.now() + Double(nanoSeconds) / Double(NSEC_PER_SEC)
+        DispatchQueue.main.after(when: when, execute: {
             action()
         })
     }
