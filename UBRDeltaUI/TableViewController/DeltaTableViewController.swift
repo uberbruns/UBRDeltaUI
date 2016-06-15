@@ -129,7 +129,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      
      - Parameter animated: if true (default) performs a partial table view that will only update changes cells
      */
-    public func updateView(animated animated: Bool = true) {
+    public func updateView(animated: Bool = true) {
         if animated {
             animateViews = animated
             updateTableView()
@@ -395,7 +395,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     
     // MARK: - API -
-    // MARK: - Content -
+    // MARK: Content
     
     /// Use this function in subclasses to provide section and rows items you want to display
     /// as table view cells.
@@ -416,7 +416,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
 
     
-    // MARK: - Table View -
+    // MARK: Table View
     
     /// Use this function in your subclass to update `reusableCellClasses` and `reusableHeaderFooterClasses`.
     public func prepareReusableTableViewCells() { }
