@@ -80,9 +80,10 @@ public class UBRDeltaContent {
         self.resultIsOutOfDate = false
 
         // Do the diffing on a background thread
-        let backgroundQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)
+        let qosAttribute = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, 0)
+        let workerQueue = dispatch_queue_create("ubr.deltaui.diffing", qosAttribute)
 
-        dispatch_async(backgroundQueue) {
+        dispatch_async(workerQueue) {
 
             let findDuplicatedItems = self.debugOutput
             
