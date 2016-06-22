@@ -43,7 +43,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     public var reusableCellClasses = [String:UITableViewCell.Type]()
     public var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
-    public private(set) var sections: [TableViewSectionItem] = []
+    public private(set) var sections: [DeltaTableViewSectionItem] = []
     private let contentDiffer = UBRDeltaContent()
     private var animateViews = true
     private var deltaUpdateOptions = DeltaUpdateOptions.Default
@@ -149,7 +149,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      
      */
     public func updateTableView(options options: DeltaUpdateOptions = .Default) {
-        let newSections: [TableViewSectionItem] = generateItems()
+        let newSections: [DeltaTableViewSectionItem] = generateItems()
         
         deltaUpdateOptions = options
         learnedCellHeights.removeAll(true)
@@ -226,7 +226,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         contentDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
-            weakSelf.sections[section].items = items
+            weakSelf.sections[section].items = items.flatMap { $0 as? DeltaTableViewItem }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -276,7 +276,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         contentDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let weakSelf = self else { return }
             
-            weakSelf.sections[section].items = items
+            weakSelf.sections[section].items = items.flatMap { $0 as? DeltaTableViewItem }
             
             if reorderMap.count == 0 {
                 return
@@ -299,7 +299,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         contentDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
-            weakSelf.sections = sections.flatMap({ $0 as? TableViewSectionItem })
+            weakSelf.sections = sections.flatMap({ $0 as? DeltaTableViewSectionItem })
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -322,7 +322,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
             
             for (sectionIndexBefore, sectionIndexAfter) in reloadIndexMap {
                 
-                if let sectionItem = sections[sectionIndexAfter] as? TableViewSectionItem {
+                if let sectionItem = sections[sectionIndexAfter] as? DeltaTableViewSectionItem {
                     
                     if let headerView = weakSelf.tableView.headerViewForSection(sectionIndexBefore) as? UpdateableTableViewHeaderFooterView {
                         headerView.updateViewWithItem(sectionItem.headerItem ?? sectionItem, animated: true, type: .Header)
@@ -344,7 +344,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         contentDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
             guard let weakSelf = self else { return }
             
-            weakSelf.sections = sections.flatMap({ $0 as? TableViewSectionItem })
+            weakSelf.sections = sections.flatMap({ $0 as? DeltaTableViewSectionItem })
             
             if reorderMap.count == 0 {
                 return
@@ -399,19 +399,19 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     /// Use this function in subclasses to provide section and rows items you want to display
     /// as table view cells.
-    public func generateItems() -> [TableViewSectionItem] {
+    public func generateItems() -> [DeltaTableViewSectionItem] {
         return []
     }
 
     
-    /// Returns the `TableViewSectionItem` that belongs to the provided section index.
-    public func sectionItemForSection(section: Int) -> TableViewSectionItem {
+    /// Returns the `DeltaTableViewSectionItem` that belongs to the provided section index.
+    public func tableViewSectionItem(section section: Int) -> DeltaTableViewSectionItem {
         return sections[section]
     }
     
 
     /// Returns the `ComparableItem` that belongs to the provided index path.
-    public func itemForIndexPath(indexPath: NSIndexPath) -> ComparableItem {
+    public func tableViewItem(indexPath indexPath: NSIndexPath) -> DeltaTableViewItem {
         return sections[indexPath.section].items[indexPath.row]
     }
 
@@ -444,8 +444,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         let item = sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
-            guard let tableViewItem = item as? DeltaTableViewItem else { break getTableViewCell }
-            guard let cell = tableView.dequeueReusableCellWithIdentifier(tableViewItem.reuseIdentifier) else { break getTableViewCell }
+            guard let cell = tableView.dequeueReusableCellWithIdentifier(item.reuseIdentifier) else { break getTableViewCell }
 
             if let updateableCell = cell as? UpdateableTableViewCell {
                 updateableCell.updateCellWithItem(item, animated: false)
@@ -514,7 +513,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var view: UIView?
         
         configureView : do {
-            guard let headerItem = item.headerItem as? DeltaTableViewHeaderFooterItem else { break configureView }
+            guard let headerItem = item.headerItem else { break configureView }
             guard let headerView = tableView.dequeueReusableHeaderFooterViewWithIdentifier(headerItem.reuseIdentifier) else { break configureView }
             // Update View
             headerView.prepareForReuse()
@@ -533,7 +532,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var height: CGFloat = tableView.sectionHeaderHeight
         
         calculateHeight : do {
-            guard let headerItem = item.headerItem as? DeltaTableViewHeaderFooterItem else { break calculateHeight }
+            guard let headerItem = item.headerItem else { break calculateHeight }
             guard let prototype = headerFooterPrototypes[headerItem.reuseIdentifier] else { break calculateHeight }
             // Update Prototype
             prototype.prepareForReuse()
@@ -560,7 +559,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var view: UIView?
         
         configureView : do {
-            guard let footerItem = item.footerItem as? DeltaTableViewHeaderFooterItem else { break configureView }
+            guard let footerItem = item.footerItem else { break configureView }
             guard let footerView = tableView.dequeueReusableHeaderFooterViewWithIdentifier(footerItem.reuseIdentifier) else { break configureView }
             // Update View
             footerView.prepareForReuse()
@@ -579,7 +578,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
         var height: CGFloat = CGFloat.min
         
         calculateHeight : do {
-            guard let footerItem = item.footerItem as? DeltaTableViewHeaderFooterItem else { break calculateHeight }
+            guard let footerItem = item.footerItem else { break calculateHeight }
             guard let prototype = headerFooterPrototypes[footerItem.reuseIdentifier] else { break calculateHeight }
             // Update Prototype
             prototype.prepareForReuse()

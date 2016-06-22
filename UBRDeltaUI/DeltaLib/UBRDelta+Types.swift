@@ -15,11 +15,11 @@ public enum ComparisonLevel {
     
     case Same, Different, Changed(ComparisonChanges)
     
-    public var isSame: Bool {
+    var isSame: Bool {
         return self != .Different
     }
     
-    public var isChanged: Bool {
+    var isChanged: Bool {
         return self != .Different && self != .Same
     }
 }
@@ -41,6 +41,31 @@ public func ==(lhs: ComparisonLevel, rhs: ComparisonLevel) -> Bool {
 }
 
 
+extension ComparisonLevel {
+    
+    /**
+     Convenience function that allows you to check if a property did change.
+     The default return value is `true`.
+     Usage:
+     ```
+     let comparison = anItem.compareTo(anotherItem)
+     let valueDidChange = comparison.propertyDidChange("value")
+     ```
+     */
+    public func propertyDidChange(property: String) -> Bool {
+        switch self {
+        case .Same :
+            return false
+        case .Changed(let changes) :
+            return changes[property] ?? true
+        default :
+            return true
+        }
+    }
+    
+}
+
+
 public struct ComparisonResult {
     
     public let insertionIndexes: [Int]
@@ -54,7 +79,7 @@ public struct ComparisonResult {
     public let newItems: [ComparableItem]
     
     
-    public init(insertionIndexes: [Int],
+    init(insertionIndexes: [Int],
                 deletionIndexes: [Int],
                 reloadIndexMap: [Int:Int],
                 moveIndexMap: [Int:Int],
@@ -77,7 +102,7 @@ public struct ComparisonResult {
 }
 
 
-public struct DeltaMatrix<T> {
+struct DeltaMatrix<T> {
     
     var rows = [Int:[Int:T]]()
 

@@ -8,8 +8,8 @@
 
 import Foundation
 
-public protocol ComparableSectionItem : ComparableItem {
+protocol ComparableSectionItem : ComparableItem {
     
-    var items: [ComparableItem] { get set }
+    var subitems: [ComparableItem] { get }
     
 }

@@ -1,5 +1,5 @@
 //
-//  TableViewSectionItem.swift
+//  DeltaTableViewSectionItem.swift
 //
 //  Created by Karsten Bruns on 28/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -9,12 +9,15 @@ import Foundation
 
 
 
-public struct TableViewSectionItem : ComparableSectionItem {
+public struct DeltaTableViewSectionItem : ComparableSectionItem {
     
     public var uniqueIdentifier: Int { return id.hash }
-    public var items: [ComparableItem] = []
-    public var headerItem: ComparableItem?
-    public var footerItem: ComparableItem?
+    
+    internal var subitems: [ComparableItem] { return items.map { $0 as ComparableItem } }
+    public var items: [DeltaTableViewItem] = []
+    
+    public var headerItem: DeltaTableViewHeaderFooterItem?
+    public var footerItem: DeltaTableViewHeaderFooterItem?
     
     public let id: String
     
@@ -24,7 +27,7 @@ public struct TableViewSectionItem : ComparableSectionItem {
     
     
     public func compareTo(other: ComparableItem) -> ComparisonLevel {
-        guard let other = other as? TableViewSectionItem else { return .Different }
+        guard let other = other as? DeltaTableViewSectionItem else { return .Different }
         guard other.id == self.id else { return .Different }
         
         var headerItemChanged = (headerItem == nil) != (other.headerItem == nil)
@@ -37,10 +40,10 @@ public struct TableViewSectionItem : ComparableSectionItem {
             footerItemChanged = footerItem.compareTo(otherFooterItem) != .Same
         }
         
-        if  !headerItemChanged && !footerItemChanged {
-            return .Same
+        if  headerItemChanged || footerItemChanged {
+            return .Changed(["headerItem": headerItemChanged, "footerItem": footerItemChanged])
         } else {
-            return .Changed(["headerItem":headerItemChanged, "footerItem": footerItemChanged])
+            return .Same
         }
     }
 }
