@@ -126,7 +126,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      
      - Parameter animated: if true (default) performs a partial table view that will only update changes cells
      */
-    public func updateView(animated: Bool = true) {
+    public func updateView(animated animated: Bool = true) {
         if animated {
             animateViews = animated
             updateTableView()
