@@ -33,13 +33,10 @@ public enum DeltaUpdateOptions {
 }
 
 
-public class DeltaTableView : UITableView {}
-
-
 public class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Controller -
-    
+
     public var reusableCellClasses = [String:UITableViewCell.Type]()
     public var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
@@ -52,7 +49,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     private var estimatedCellHeights = DeltaMatrix<CGFloat>()
     private var learnedCellHeights = DeltaMatrix<CGFloat>()
     private var headerFooterPrototypes = [String:UITableViewHeaderFooterView]()
-    public let tableView = DeltaTableView(frame: CGRect.zero, style: .grouped)
+    public var tableView = UITableView(frame: CGRect.zero, style: .grouped)
     
     
     // Table View API
