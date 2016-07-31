@@ -31,12 +31,12 @@ public struct DeltaTableViewSectionItem : ComparableSectionItem {
         guard other.id == self.id else { return .different }
         
         var headerItemChanged = (headerItem == nil) != (other.headerItem == nil)
-        if let headerItem = headerItem, otherheaderItem = other.headerItem {
+        if let headerItem = headerItem, let otherheaderItem = other.headerItem {
             headerItemChanged = headerItem.compareTo(otherheaderItem) != .same
         }
 
         var footerItemChanged = (footerItem == nil) != (other.footerItem == nil)
-        if let footerItem = footerItem, otherFooterItem = other.footerItem {
+        if let footerItem = footerItem, let otherFooterItem = other.footerItem {
             footerItemChanged = footerItem.compareTo(otherFooterItem) != .same
         }
         

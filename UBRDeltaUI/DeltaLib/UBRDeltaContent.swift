@@ -103,7 +103,7 @@ class UBRDeltaContent {
                     itemDiffs[oldSectionIndex] = itemDiff
                     
                     if findDuplicatedItems {
-                        if let duplicatedIndexes = itemDiff.duplicatedIndexes where duplicatedIndexes.count > 0 {
+                        if let duplicatedIndexes = itemDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
                             print("\n")
                             print("WARNING: Duplicated items detected. App will probably crash.")
                             print("Dublicated indexes:", duplicatedIndexes)
@@ -123,7 +123,7 @@ class UBRDeltaContent {
             let sectionDiff = UBRDelta.diff(old: oldSectionAsItems, new: newSectionsAsItems, findDuplicatedItems: findDuplicatedItems)
             
             if findDuplicatedItems {
-                if let duplicatedIndexes = sectionDiff.duplicatedIndexes where duplicatedIndexes.count > 0 {
+                if let duplicatedIndexes = sectionDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
                     print("\n")
                     print("WARNING: Duplicated section items detected. App will probably crash.")
                     print("Dublicated indexes:", duplicatedIndexes)
