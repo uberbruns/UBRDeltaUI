@@ -18,7 +18,7 @@ class UBRDeltaUITests: XCTestCase {
     let janeway = Captain(name: "Kathrin Janeway", ships: ["USS Voxager"], fistFights: 12)
 
     
-    func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> ComparisonResult {
+    func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> UBRDeltaUI.DeltaComparisonResult {
         return UBRDelta.diff(old: oldItems, new: newItems, findDuplicatedItems: findDuplicatedItems)
     }
     
@@ -206,7 +206,7 @@ class UBRDeltaUITests: XCTestCase {
             var insertions = 0
             var changes = 0
             
-            for (index, captain) in oldCaptains.enumerate() {
+            for (index, captain) in oldCaptains.enumerated() {
                 let rand = arc4random_uniform(8)
                 if rand == 0 {
                     deletions += 1
@@ -231,7 +231,7 @@ class UBRDeltaUITests: XCTestCase {
             // Move
             for captain in moving {
                 let randIndex = Int(arc4random_uniform(UInt32(newCaptains.count)))
-                newCaptains.insert(captain, atIndex: randIndex)
+                newCaptains.insert(captain, at: randIndex)
             }
             
             // Diff Captains
@@ -243,13 +243,13 @@ class UBRDeltaUITests: XCTestCase {
             
             // Apply Deletes and Reloads
             let deletionSet = Set(result.deletionIndexes)
-            for (index, captain) in oldCaptains.enumerate() where !deletionSet.contains(index) {
+            for (index, captain) in oldCaptains.enumerated() where !deletionSet.contains(index) {
                 unmovedCaptainsRef.append(captain)
             }
             
             // Apply Inserts
             for index in result.insertionIndexes {
-                unmovedCaptainsRef.insert(newCaptains[index], atIndex: index)
+                unmovedCaptainsRef.insert(newCaptains[index], at: index)
             }
             
             // Apply Reloads
@@ -262,15 +262,15 @@ class UBRDeltaUITests: XCTestCase {
             
             // Move Items
             var newCaptainsRef = [Captain]()
-            for (oldIndex, captain) in unmovedCaptainsRef.enumerate() {
+            for (oldIndex, captain) in unmovedCaptainsRef.enumerated() {
                 if result.moveIndexMap[oldIndex] == nil {
                     newCaptainsRef.append(captain)
                 }
             }
             
-            for (_, to) in result.moveIndexMap.sort({ $0.1 < $1.1 }) {
+            for (_, to) in result.moveIndexMap.sorted(isOrderedBefore: { $0.1 < $1.1 }) {
                 let item = newCaptains[to]
-                newCaptainsRef.insert(item, atIndex: to)
+                newCaptainsRef.insert(item, at: to)
             }
             
             // Test
@@ -293,7 +293,7 @@ class UBRDeltaUITests: XCTestCase {
         var newCaptains = [Captain]()
         var moving = [Captain]()
         
-        for (index, captain) in oldCaptains.enumerate() {
+        for (index, captain) in oldCaptains.enumerated() {
             let num = index%8
             if num == 0 {
                 // Delete
@@ -316,14 +316,14 @@ class UBRDeltaUITests: XCTestCase {
         // Move
         for captain in moving {
             let randIndex = Int(arc4random_uniform(UInt32(newCaptains.count)))
-            newCaptains.insert(captain, atIndex: randIndex)
+            newCaptains.insert(captain, at: randIndex)
         }
         
         // Diff Captains
         let oldItems = oldCaptains.map({ $0 as ComparableItem })
         let newItems = newCaptains.map({ $0 as ComparableItem })
         
-        measureBlock {
+        measure {
             _ = self.diff(old: oldItems, new: newItems)
         }
     }

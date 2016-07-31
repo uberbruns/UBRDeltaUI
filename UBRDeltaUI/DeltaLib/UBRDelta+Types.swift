@@ -11,7 +11,7 @@ import Foundation
 public typealias ComparisonChanges = [String:Bool]
 
 
-public enum ComparisonLevel {
+public enum DeltaComparisonLevel {
     
     case same, different, changed(ComparisonChanges)
     
@@ -25,9 +25,9 @@ public enum ComparisonLevel {
 }
 
 
-extension ComparisonLevel : Equatable { }
+extension DeltaComparisonLevel : Equatable { }
 
-public func ==(lhs: ComparisonLevel, rhs: ComparisonLevel) -> Bool {
+public func ==(lhs: DeltaComparisonLevel, rhs: DeltaComparisonLevel) -> Bool {
     switch (lhs, rhs) {
     case (.different, .different) :
         return true
@@ -41,7 +41,7 @@ public func ==(lhs: ComparisonLevel, rhs: ComparisonLevel) -> Bool {
 }
 
 
-extension ComparisonLevel {
+extension DeltaComparisonLevel {
     
     /**
      Convenience function that allows you to check if a property did change.
@@ -66,7 +66,7 @@ extension ComparisonLevel {
 }
 
 
-public struct ComparisonResult {
+public struct DeltaComparisonResult {
     
     public let insertionIndexes: [Int]
     public let deletionIndexes: [Int]

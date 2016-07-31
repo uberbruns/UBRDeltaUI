@@ -10,7 +10,7 @@ import Foundation
 
 public struct UBRDelta {
     
-    public static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> ComparisonResult
+    public static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> DeltaComparisonResult
     {
         // Init return vars
         var insertionIndexes = [Int]()
@@ -102,7 +102,7 @@ public struct UBRDelta {
         }
         
         // Bundle result
-        let comparisonResult = ComparisonResult(
+        let comparisonResult = DeltaComparisonResult(
             insertionIndexes: insertionIndexes,
             deletionIndexes: deletionIndexes,
             reloadIndexMap: reloadIndexMap,

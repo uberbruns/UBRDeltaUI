@@ -19,7 +19,7 @@ public protocol ComparableItem {
     
     /// Implement this function to determine how two instances relate to another
     /// Are they the same, same but with changed data or completly differtent
-    func compareTo(_ other: ComparableItem) -> ComparisonLevel
+    func compareTo(_ other: ComparableItem) -> DeltaComparisonLevel
     
 }
 
@@ -43,8 +43,8 @@ public extension ComparableItem {
     }
 
     /// Convenience function that allows you to compare against an optional item
-    func compareTo(_ other: ComparableItem?) -> ComparisonLevel {
-        guard let other = other else { return ComparisonLevel.different }
+    func compareTo(_ other: ComparableItem?) -> DeltaComparisonLevel {
+        guard let other = other else { return DeltaComparisonLevel.different }
         return self.compareTo(other)
     }
 }

@@ -26,7 +26,7 @@ public struct DeltaTableViewSectionItem : ComparableSectionItem {
     }
     
     
-    public func compareTo(_ other: ComparableItem) -> ComparisonLevel {
+    public func compareTo(_ other: ComparableItem) -> DeltaComparisonLevel {
         guard let other = other as? DeltaTableViewSectionItem else { return .different }
         guard other.id == self.id else { return .different }
         

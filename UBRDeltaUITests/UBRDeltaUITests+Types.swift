@@ -31,17 +31,17 @@ extension Captain : ComparableItem {
     }
     
     
-    func compareTo(other: ComparableItem) -> ComparisonLevel {
-        guard uniqueIdentifier == other.uniqueIdentifier else { return .Different }
-        guard let otherPlayer = other as? Captain else { return .Different }
+    func compareTo(_ other: ComparableItem) -> DeltaComparisonLevel {
+        guard uniqueIdentifier == other.uniqueIdentifier else { return .different }
+        guard let otherPlayer = other as? Captain else { return .different }
         
         let shipsChanged = ships != otherPlayer.ships
         let fistFightsChanged = fistFights != otherPlayer.fistFights
         
         if !shipsChanged && !fistFightsChanged {
-            return .Same
+            return .same
         } else {
-            return .Changed(["ships":shipsChanged, "fistFights": fistFightsChanged])
+            return .changed(["ships":shipsChanged, "fistFights": fistFightsChanged])
         }
     }
     
@@ -51,5 +51,5 @@ extension Captain : ComparableItem {
 extension Captain : Equatable { }
 
 func ==(lhs: Captain, rhs: Captain) -> Bool {
-    return lhs.compareTo(rhs) == ComparisonLevel.Same
+    return lhs.compareTo(rhs) == DeltaComparisonLevel.same
 }

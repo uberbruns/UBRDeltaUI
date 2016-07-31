@@ -87,7 +87,7 @@ class UBRDeltaContent {
             let findDuplicatedItems = self.debugOutput
             
             // Diffing Items
-            var itemDiffs = [Int: ComparisonResult]()
+            var itemDiffs = [Int: DeltaComparisonResult]()
             for (oldSectionIndex, oldSection) in oldSections.enumerated() {
                 
                 let newIndex = newSections.index(where: { newSection -> Bool in
