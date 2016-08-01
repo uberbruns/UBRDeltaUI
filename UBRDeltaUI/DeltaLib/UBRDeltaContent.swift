@@ -80,7 +80,7 @@ class UBRDeltaContent {
         self.resultIsOutOfDate = false
 
         // Do the diffing on a background thread
-        let backgroundQueue = DispatchQueue.global(attributes: DispatchQueue.GlobalAttributes.qosBackground)
+        let backgroundQueue = DispatchQueue.global(qos: .background)
 
         backgroundQueue.async {
 
@@ -167,7 +167,7 @@ class UBRDeltaContent {
                 
                 // Item update for the old section order, because the sections
                 // are not moved yet
-                for (oldSectionIndex, itemDiff) in itemDiffs.sorted(isOrderedBefore: { $0.0 < $1.0 }) {
+                for (oldSectionIndex, itemDiff) in itemDiffs.sorted(by: { $0.0 < $1.0 }) {
                     
                     // Call item handler functions
                     self.itemUpdate?(
@@ -220,9 +220,9 @@ class UBRDeltaContent {
         
         let nanoSeconds: Int64 = Int64(Double(NSEC_PER_SEC) * time);
         let when = DispatchTime.now() + Double(nanoSeconds) / Double(NSEC_PER_SEC)
-        DispatchQueue.main.after(when: when, execute: {
+
+        DispatchQueue.main.asyncAfter(deadline: when, execute: {
             action()
         })
     }
-    
 }
