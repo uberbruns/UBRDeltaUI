@@ -33,51 +33,51 @@ public enum DeltaUpdateOptions {
 }
 
 
-public class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+open class DeltaTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Controller -
 
-    public var reusableCellClasses = [String:UITableViewCell.Type]()
-    public var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
+    open var reusableCellClasses = [String:UITableViewCell.Type]()
+    open var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
-    public private(set) var sections: [DeltaTableViewSectionItem] = []
+    open private(set) var sections: [DeltaTableViewSectionItem] = []
     private let contentDiffer = UBRDeltaContent()
     private var animateViews = true
     private var deltaUpdateOptions = DeltaUpdateOptions.default
-    public var deltaDebugOutput = DeltaDebugOutput.none
+    open var deltaDebugOutput = DeltaDebugOutput.none
     
     private var estimatedCellHeights = DeltaMatrix<CGFloat>()
     private var learnedCellHeights = DeltaMatrix<CGFloat>()
     private var headerFooterPrototypes = [String:UITableViewHeaderFooterView]()
-    public var tableView = UITableView(frame: CGRect.zero, style: .grouped)
+    open var tableView = UITableView(frame: CGRect.zero, style: .grouped)
     
     
     // Table View API
     
     /// The type of animation when rows are deleted.
-    public var rowDeletionAnimation = UITableViewRowAnimation.automatic
+    open var rowDeletionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when rows are inserted.
-    public var rowInsertionAnimation = UITableViewRowAnimation.automatic
+    open var rowInsertionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when rows are reloaded (not updated)
-    public var rowReloadAnimation = UITableViewRowAnimation.automatic
+    open var rowReloadAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when sections are deleted.
-    public var sectionDeletionAnimation = UITableViewRowAnimation.automatic
+    open var sectionDeletionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when sections are inserted.
-    public var sectionInsertionAnimation = UITableViewRowAnimation.automatic
+    open var sectionInsertionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when sections are reloaded (not updated)
-    public var sectionReloadAnimation = UITableViewRowAnimation.automatic
+    open var sectionReloadAnimation = UITableViewRowAnimation.automatic
     
     
     
     // MARK: - View -
     // MARK: Life-Cycle
     
-    public override func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         configureContentDiffer()
         prepareReusableTableViewCells()
@@ -126,12 +126,12 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      
      - Parameter animated: if true (default) performs a partial table view that will only update changes cells
      */
-    public func updateView(animated: Bool = true) {
+    open func updateView(_ animated: Bool = true) {
         if animated {
             animateViews = animated
             updateTableView()
         } else {
-            updateTableView(options: .hardReload)
+            updateTableView(.hardReload)
         }
     }
     
@@ -145,7 +145,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      - Parameter options: Enum with instructions on how to update the table view. Default is `.Default`.
      
      */
-    public func updateTableView(options: DeltaUpdateOptions = .default) {
+    open func updateTableView(_ options: DeltaUpdateOptions = .default) {
         let newSections: [DeltaTableViewSectionItem] = generateItems()
         
         deltaUpdateOptions = options
@@ -396,19 +396,19 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     /// Use this function in subclasses to provide section and rows items you want to display
     /// as table view cells.
-    public func generateItems() -> [DeltaTableViewSectionItem] {
+    open func generateItems() -> [DeltaTableViewSectionItem] {
         return []
     }
 
     
     /// Returns the `DeltaTableViewSectionItem` that belongs to the provided section index.
-    public func tableViewSectionItem(section: Int) -> DeltaTableViewSectionItem {
+    open func tableViewSectionItem(_ section: Int) -> DeltaTableViewSectionItem {
         return sections[section]
     }
     
 
     /// Returns the `ComparableItem` that belongs to the provided index path.
-    public func tableViewItem(indexPath: IndexPath) -> DeltaTableViewItem {
+    open func tableViewItem(_ indexPath: IndexPath) -> DeltaTableViewItem {
         return sections[indexPath.section].items[indexPath.row]
     }
 
@@ -416,15 +416,15 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Table View
     
     /// Use this function in your subclass to update `reusableCellClasses` and `reusableHeaderFooterClasses`.
-    public func prepareReusableTableViewCells() { }
+    open func prepareReusableTableViewCells() { }
     
     
     /// Subclass this function in your subclass to execute code when a table view will update.
-    public func tableViewWillUpdateCells(_ animated: Bool) {}
+    open func tableViewWillUpdateCells(_ animated: Bool) {}
     
     
     /// Subclass this function in your subclass to execute code when a table view did update.
-    public func tableViewDidUpdateCells(_ animated: Bool) {}
+    open func tableViewDidUpdateCells(_ animated: Bool) {}
     
     
     /**
@@ -437,7 +437,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
      In most cases this function is only used internally and a custom implementation of `tableView(tableView:cellForRowAtIndexPath:)`
      is not needed.
      */
-    public func tableViewCellForRowAtIndexPath(_ indexPath: IndexPath) -> UITableViewCell? {
+    open func tableViewCellForRowAtIndexPath(_ indexPath: IndexPath) -> UITableViewCell? {
         let item = sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
@@ -461,17 +461,17 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: - Protocols -
     // MARK: UITableViewDataSource
     
-    public func numberOfSections(in tableView: UITableView) -> Int {
+    open func numberOfSections(in tableView: UITableView) -> Int {
         return sections.count
     }
     
     
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sections[section].items.count
     }
     
     
-    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if let cell = tableViewCellForRowAtIndexPath(indexPath) {
             return cell
         } else {
@@ -483,7 +483,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: UITableViewDelegate
     // MARK: Row
     
-    public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    open func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if let learnedHeight = learnedCellHeights[indexPath.section, indexPath.row] {
             return learnedHeight
         } else {
@@ -492,12 +492,12 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+    open func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return estimatedCellHeights[indexPath.section, indexPath.row] ?? tableView.estimatedRowHeight
     }
     
     
-    public func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         estimatedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
         learnedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
     }
@@ -505,7 +505,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: Header
     
-    public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    open func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let item = sections[section]
         var view: UIView?
         
@@ -524,7 +524,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+    open func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         let item = sections[section]
         var height: CGFloat = tableView.sectionHeaderHeight
         
@@ -551,7 +551,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: Footer
 
-    public func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+    open func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let item = sections[section]
         var view: UIView?
         
@@ -570,7 +570,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     }
     
     
-    public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    open func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         let item = sections[section]
         var height: CGFloat = CGFloat.leastNormalMagnitude
         
@@ -602,7 +602,7 @@ public class DeltaTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: Selection
     
-    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item = sections[indexPath.section].items[indexPath.row]
         
         if let selectableItem = item as? SelectableTableViewItem {

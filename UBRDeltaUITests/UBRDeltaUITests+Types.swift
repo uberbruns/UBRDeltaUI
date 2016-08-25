@@ -38,10 +38,10 @@ extension Captain : ComparableItem {
         let shipsChanged = ships != otherPlayer.ships
         let fistFightsChanged = fistFights != otherPlayer.fistFights
         
-        if !shipsChanged && !fistFightsChanged {
-            return .same
+        if shipsChanged || fistFightsChanged {
+            return .changed(["ships": shipsChanged, "fistFights": fistFightsChanged])
         } else {
-            return .changed(["ships":shipsChanged, "fistFights": fistFightsChanged])
+            return .same
         }
     }
     

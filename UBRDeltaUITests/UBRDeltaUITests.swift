@@ -268,7 +268,7 @@ class UBRDeltaUITests: XCTestCase {
                 }
             }
             
-            for (_, to) in result.moveIndexMap.sorted(isOrderedBefore: { $0.1 < $1.1 }) {
+            for (_, to) in result.moveIndexMap.sorted(by: { $0.1 < $1.1 }) {
                 let item = newCaptains[to]
                 newCaptainsRef.insert(item, at: to)
             }
@@ -287,7 +287,7 @@ class UBRDeltaUITests: XCTestCase {
     func testMeasure() {
         
         // Create Original Array
-        let oldCaptains = (0..<216).map { num in Captain(name: "\(num+10)", ships: ["USS Enterprise-\(num)"], fistFights: num) }
+        let oldCaptains = (0..<512).map { num in Captain(name: "\(num+10)", ships: ["USS Enterprise-\(num)"], fistFights: num) }
         
         // Create Changed Array
         var newCaptains = [Captain]()

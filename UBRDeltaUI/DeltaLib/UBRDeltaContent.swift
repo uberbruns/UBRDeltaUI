@@ -10,10 +10,10 @@ import Foundation
 
 class UBRDeltaContent {
     
-    typealias ItemUpdateHandler = (items: [ComparableItem], section: Int, insertIndexPaths: [Int], reloadIndexPaths: [Int:Int], deleteIndexPaths: [Int]) -> ()
-    typealias ItemReorderHandler = (items: [ComparableItem], section: Int, reorderMap: [Int:Int]) -> ()
-    typealias SectionUpdateHandler = (sections: [ComparableSectionItem], insertIndexSet: [Int], reloadIndexSet: [Int:Int], deleteIndexSet: [Int]) -> ()
-    typealias SectionReorderHandler = (sections: [ComparableSectionItem], reorderMap: [Int:Int]) -> ()
+    typealias ItemUpdateHandler = (_ items: [ComparableItem], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> ()
+    typealias ItemReorderHandler = (_ items: [ComparableItem], _ section: Int, _ reorderMap: [Int:Int]) -> ()
+    typealias SectionUpdateHandler = (_ sections: [ComparableSectionItem], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> ()
+    typealias SectionReorderHandler = (_ sections: [ComparableSectionItem], _ reorderMap: [Int:Int]) -> ()
     typealias StartHandler = () -> ()
     typealias CompletionHandler = () -> ()
     
@@ -171,13 +171,13 @@ class UBRDeltaContent {
                     
                     // Call item handler functions
                     self.itemUpdate?(
-                        items: itemDiff.unmovedItems,
-                        section: oldSectionIndex,
-                        insertIndexPaths: itemDiff.insertionIndexes,
-                        reloadIndexPaths: itemDiff.reloadIndexMap,
-                        deleteIndexPaths: itemDiff.deletionIndexes
+                        itemDiff.unmovedItems,
+                        oldSectionIndex,
+                        itemDiff.insertionIndexes,
+                        itemDiff.reloadIndexMap,
+                        itemDiff.deletionIndexes
                     )
-                    self.itemReorder?(items: itemDiff.newItems, section: oldSectionIndex, reorderMap: itemDiff.moveIndexMap)
+                    self.itemReorder?(itemDiff.newItems, oldSectionIndex, itemDiff.moveIndexMap)
                     
                 }
                 
@@ -187,8 +187,8 @@ class UBRDeltaContent {
                 let reorderItems = sectionDiff.newItems.map({ $0 as! ComparableSectionItem })
                 
                 // Call section handler functions
-                self.sectionUpdate?(sections: updateItems, insertIndexSet: sectionDiff.insertionIndexes, reloadIndexSet: sectionDiff.reloadIndexMap, deleteIndexSet: sectionDiff.deletionIndexes)
-                self.sectionReorder?(sections: reorderItems, reorderMap: sectionDiff.moveIndexMap)
+                self.sectionUpdate?(updateItems, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
+                self.sectionReorder?(reorderItems, sectionDiff.moveIndexMap)
                 
                 // Call completion block
                 self.completion?()
@@ -205,13 +205,13 @@ class UBRDeltaContent {
     }
     
     
-    static private func executeDelayed(_ time: Int, action: () -> ())
+    static private func executeDelayed(_ time: Int, action: @escaping () -> ())
     {
         self.executeDelayed(Double(time), action: action)
     }
     
     
-    static private func executeDelayed(_ time: Double, action: () -> ())
+    static private func executeDelayed(_ time: Double, action: @escaping () -> ())
     {
         if time == 0 {
             action()
