@@ -22,7 +22,7 @@ public protocol ElementTableViewCell : AnyElementTableViewCell {
 
 
 extension ElementTableViewCell {
-    var anyViewElement: AnyViewElement {
+    public var anyViewElement: AnyViewElement {
         get {
             return element
         }
@@ -42,37 +42,35 @@ extension ElementTableViewCell {
 
 
 
-public protocol ElementViewHeaderFooterView : class {
-    func update(with element: AnyElement, animated: Bool, type: HeaderFooterType)
+
+public protocol AnyElementHeaderFooterView : class {
+    var anyViewElement: AnyViewElement { get set }
+    func elementDidChange(oldElement: AnyViewElement, animate: Bool, type: HeaderFooterType)
 }
 
 
-struct TestElement: ViewElement {
-    
-    let typeIdentifier = "test"
-
-    var id: String
-    var text: String
-    
-    static var placeholder: TestElement {
-        return TestElement(id: "", text: "")
-    }
-    
-    func isEqual(to other: TestElement) -> Bool {
-        return text == other.text
-    }
-    
-    init(id: String, text: String) {
-        self.id = id
-        self.text = text
-    }
+public protocol ElementHeaderFooterView : AnyElementHeaderFooterView {
+    associatedtype VE: ViewElement
+    var element: VE { get set }
+    func elementDidChange(oldElement: VE, animate: Bool, type: HeaderFooterType)
 }
 
 
-class TestCell: UITableViewCell, ElementTableViewCell {
+extension ElementHeaderFooterView {
+    public var anyViewElement: AnyViewElement {
+        get {
+            return element
+        }
+        set {
+            if let element = newValue as? VE {
+                self.element = element
+            }
+        }
+    }
     
-    var element = TestElement.placeholder
-    
-    func elementDidChange(oldElement: TestElement, animate: Bool) {
+    public func elementDidChange(oldElement: AnyViewElement, animate: Bool, type: HeaderFooterType) {
+        if let expectedOldElement = oldElement as? VE {
+            elementDidChange(oldElement: expectedOldElement, animate: animate, type: type)
+        }
     }
 }

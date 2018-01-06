@@ -1,5 +1,5 @@
 //
-//  ElementDiffer.swift
+//  SectionDiffer.swift
 //
 //  Created by Karsten Bruns on 27/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -8,7 +8,7 @@
 import Foundation
 
 
-class ElementDiffer {
+class SectionDiffer {
     
     typealias ElementUpdateHandler = (_ items: [AnyElement], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> ()
     typealias ElementReorderHandler = (_ items: [AnyElement], _ section: Int, _ reorderMap: [Int:Int]) -> ()
@@ -154,7 +154,7 @@ class ElementDiffer {
                     // updateAllowedIn > 0 means the allowed update time is in the future
                     // so we schedule a new diff() for this point in time
                     self.timeLockEnabled = true
-                    ElementDiffer.executeDelayed(updateAllowedIn) {
+                    SectionDiffer.executeDelayed(updateAllowedIn) {
                         self.timeLockEnabled = false
                         self.diff()
                     }

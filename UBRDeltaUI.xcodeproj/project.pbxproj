@@ -19,7 +19,7 @@
 		9B8FF2E41C5D1127002B105A /* UBRDelta.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */; };
 		9B8FF2E51C5D1127002B105A /* UBRDelta+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */; };
 		9B8FF2E61C5D1127002B105A /* UBRDelta+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */; };
-		9B8FF2E71C5D1127002B105A /* ElementDiffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E11C5D1127002B105A /* ElementDiffer.swift */; };
+		9B8FF2E71C5D1127002B105A /* SectionDiffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E11C5D1127002B105A /* SectionDiffer.swift */; };
 		9B8FF2E81C5D1127002B105A /* UBRDeltaContent+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,7 +49,7 @@
 		9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = UBRDelta.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDelta+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDelta+Types.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		9B8FF2E11C5D1127002B105A /* ElementDiffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ElementDiffer.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B8FF2E11C5D1127002B105A /* SectionDiffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = SectionDiffer.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDeltaContent+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 /* End PBXFileReference section */
 
@@ -129,7 +129,7 @@
 				9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */,
 				9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */,
 				9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */,
-				9B8FF2E11C5D1127002B105A /* ElementDiffer.swift */,
+				9B8FF2E11C5D1127002B105A /* SectionDiffer.swift */,
 				9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */,
 			);
 			path = DeltaLib;
@@ -258,7 +258,7 @@
 			files = (
 				901BE5D2200147E300D5275A /* ElementTableViewCell.swift in Sources */,
 				9B78BDA11C5A660B002D3CE4 /* ElementTableViewController.swift in Sources */,
-				9B8FF2E71C5D1127002B105A /* ElementDiffer.swift in Sources */,
+				9B8FF2E71C5D1127002B105A /* SectionDiffer.swift in Sources */,
 				9B8FF2E51C5D1127002B105A /* UBRDelta+Protocols.swift in Sources */,
 				9B78BDA21C5A660B002D3CE4 /* ViewElement.swift in Sources */,
 				9B8FF2E81C5D1127002B105A /* UBRDeltaContent+Protocols.swift in Sources */,

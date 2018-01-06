@@ -15,7 +15,7 @@ public typealias SelectionHandler = () -> ()
 
 public protocol AnyViewElement : AnyElement {
     var id: String { get }
-    var typeIdentifier: String { get }
+    static var typeIdentifier: String { get }
 }
 
 

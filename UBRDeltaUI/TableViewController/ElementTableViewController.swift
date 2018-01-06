@@ -26,15 +26,16 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     open var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
     open private(set) var sections: [SectionViewElement] = []
-    private let contentDiffer = ElementDiffer()
+    private let sectionDiffer = SectionDiffer()
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
     open var deltaDebugOutput = DeltaDebugOutput.none
     
-    private var estimatedCellHeights = DeltaMatrix<CGFloat>()
-    private var learnedCellHeights = DeltaMatrix<CGFloat>()
-    private var headerFooterPrototypes = [String:UITableViewHeaderFooterView]()
-    open var tableView = UITableView(frame: .zero, style: .grouped)
+    open class var tableView: UITableView {
+        return UITableView(frame: .zero, style: .grouped)        
+    }
+    
+    public private(set) lazy var tableView: UITableView = { return type(of: self).tableView }()
     
     
     // Table View API
@@ -66,7 +67,6 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         super.viewDidLoad()
         configureContentDiffer()
         prepareReusableTableViewCells()
-        loadHeaderFooterViewPrototypes()
         addTableView()
         updateTableView()
     }
@@ -84,17 +84,13 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         tableView.dataSource = self
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Configuring rows for auto layout
-        // Note: Header and footer views are calculated usnig protoype views, because
-        // using UITableViewAutomaticDimension for header and footer views leads to broken
-        // animated table view updates
+        // Cell dimensions
         tableView.rowHeight = UITableViewAutomaticDimension
-        tableView.estimatedRowHeight = 44.0
-        
+        tableView.sectionHeaderHeight = UITableViewAutomaticDimension
+        tableView.sectionFooterHeight = UITableViewAutomaticDimension
+
         // Add reusable cells
         prepareReusableTableViewCells()
-        reusableCellClasses.forEach { (identifier, cellClass) -> () in tableView.register(cellClass, forCellReuseIdentifier: identifier) }
-        reusableHeaderFooterClasses.forEach { (identifier, hfClass) -> () in tableView.register(hfClass, forHeaderFooterViewReuseIdentifier: identifier) }
         
         // Constraints
         let viewDict = ["tableView" : tableView]
@@ -131,10 +127,10 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
      
      */
     open func updateTableView(_ options: UpdateOptions = .default) {
-        let newSections: [SectionViewElement] = generateElements()
+        var newSections = [SectionViewElement]()
+        generateElements(sections: &newSections)
         
         updateOptions = options
-        learnedCellHeights.removeAll(true)
         
         if options == .dataOnly {
             sections = newSections
@@ -142,43 +138,14 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
             tableViewWillUpdateCells(false)
             sections = newSections
             tableView.reloadData()
-            updateLearnedHeights()
             tableViewDidUpdateCells(false)
         } else {
             let oldSections = sections.map({ $0 as SectionElement })
             let newSections = newSections.map({ $0 as SectionElement })
-            contentDiffer.queueComparison(oldSections: oldSections, newSections: newSections)
+            sectionDiffer.queueComparison(oldSections: oldSections, newSections: newSections)
         }
     }
-    
-    
-    /**
-     The better the estimated height, the better are animated table view updates. This function
-     updates the internal data set of rendered cell heights for every index path.
-     */
-    private func updateLearnedHeights() {
-        for indexPath in tableView.indexPathsForVisibleRows ?? [] {
-            guard let cell = tableView.cellForRow(at: indexPath) else { continue }
-            estimatedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
-            learnedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
-        }
-    }
-    
-    
-    /**
-     Because of aniamtion glitches with pure auto layout based table view headers and footers
-     the heights of those elements are determined by keeping a set of view prototypes that
-     is updated with real data upfront to learn the height of headers in footers in every sections.
-     This functions creates the prototype directory.
-     */
-    private func loadHeaderFooterViewPrototypes() {
-        headerFooterPrototypes.removeAll()
-        for (reuseIdentifier, HeaderFooterClass) in reusableHeaderFooterClasses {
-            let headerFooterPrototype = HeaderFooterClass.init(reuseIdentifier: reuseIdentifier)
-            headerFooterPrototypes[reuseIdentifier] = headerFooterPrototype
-        }
-    }
-    
+
     
     // MARK: Configuration
     
@@ -189,11 +156,11 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     */
     private func configureContentDiffer() {
         
-        contentDiffer.throttleTimeInterval = 0.16667
-        contentDiffer.debugOutput = deltaDebugOutput != .none
+        sectionDiffer.throttleTimeInterval = 0.16667
+        sectionDiffer.debugOutput = deltaDebugOutput != .none
         
         // Start updating table view
-        contentDiffer.start = { [weak self] in
+        sectionDiffer.start = { [weak self] in
             guard let weakSelf = self else { return }
             if weakSelf.deltaDebugOutput == .debug {
                 print("Start updating table view", separator: "\n", terminator: "\n\n")
@@ -205,7 +172,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         }
         
         // Insert, reload and delete table view rows
-        contentDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
+        sectionDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
             weakSelf.sections[section].items = items.flatMap { $0 as? AnyViewElement }
@@ -256,7 +223,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         }
         
         // Reorder table view rows
-        contentDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
+        sectionDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let weakSelf = self else { return }
             
             weakSelf.sections[section].items = items.flatMap { $0 as? AnyViewElement }
@@ -279,7 +246,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         }
         
         // Insert, reload and delete table view sections
-        contentDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
+        sectionDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
             weakSelf.sections = sections.flatMap({ $0 as? SectionViewElement })
@@ -307,12 +274,16 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
                 
                 if let sectionElement = sections[sectionIndexAfter] as? SectionViewElement {
                     
-                    if let headerView = weakSelf.tableView.headerView(forSection: sectionIndexBefore) as? ElementViewHeaderFooterView {
-                        headerView.update(with: sectionElement.headerElement ?? sectionElement, animated: true, type: .header)
+                    if let headerView = weakSelf.tableView.headerView(forSection: sectionIndexBefore) as? AnyElementHeaderFooterView, let headerElement = sectionElement.headerElement {
+                        let oldElement = headerView.anyViewElement
+                        headerView.anyViewElement = headerElement
+                        headerView.elementDidChange(oldElement: oldElement, animate: true, type: .header)
                     }
                     
-                    if let footerView = weakSelf.tableView.footerView(forSection: sectionIndexBefore) as? ElementViewHeaderFooterView {
-                        footerView.update(with: sectionElement.footerElement ?? sectionElement, animated: true, type: .footer)
+                    if let footerView = weakSelf.tableView.footerView(forSection: sectionIndexBefore) as? AnyElementHeaderFooterView, let footerElement = sectionElement.footerElement {
+                        let oldElement = footerView.anyViewElement
+                        footerView.anyViewElement = footerElement
+                        footerView.elementDidChange(oldElement: oldElement, animate: true, type: .footer)
                     }
                     
                 } else {
@@ -324,7 +295,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         }
         
         // Reorder table view sections
-        contentDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
+        sectionDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
             guard let weakSelf = self else { return }
             
             weakSelf.sections = sections.flatMap({ $0 as? SectionViewElement })
@@ -345,7 +316,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         }
         
         // Updating table view did end
-        contentDiffer.completion = { [weak self] in
+        sectionDiffer.completion = { [weak self] in
             guard let weakSelf = self else { return }
             
             if weakSelf.updateOptions == .updateVisibleCells {
@@ -374,7 +345,6 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
             UIView.setAnimationsEnabled(true)
             weakSelf.tableViewDidUpdateCells(weakSelf.animateViews)
             weakSelf.animateViews = true
-            weakSelf.updateLearnedHeights()
         }
     }
     
@@ -384,8 +354,8 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     /// Use this function in subclasses to provide section and rows items you want to display
     /// as table view cells.
-    open func generateElements() -> [SectionViewElement] {
-        return []
+    open func generateElements(sections: inout [SectionViewElement]) {
+        
     }
 
     
@@ -406,6 +376,18 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     /// Use this function in your subclass to update `reusableCellClasses` and `reusableHeaderFooterClasses`.
     open func prepareReusableTableViewCells() { }
     
+    
+    public func register<EC: ElementTableViewCell & UITableViewCell>(_ elementTableViewCellType: EC.Type) {
+        let reuseIdentifier = elementTableViewCellType.VE.typeIdentifier
+        tableView.register(elementTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
+    }
+    
+
+    public func register<EC: ElementHeaderFooterView & UITableViewHeaderFooterView>(_ elementViewHeaderFooterViewType: EC.Type) {
+        let reuseIdentifier = elementViewHeaderFooterViewType.VE.typeIdentifier
+        tableView.register(elementViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
+    }
+
     
     /// Subclass this function in your subclass to execute code when a table view will update.
     open func tableViewWillUpdateCells(_ animated: Bool) {}
@@ -429,7 +411,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         let element = sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: element.typeIdentifier) else { break getTableViewCell }
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: element).typeIdentifier) else { break getTableViewCell }
 
             if let elementCell = cell as? AnyElementTableViewCell {
                 let oldElement = elementCell.anyViewElement
@@ -473,120 +455,65 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: UITableViewDelegate
     // MARK: Row
     
-    open func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if let learnedHeight = learnedCellHeights[indexPath.section, indexPath.row] {
-            return learnedHeight
-        } else {
-            return UITableViewAutomaticDimension
-        }
+    public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableViewAutomaticDimension
     }
-    
-    
-    open func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return estimatedCellHeights[indexPath.section, indexPath.row] ?? tableView.estimatedRowHeight
-    }
-    
-    
-    open func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        estimatedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
-        learnedCellHeights[indexPath.section, indexPath.row] = cell.bounds.height
-    }
-    
+
     
     // MARK: Header
     
+    public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        guard sections[section].headerElement != nil else {
+            return 0
+        }
+        return UITableViewAutomaticDimension
+    }
+
+    
     open func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let element = sections[section]
-        var view: UIView?
-        
         configureView : do {
+            let element = sections[section]
             guard let headerElement = element.headerElement else { break configureView }
-            guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: headerElement.typeIdentifier) else { break configureView }
+            guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerElement).typeIdentifier) else { break configureView }
+            
             // Update View
-            headerView.prepareForReuse()
-            if let updateableView = headerView as? ElementViewHeaderFooterView {
-                updateableView.update(with: headerElement as AnyElement, animated: false, type: .header)
+            if let headerView = headerView as? AnyElementHeaderFooterView {
+                let oldElement = headerView.anyViewElement
+                headerView.anyViewElement = headerElement
+                headerView.elementDidChange(oldElement: oldElement, animate: false, type: .header)
             }
-            view = headerView
-        }
-    
-        return view
-    }
-    
-    
-    open func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        let element = sections[section]
-        var height: CGFloat = tableView.sectionHeaderHeight
-        
-        calculateHeight : do {
-            guard let headerElement = element.headerElement else { break calculateHeight }
-            guard let prototype = headerFooterPrototypes[headerElement.typeIdentifier] else { break calculateHeight }
-            // Update Prototype
-            prototype.prepareForReuse()
-            if let updatableView = prototype as? ElementViewHeaderFooterView {
-                updatableView.update(with: headerElement as AnyElement, animated: false, type: .header)
-            }
-            // Get Height
-            let fittedWidth = tableView.bounds.width
-            let fittedHeight = UILayoutFittingCompressedSize.height
-            let fittingSize = CGSize(width: fittedWidth, height: fittedHeight)
-            let size = prototype.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: UILayoutPriority(rawValue: 999), verticalFittingPriority: UILayoutPriority.fittingSizeLevel)
-            height = size.height
+            return headerView
         }
         
-        return height
+        return nil
     }
-    
     
     
     // MARK: Footer
-
-    open func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let element = sections[section]
-        var view: UIView?
-        
-        configureView : do {
-            guard let footerElement = element.footerElement else { break configureView }
-            guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: footerElement.typeIdentifier) else { break configureView }
-            // Update View
-            footerView.prepareForReuse()
-            if let updateableView = footerView as? ElementViewHeaderFooterView {
-                updateableView.update(with: footerElement as AnyElement, animated: false, type: .footer)
-            }
-            view = footerView
+    public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        guard sections[section].footerElement != nil else {
+            return 0
         }
-        
-        return view
+        return UITableViewAutomaticDimension
     }
+
     
-    
-    open func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        let element = sections[section]
-        var height: CGFloat = CGFloat.leastNormalMagnitude
-        
-        calculateHeight : do {
-            guard let footerElement = element.footerElement else { break calculateHeight }
-            guard let prototype = headerFooterPrototypes[footerElement.typeIdentifier] else { break calculateHeight }
-            // Update Prototype
-            prototype.prepareForReuse()
-            if let updatableView = prototype as? ElementViewHeaderFooterView {
-                updatableView.update(with: footerElement as AnyElement, animated: false, type: .footer)
+    open func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        configureView : do {
+            let element = sections[section]
+            guard let footerElement = element.footerElement else { break configureView }
+            guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerElement).typeIdentifier) else { break configureView }
+            
+            // Update View
+            if let footerView = footerView as? AnyElementHeaderFooterView {
+                let oldElement = footerView.anyViewElement
+                footerView.anyViewElement = footerElement
+                footerView.elementDidChange(oldElement: oldElement, animate: false, type: .footer)
             }
-            // Get Height
-            let fittedWidth = tableView.bounds.width
-            let fittedHeight = UILayoutFittingCompressedSize.height
-            let fittingSize = CGSize(width: fittedWidth, height: fittedHeight)
-            let size = prototype.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: UILayoutPriority(rawValue: 999), verticalFittingPriority: UILayoutPriority.fittingSizeLevel)
-            height = size.height
+            return footerView
         }
         
-        lastFooterHeight : do {
-            guard section == tableView.numberOfSections - 1 else { break lastFooterHeight }
-            guard element.footerElement == nil else { break lastFooterHeight }
-            height = tableView.sectionFooterHeight
-        }
-        
-        return height
+        return nil
     }
 
     
