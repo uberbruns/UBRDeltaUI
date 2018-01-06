@@ -13,25 +13,21 @@ import UIKit
 public typealias SelectionHandler = () -> ()
 
 
-public protocol DeltaTableViewElement : ComparableElement {
+public protocol AnyViewElement : AnyElement {
     var id: String { get }
-    var reuseIdentifier: String { get }
+    var typeIdentifier: String { get }
 }
 
 
-public protocol DeltaTableViewHeaderFooterElement : ComparableElement {
-    var id: String { get }
-    var reuseIdentifier: String { get }
+public protocol ViewElement: AnyViewElement, Element {
+    static var placeholder: Self { get }
 }
 
 
-public protocol UpdateableTableViewCell : class {
-    func updateCellWithElement(_ item: ComparableElement, animated: Bool)
-}
-
-
-public protocol UpdateableTableViewHeaderFooterView : class {
-    func updateViewWithElement(_ item: ComparableElement, animated: Bool, type: HeaderFooterType)
+extension ViewElement {
+    public var uniqueIdentifier: Int {
+        return id.hashValue
+    }
 }
 
 

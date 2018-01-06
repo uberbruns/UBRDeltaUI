@@ -18,7 +18,7 @@ class UBRDeltaUITests: XCTestCase {
     let janeway = Captain(name: "Kathrin Janeway", ships: ["USS Voxager"], fistFights: 12)
 
     
-    func diff(old oldElements: [ComparableElement], new newElements: [ComparableElement], findDuplicatedElements: Bool = false) -> UBRDeltaUI.DeltaComparisonResult {
+    func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> UBRDeltaUI.DeltaComparisonResult {
         return UBRDelta.diff(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
     }
     
@@ -42,17 +42,17 @@ class UBRDeltaUITests: XCTestCase {
     func testInsertOneElement() {
         do {
             let result = diff(old: [kirk, picard], new: [sisko, kirk, picard])
-            XCTAssertEqual(result.insertionIndexes, [0], "Insert one item at index 0")
+            XCTAssertEqual(result.insertionIndexes, [0], "Insert one element at index 0")
         }
         
         do {
             let result = diff(old: [kirk, picard], new: [kirk, sisko, picard])
-            XCTAssertEqual(result.insertionIndexes, [1], "Insert one item at index 1")
+            XCTAssertEqual(result.insertionIndexes, [1], "Insert one element at index 1")
         }
         
         do {
             let result = diff(old: [kirk, picard], new: [kirk, picard, sisko])
-            XCTAssertEqual(result.insertionIndexes, [2], "Insert one item at index 2")
+            XCTAssertEqual(result.insertionIndexes, [2], "Insert one element at index 2")
         }
     }
     
@@ -76,15 +76,15 @@ class UBRDeltaUITests: XCTestCase {
     func testDeleteOneElement() {
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [picard, sisko, janeway])
-            XCTAssertEqual(result.deletionIndexes, [0], "Delete one item at index 0")
+            XCTAssertEqual(result.deletionIndexes, [0], "Delete one element at index 0")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, picard, janeway])
-            XCTAssertEqual(result.deletionIndexes, [2], "Delete one item at index 2")
+            XCTAssertEqual(result.deletionIndexes, [2], "Delete one element at index 2")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, sisko, picard])
-            XCTAssertEqual(result.deletionIndexes, [3], "Delete one item at index 3")
+            XCTAssertEqual(result.deletionIndexes, [3], "Delete one element at index 3")
         }
     }
     
@@ -116,13 +116,13 @@ class UBRDeltaUITests: XCTestCase {
     func testInsertAndDeleteMultipleElement() {
         do {
             let result = diff(old: [kirk, picard, sisko], new: [kirk, sisko, janeway])
-            XCTAssertEqual(result.deletionIndexes, [1], "Delete one item at index 1")
-            XCTAssertEqual(result.insertionIndexes, [2], "Insert one item at index 2")
+            XCTAssertEqual(result.deletionIndexes, [1], "Delete one element at index 1")
+            XCTAssertEqual(result.insertionIndexes, [2], "Insert one element at index 2")
         }
         do {
             let result = diff(old: [kirk, picard], new: [sisko, janeway])
-            XCTAssertEqual(result.deletionIndexes, [0,1], "Delete one item at index 1")
-            XCTAssertEqual(result.insertionIndexes, [0,1], "Insert one item at index 2")
+            XCTAssertEqual(result.deletionIndexes, [0,1], "Delete one element at index 1")
+            XCTAssertEqual(result.insertionIndexes, [0,1], "Insert one element at index 2")
         }
     }
     
@@ -150,11 +150,11 @@ class UBRDeltaUITests: XCTestCase {
     func testMoveOneElement() {
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [picard, kirk, sisko, janeway])
-            XCTAssertEqual(result.moveIndexMap, [0:1], "Move one item from index 0 to index 1")
+            XCTAssertEqual(result.moveIndexMap, [0:1], "Move one element from index 0 to index 1")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [picard, sisko, janeway, kirk])
-            XCTAssertEqual(result.moveIndexMap, [0:3], "Move one item from index 0 to index 3")
+            XCTAssertEqual(result.moveIndexMap, [0:3], "Move one element from index 0 to index 3")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [janeway, sisko, picard, kirk])
@@ -168,11 +168,11 @@ class UBRDeltaUITests: XCTestCase {
         janeway2.ships.append("Delta Flyer")
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, picard, sisko, janeway2])
-            XCTAssertEqual(result.reloadIndexMap, [3:3], "Reload one item at index 3")
+            XCTAssertEqual(result.reloadIndexMap, [3:3], "Reload one element at index 3")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, janeway2])
-            XCTAssertEqual(result.reloadIndexMap, [3:1], "Reload one item at index 3 that ends up being at index 1")
+            XCTAssertEqual(result.reloadIndexMap, [3:1], "Reload one element at index 3 that ends up being at index 1")
         }
     }
     
@@ -182,11 +182,11 @@ class UBRDeltaUITests: XCTestCase {
         janeway2.ships.append("Delta Flyer")
         do {
             let result = diff(old: [picard, sisko, janeway], new: [kirk, janeway2, picard])
-            XCTAssertEqual(result.reloadIndexMap, [2:2], "Reload one item")
-            XCTAssertEqual(result.insertionIndexes, [0], "Insert one item")
-            XCTAssertEqual(result.deletionIndexes, [1], "Insert one item")
+            XCTAssertEqual(result.reloadIndexMap, [2:2], "Reload one element")
+            XCTAssertEqual(result.insertionIndexes, [0], "Insert one element")
+            XCTAssertEqual(result.deletionIndexes, [1], "Insert one element")
             XCTAssertEqual(result.unmovedElements.flatMap({ $0 as? Captain }).map({ $0.name }), [kirk, picard, janeway2].map({ $0.name }), "Unmoved state")
-            XCTAssertEqual(result.moveIndexMap, [1:2], "Move one item")
+            XCTAssertEqual(result.moveIndexMap, [1:2], "Move one element")
         }
     }
     
@@ -235,7 +235,7 @@ class UBRDeltaUITests: XCTestCase {
             }
             
             // Diff Captains
-            let result = self.diff(old: oldCaptains.map({ $0 as ComparableElement }), new: newCaptains.map({ $0 as ComparableElement }))
+            let result = self.diff(old: oldCaptains.map({ $0 as AnyElement }), new: newCaptains.map({ $0 as AnyElement }))
             
             // Apply comparison result to oldCaptians
             // Expectation is that the changed `oldCaptains` in the end equals `newCaptians`
@@ -257,7 +257,7 @@ class UBRDeltaUITests: XCTestCase {
                 let a = oldCaptains[oldIndex]
                 let b = result.unmovedElements[unmIndex] as! Captain
                 unmovedCaptainsRef[unmIndex] = b
-                XCTAssertEqual(a.uniqueIdentifier, b.uniqueIdentifier, "Reloading same item")
+                XCTAssertEqual(a.uniqueIdentifier, b.uniqueIdentifier, "Reloading same element")
             }
             
             // Move Elements
@@ -269,8 +269,8 @@ class UBRDeltaUITests: XCTestCase {
             }
             
             for (_, to) in result.moveIndexMap.sorted(by: { $0.1 < $1.1 }) {
-                let item = newCaptains[to]
-                newCaptainsRef.insert(item, at: to)
+                let element = newCaptains[to]
+                newCaptainsRef.insert(element, at: to)
             }
             
             // Test
@@ -320,8 +320,8 @@ class UBRDeltaUITests: XCTestCase {
         }
         
         // Diff Captains
-        let oldElements = oldCaptains.map({ $0 as ComparableElement })
-        let newElements = newCaptains.map({ $0 as ComparableElement })
+        let oldElements = oldCaptains.map({ $0 as AnyElement })
+        let newElements = newCaptains.map({ $0 as AnyElement })
         
         measure {
             _ = self.diff(old: oldElements, new: newElements)

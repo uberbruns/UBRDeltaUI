@@ -8,64 +8,6 @@
 import Foundation
 
 
-public typealias ComparisonChanges = [String:Bool]
-
-
-public enum DeltaComparisonLevel {
-    
-    case same, different, changed(ComparisonChanges)
-    
-    var isSame: Bool {
-        return self != .different
-    }
-    
-    var isChanged: Bool {
-        return self != .different && self != .same
-    }
-}
-
-
-extension DeltaComparisonLevel : Equatable { }
-
-public func ==(lhs: DeltaComparisonLevel, rhs: DeltaComparisonLevel) -> Bool {
-    switch (lhs, rhs) {
-    case (.different, .different) :
-        return true
-    case (.same, .same) :
-        return true
-    case (.changed(let a), .changed(let b)) :
-        return a == b
-    default :
-        return false
-    }
-}
-
-
-extension DeltaComparisonLevel {
-    
-    /**
-     Convenience function that allows you to check if a property did change.
-     The default return value is `true`.
-     Usage:
-     ```
-     let comparison = anElement.compareTo(anotherElement)
-     let valueDidChange = comparison.propertyDidChange("value")
-     ```
-     */
-    public func propertyDidChange(_ property: String) -> Bool {
-        switch self {
-        case .same :
-            return false
-        case .changed(let changes) :
-            return changes[property] ?? true
-        default :
-            return true
-        }
-    }
-    
-}
-
-
 public struct DeltaComparisonResult {
     
     public let insertionIndexes: [Int]
@@ -74,20 +16,19 @@ public struct DeltaComparisonResult {
     public let reloadIndexMap: [Int:Int] // Old Index, New Index
     public let moveIndexMap: [Int:Int]
 
-    public let oldElements: [ComparableElement]
-    public let unmovedElements: [ComparableElement]
-    public let newElements: [ComparableElement]
+    public let oldElements: [AnyElement]
+    public let unmovedElements: [AnyElement]
+    public let newElements: [AnyElement]
     
     
     init(insertionIndexes: [Int],
                 deletionIndexes: [Int],
                 reloadIndexMap: [Int:Int],
                 moveIndexMap: [Int:Int],
-                oldElements: [ComparableElement],
-                unmovedElements: [ComparableElement],
-                newElements: [ComparableElement],
-                duplicatedIndexes: [Int]? = nil)
-    {
+                oldElements: [AnyElement],
+                unmovedElements: [AnyElement],
+                newElements: [AnyElement],
+                duplicatedIndexes: [Int]? = nil) {
         self.insertionIndexes = insertionIndexes
         self.deletionIndexes = deletionIndexes
         self.reloadIndexMap = reloadIndexMap

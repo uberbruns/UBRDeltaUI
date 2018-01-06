@@ -11,7 +11,7 @@ import Foundation
 /// This protocol is the foundation for diffing types:
 /// It allows UBRDelta to compare instances by determining
 /// if instances are a) the same, b) the same with changed properties, c) completly different entities.
-public protocol ComparableElement {
+public protocol AnyElement {
     
     /// The uniqued identifier is used to determine if to instances
     /// represent the same set of data
@@ -19,32 +19,25 @@ public protocol ComparableElement {
     
     /// Implement this function to determine how two instances relate to another
     /// Are they the same, same but with changed data or completly differtent
-    func compareTo(_ other: ComparableElement) -> DeltaComparisonLevel
-    
+    func isEqual(to other: AnyElement) -> Bool
 }
 
 
-public extension ComparableElement {
+public protocol Element : AnyElement {
+
+    func isEqual(to other: Self) -> Bool
+
+}
+
+
+public extension Element {
     
-    /// Determines if a property of an item changed compared to another by calling `compareTo(other:)`
-    /// The default returned value is `true` if `other` is nil, the result of compareTo is `.Different`
-    /// or the property is missed in the dict of `.Changed`
-    func comparedTo(_ other: ComparableElement?, didPropertyChange property: String) -> Bool {
-        guard let other = other else { return true }
-        let comparisonLevel = self.compareTo(other)
-        switch comparisonLevel {
-        case .same :
+    func isEqual(to other: AnyElement) -> Bool {
+        if let otherOfSameType = other as? Self {
+            return isEqual(to: otherOfSameType)
+        } else {
             return false
-        case .changed(let changes) :
-            return changes[property] ?? true
-        default :
-            return true
         }
     }
-
-    /// Convenience function that allows you to compare against an optional item
-    func compareTo(_ other: ComparableElement?) -> DeltaComparisonLevel {
-        guard let other = other else { return DeltaComparisonLevel.different }
-        return self.compareTo(other)
-    }
+    
 }

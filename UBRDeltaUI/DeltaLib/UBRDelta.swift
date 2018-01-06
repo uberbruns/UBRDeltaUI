@@ -10,14 +10,13 @@ import Foundation
 
 public struct UBRDelta {
     
-    public static func diff(old oldElements: [ComparableElement], new newElements: [ComparableElement], findDuplicatedElements: Bool = false) -> DeltaComparisonResult
-    {
+    public static func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> DeltaComparisonResult {
         // Init return vars
         var insertionIndexes = [Int]()
         var deletionIndexes = [Int]()
         var reloadIndexMap = [Int:Int]()
         var moveIndexMap = [Int:Int]()
-        var unmovedElements = [ComparableElement]()
+        var unmovedElements = [AnyElement]()
         var duplicatedIndexes: [Int]? = findDuplicatedElements ? [Int]() : nil
         
         // Diffing
@@ -68,7 +67,7 @@ public struct UBRDelta {
             let id = newElement.uniqueIdentifier
             if let oldIndex = oldIDMap[id] {
                 let oldElement = oldElements[oldIndex]
-                if oldElement.compareTo(newElement).isChanged {
+                if !oldElement.isEqual(to: newElement) {
                     // Found change
                     reloadIDs.insert(id)
                 }

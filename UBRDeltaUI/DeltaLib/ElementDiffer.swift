@@ -1,5 +1,5 @@
 //
-//  UBRDeltaContent.swift
+//  ElementDiffer.swift
 //
 //  Created by Karsten Bruns on 27/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -8,16 +8,16 @@
 import Foundation
 
 
-class UBRDeltaContent {
+class ElementDiffer {
     
-    typealias ElementUpdateHandler = (_ items: [ComparableElement], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> ()
-    typealias ElementReorderHandler = (_ items: [ComparableElement], _ section: Int, _ reorderMap: [Int:Int]) -> ()
-    typealias SectionUpdateHandler = (_ sections: [ComparableSectionElement], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> ()
-    typealias SectionReorderHandler = (_ sections: [ComparableSectionElement], _ reorderMap: [Int:Int]) -> ()
+    typealias ElementUpdateHandler = (_ items: [AnyElement], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> ()
+    typealias ElementReorderHandler = (_ items: [AnyElement], _ section: Int, _ reorderMap: [Int:Int]) -> ()
+    typealias SectionUpdateHandler = (_ sections: [SectionElement], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> ()
+    typealias SectionReorderHandler = (_ sections: [SectionElement], _ reorderMap: [Int:Int]) -> ()
     typealias StartHandler = () -> ()
     typealias CompletionHandler = () -> ()
     
-    var userInterfaceUpdateTime: Double = 0.2
+    var throttleTimeInterval: Double = 0.2
     var debugOutput = false
     
     // Update handler
@@ -38,15 +38,14 @@ class UBRDeltaContent {
     private var lastUpdateTime: Date = Date(timeIntervalSince1970: 0)
     
     // Section data
-    private var oldSections: [ComparableSectionElement]? = nil
-    private var newSections: [ComparableSectionElement]? = nil
+    private var oldSections: [SectionElement]? = nil
+    private var newSections: [SectionElement]? = nil
     
     
     init() {}
     
     
-    func queueComparison(oldSections: [ComparableSectionElement], newSections: [ComparableSectionElement])
-    {
+    func queueComparison(oldSections: [SectionElement], newSections: [SectionElement]) {
         // Set Sections
         if self.oldSections == nil {
             // Old section should change only when a diff completes
@@ -69,8 +68,7 @@ class UBRDeltaContent {
     }
     
     
-    private func diff()
-    {
+    private func diff() {
         // Guarding
         guard let oldSections = self.oldSections else { return }
         guard let newSections = self.newSections else { return }
@@ -84,25 +82,26 @@ class UBRDeltaContent {
 
         backgroundQueue.async {
 
-            let findDuplicatedElements = self.debugOutput
+            let reportDuplicatedElements = self.debugOutput
             
             // Diffing Elements
             var itemDiffs = [Int: DeltaComparisonResult]()
             for (oldSectionIndex, oldSection) in oldSections.enumerated() {
                 
                 let newIndex = newSections.index(where: { newSection -> Bool in
-                    let comparisonLevel = newSection.compareTo(oldSection)
-                    return comparisonLevel.isSame
+                    let isSame = newSection.uniqueIdentifier == oldSection.uniqueIdentifier
+                    let isEqual = newSection.isEqual(to: oldSection)
+                    return isSame && isEqual
                 })
                 
                 if let newIndex = newIndex {
                     // Diffing
                     let oldElements = oldSection.subitems
                     let newElements = newSections[newIndex].subitems
-                    let itemDiff = UBRDelta.diff(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
+                    let itemDiff = UBRDelta.diff(old: oldElements, new: newElements, findDuplicatedElements: reportDuplicatedElements)
                     itemDiffs[oldSectionIndex] = itemDiff
                     
-                    if findDuplicatedElements {
+                    if reportDuplicatedElements {
                         if let duplicatedIndexes = itemDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
                             print("\n")
                             print("WARNING: Duplicated items detected. App will probably crash.")
@@ -116,13 +115,13 @@ class UBRDeltaContent {
             }
             
             // Satisfy argument requirements of UBRDelta.diff()
-            let oldSectionAsElements = oldSections.map({ $0 as ComparableElement })
-            let newSectionsAsElements = newSections.map({ $0 as ComparableElement })
+            let oldSectionAsElements = oldSections.map({ $0 as AnyElement })
+            let newSectionsAsElements = newSections.map({ $0 as AnyElement })
             
             // Diffing sections
-            let sectionDiff = UBRDelta.diff(old: oldSectionAsElements, new: newSectionsAsElements, findDuplicatedElements: findDuplicatedElements)
+            let sectionDiff = UBRDelta.diff(old: oldSectionAsElements, new: newSectionsAsElements, findDuplicatedElements: reportDuplicatedElements)
             
-            if findDuplicatedElements {
+            if reportDuplicatedElements {
                 if let duplicatedIndexes = sectionDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
                     print("\n")
                     print("WARNING: Duplicated section items detected. App will probably crash.")
@@ -150,12 +149,12 @@ class UBRDeltaContent {
                     return
                 }
                 
-                let updateAllowedIn = self.lastUpdateTime.timeIntervalSinceNow + self.userInterfaceUpdateTime
+                let updateAllowedIn = self.lastUpdateTime.timeIntervalSinceNow + self.throttleTimeInterval
                 if  updateAllowedIn > 0 {
                     // updateAllowedIn > 0 means the allowed update time is in the future
                     // so we schedule a new diff() for this point in time
                     self.timeLockEnabled = true
-                    UBRDeltaContent.executeDelayed(updateAllowedIn) {
+                    ElementDiffer.executeDelayed(updateAllowedIn) {
                         self.timeLockEnabled = false
                         self.diff()
                     }
@@ -169,7 +168,7 @@ class UBRDeltaContent {
                 // are not moved yet
                 for (oldSectionIndex, itemDiff) in itemDiffs.sorted(by: { $0.0 < $1.0 }) {
                     
-                    // Call item handler functions
+                    // Call element handler functions
                     self.itemUpdate?(
                         itemDiff.unmovedElements,
                         oldSectionIndex,
@@ -178,13 +177,12 @@ class UBRDeltaContent {
                         itemDiff.deletionIndexes
                     )
                     self.itemReorder?(itemDiff.newElements, oldSectionIndex, itemDiff.moveIndexMap)
-                    
                 }
                 
-                // Change type from ComparableElement to ComparableSectionElement.
+                // Change type from Element to SectionElement.
                 // Since this is expected to succeed a force unwrap is justified
-                let updateElements = sectionDiff.unmovedElements.map({ $0 as! ComparableSectionElement })
-                let reorderElements = sectionDiff.newElements.map({ $0 as! ComparableSectionElement })
+                let updateElements = sectionDiff.unmovedElements.map({ $0 as! SectionElement })
+                let reorderElements = sectionDiff.newElements.map({ $0 as! SectionElement })
                 
                 // Call section handler functions
                 self.sectionUpdate?(updateElements, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
@@ -205,14 +203,12 @@ class UBRDeltaContent {
     }
     
     
-    static private func executeDelayed(_ time: Int, action: @escaping () -> ())
-    {
+    static private func executeDelayed(_ time: Int, action: @escaping () -> ()) {
         self.executeDelayed(Double(time), action: action)
     }
     
     
-    static private func executeDelayed(_ time: Double, action: @escaping () -> ())
-    {
+    static private func executeDelayed(_ time: Double, action: @escaping () -> ()) {
         if time == 0 {
             action()
             return

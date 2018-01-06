@@ -7,18 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		901BE5D2200147E300D5275A /* ElementTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901BE5D1200147E300D5275A /* ElementTableViewCell.swift */; };
 		9B2DD3B41CB6944F00005992 /* UBRDeltaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3B31CB6944F00005992 /* UBRDeltaUITests.swift */; };
 		9B2DD3B61CB6944F00005992 /* UBRDeltaUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */; };
 		9B2DD3BD1CB6945C00005992 /* UBRDeltaUITests+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3BC1CB6945C00005992 /* UBRDeltaUITests+Types.swift */; };
 		9B78BD851C5A5D59002D3CE4 /* UBRDeltaUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9B78BDA11C5A660B002D3CE4 /* DeltaTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */; };
-		9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */; };
-		9B78BDA31C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift */; };
+		9B78BDA11C5A660B002D3CE4 /* ElementTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* ElementTableViewController.swift */; };
+		9B78BDA21C5A660B002D3CE4 /* ViewElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* ViewElement.swift */; };
+		9B78BDA31C5A660B002D3CE4 /* SectionViewElement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* SectionViewElement.swift */; };
 		9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DD1C5D1127002B105A /* Dwifft.swift */; };
 		9B8FF2E41C5D1127002B105A /* UBRDelta.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */; };
 		9B8FF2E51C5D1127002B105A /* UBRDelta+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */; };
 		9B8FF2E61C5D1127002B105A /* UBRDelta+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */; };
-		9B8FF2E71C5D1127002B105A /* UBRDeltaContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E11C5D1127002B105A /* UBRDeltaContent.swift */; };
+		9B8FF2E71C5D1127002B105A /* ElementDiffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E11C5D1127002B105A /* ElementDiffer.swift */; };
 		9B8FF2E81C5D1127002B105A /* UBRDeltaContent+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		901BE5D1200147E300D5275A /* ElementTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElementTableViewCell.swift; sourceTree = "<group>"; };
 		9B2DD3B11CB6944F00005992 /* UBRDeltaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UBRDeltaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B2DD3B31CB6944F00005992 /* UBRDeltaUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UBRDeltaUITests.swift; sourceTree = "<group>"; };
 		9B2DD3B51CB6944F00005992 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -40,14 +42,14 @@
 		9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = UBRDeltaUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRDeltaUI.h; sourceTree = "<group>"; };
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = DeltaTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "DeltaTableViewController+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		9B78BD991C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = DeltaTableViewSectionItem.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD971C5A660B002D3CE4 /* ElementTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ElementTableViewController.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD981C5A660B002D3CE4 /* ViewElement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ViewElement.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD991C5A660B002D3CE4 /* SectionViewElement.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = SectionViewElement.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DD1C5D1127002B105A /* Dwifft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dwifft.swift; sourceTree = "<group>"; };
 		9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = UBRDelta.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDelta+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDelta+Types.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		9B8FF2E11C5D1127002B105A /* UBRDeltaContent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = UBRDeltaContent.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B8FF2E11C5D1127002B105A /* ElementDiffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ElementDiffer.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UBRDeltaContent+Protocols.swift"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 /* End PBXFileReference section */
 
@@ -112,9 +114,10 @@
 		9B78BD961C5A660B002D3CE4 /* TableViewController */ = {
 			isa = PBXGroup;
 			children = (
-				9B78BD971C5A660B002D3CE4 /* DeltaTableViewController.swift */,
-				9B78BD981C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift */,
-				9B78BD991C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift */,
+				901BE5D1200147E300D5275A /* ElementTableViewCell.swift */,
+				9B78BD971C5A660B002D3CE4 /* ElementTableViewController.swift */,
+				9B78BD991C5A660B002D3CE4 /* SectionViewElement.swift */,
+				9B78BD981C5A660B002D3CE4 /* ViewElement.swift */,
 			);
 			path = TableViewController;
 			sourceTree = "<group>";
@@ -126,7 +129,7 @@
 				9B8FF2DE1C5D1127002B105A /* UBRDelta.swift */,
 				9B8FF2DF1C5D1127002B105A /* UBRDelta+Protocols.swift */,
 				9B8FF2E01C5D1127002B105A /* UBRDelta+Types.swift */,
-				9B8FF2E11C5D1127002B105A /* UBRDeltaContent.swift */,
+				9B8FF2E11C5D1127002B105A /* ElementDiffer.swift */,
 				9B8FF2E21C5D1127002B105A /* UBRDeltaContent+Protocols.swift */,
 			);
 			path = DeltaLib;
@@ -253,15 +256,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9B78BDA11C5A660B002D3CE4 /* DeltaTableViewController.swift in Sources */,
-				9B8FF2E71C5D1127002B105A /* UBRDeltaContent.swift in Sources */,
+				901BE5D2200147E300D5275A /* ElementTableViewCell.swift in Sources */,
+				9B78BDA11C5A660B002D3CE4 /* ElementTableViewController.swift in Sources */,
+				9B8FF2E71C5D1127002B105A /* ElementDiffer.swift in Sources */,
 				9B8FF2E51C5D1127002B105A /* UBRDelta+Protocols.swift in Sources */,
-				9B78BDA21C5A660B002D3CE4 /* DeltaTableViewController+Protocols.swift in Sources */,
+				9B78BDA21C5A660B002D3CE4 /* ViewElement.swift in Sources */,
 				9B8FF2E81C5D1127002B105A /* UBRDeltaContent+Protocols.swift in Sources */,
 				9B8FF2E41C5D1127002B105A /* UBRDelta.swift in Sources */,
 				9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */,
 				9B8FF2E61C5D1127002B105A /* UBRDelta+Types.swift in Sources */,
-				9B78BDA31C5A660B002D3CE4 /* DeltaTableViewSectionItem.swift in Sources */,
+				9B78BDA31C5A660B002D3CE4 /* SectionViewElement.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,11 +285,13 @@
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				INFOPLIST_FILE = UBRDeltaUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = me.bruns.UBRDeltaUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SDKROOT = iphoneos;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
 		};
@@ -294,12 +300,14 @@
 			buildSettings = {
 				CLANG_ANALYZER_NONNULL = YES;
 				INFOPLIST_FILE = UBRDeltaUITests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = me.bruns.UBRDeltaUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
+				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
 		};
@@ -425,7 +433,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = me.bruns.UBRDeltaUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -447,7 +455,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;

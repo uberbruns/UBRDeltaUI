@@ -24,32 +24,29 @@ struct Captain {
 }
 
 
-extension Captain : ComparableElement {
-    
+extension Captain : Element {
+
     var uniqueIdentifier: Int {
         return name.hash
     }
-    
-    
-    func compareTo(_ other: ComparableElement) -> DeltaComparisonLevel {
-        guard uniqueIdentifier == other.uniqueIdentifier else { return .different }
-        guard let otherPlayer = other as? Captain else { return .different }
-        
-        let shipsChanged = ships != otherPlayer.ships
-        let fistFightsChanged = fistFights != otherPlayer.fistFights
+
+    func isEqual(to other: Captain) -> Bool {
+        let shipsChanged = ships != other.ships
+        let fistFightsChanged = fistFights != other.fistFights
         
         if shipsChanged || fistFightsChanged {
-            return .changed(["ships": shipsChanged, "fistFights": fistFightsChanged])
+            return false
         } else {
-            return .same
+            return true
         }
     }
-    
 }
 
 
 extension Captain : Equatable { }
 
 func ==(lhs: Captain, rhs: Captain) -> Bool {
-    return lhs.compareTo(rhs) == DeltaComparisonLevel.same
+    let isSame = lhs.uniqueIdentifier == rhs.uniqueIdentifier
+    let isEqual = lhs.isEqual(to: rhs)
+    return isSame && isEqual
 }
