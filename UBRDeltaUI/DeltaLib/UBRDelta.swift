@@ -10,15 +10,15 @@ import Foundation
 
 public struct UBRDelta {
     
-    public static func diff(old oldItems: [ComparableItem], new newItems: [ComparableItem], findDuplicatedItems: Bool = false) -> DeltaComparisonResult
+    public static func diff(old oldElements: [ComparableElement], new newElements: [ComparableElement], findDuplicatedElements: Bool = false) -> DeltaComparisonResult
     {
         // Init return vars
         var insertionIndexes = [Int]()
         var deletionIndexes = [Int]()
         var reloadIndexMap = [Int:Int]()
         var moveIndexMap = [Int:Int]()
-        var unmovedItems = [ComparableItem]()
-        var duplicatedIndexes: [Int]? = findDuplicatedItems ? [Int]() : nil
+        var unmovedElements = [ComparableElement]()
+        var duplicatedIndexes: [Int]? = findDuplicatedElements ? [Int]() : nil
         
         // Diffing
         var newIDs = [Int]()
@@ -28,10 +28,10 @@ public struct UBRDelta {
         var newIDMap = [Int:Int]()
         
         // Test
-        if findDuplicatedItems {
+        if findDuplicatedElements {
             var uniqueIndexes = Set<Int>()
-            for (newIndex, newItem) in newItems.enumerated() {
-                let newId = newItem.uniqueIdentifier
+            for (newIndex, newElement) in newElements.enumerated() {
+                let newId = newElement.uniqueIdentifier
                 if uniqueIndexes.contains(newId) {
                     duplicatedIndexes?.append(newIndex)
                 } else {
@@ -41,8 +41,8 @@ public struct UBRDelta {
         }
         
         // Prepare mapping vars for new items
-        for (newIndex, newItem) in newItems.enumerated() {
-            let newId = newItem.uniqueIdentifier
+        for (newIndex, newElement) in newElements.enumerated() {
+            let newId = newElement.uniqueIdentifier
             newIDs.append(newId)
             newIDMap[newId] = newIndex
         }
@@ -50,12 +50,12 @@ public struct UBRDelta {
         // - Prepare mapping vars for old items
         // - Create the unmoved array
         // - Search for deletions
-        for (oldIndex, oldItem) in oldItems.enumerated() {
-            let id = oldItem.uniqueIdentifier
+        for (oldIndex, oldElement) in oldElements.enumerated() {
+            let id = oldElement.uniqueIdentifier
             oldIDMap[id] = oldIndex
             if let newIndex = newIDMap[id] {
-                let newItem = newItems[newIndex]
-                unmovedItems.append(newItem)
+                let newElement = newElements[newIndex]
+                unmovedElements.append(newElement)
                 unmIDs.append(id)
             } else {
                 deletionIndexes.append(oldIndex)
@@ -63,26 +63,26 @@ public struct UBRDelta {
         }
         
         // Search for insertions and updates
-        for (newIndex, newItem) in newItems.enumerated() {
+        for (newIndex, newElement) in newElements.enumerated() {
             // Looking for changes
-            let id = newItem.uniqueIdentifier
+            let id = newElement.uniqueIdentifier
             if let oldIndex = oldIDMap[id] {
-                let oldItem = oldItems[oldIndex]
-                if oldItem.compareTo(newItem).isChanged {
+                let oldElement = oldElements[oldIndex]
+                if oldElement.compareTo(newElement).isChanged {
                     // Found change
                     reloadIDs.insert(id)
                 }
             } else {
                 // Found insertion
                 insertionIndexes.append(newIndex)
-                unmovedItems.insert(newItem, at: newIndex)
+                unmovedElements.insert(newElement, at: newIndex)
                 unmIDs.insert(id, at: newIndex)
             }
         }
         
         // Reload
-        for (unmIndex, unmItem) in unmovedItems.enumerated() {
-            let id = unmItem.uniqueIdentifier
+        for (unmIndex, unmElement) in unmovedElements.enumerated() {
+            let id = unmElement.uniqueIdentifier
             if reloadIDs.contains(id) {
                 let oldIndex = oldIDMap[id]!
                 reloadIndexMap[oldIndex] = unmIndex
@@ -107,9 +107,9 @@ public struct UBRDelta {
             deletionIndexes: deletionIndexes,
             reloadIndexMap: reloadIndexMap,
             moveIndexMap: moveIndexMap,
-            oldItems: newItems,
-            unmovedItems: unmovedItems,
-            newItems: newItems,
+            oldElements: newElements,
+            unmovedElements: unmovedElements,
+            newElements: newElements,
             duplicatedIndexes: duplicatedIndexes
         )
         

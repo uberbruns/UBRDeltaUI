@@ -13,25 +13,25 @@ import UIKit
 public typealias SelectionHandler = () -> ()
 
 
-public protocol DeltaTableViewItem : ComparableItem {
+public protocol DeltaTableViewElement : ComparableElement {
     var id: String { get }
     var reuseIdentifier: String { get }
 }
 
 
-public protocol DeltaTableViewHeaderFooterItem : ComparableItem {
+public protocol DeltaTableViewHeaderFooterElement : ComparableElement {
     var id: String { get }
     var reuseIdentifier: String { get }
 }
 
 
 public protocol UpdateableTableViewCell : class {
-    func updateCellWithItem(_ item: ComparableItem, animated: Bool)
+    func updateCellWithElement(_ item: ComparableElement, animated: Bool)
 }
 
 
 public protocol UpdateableTableViewHeaderFooterView : class {
-    func updateViewWithItem(_ item: ComparableItem, animated: Bool, type: HeaderFooterType)
+    func updateViewWithElement(_ item: ComparableElement, animated: Bool, type: HeaderFooterType)
 }
 
 
@@ -40,7 +40,7 @@ public enum HeaderFooterType {
 }
 
 
-public protocol SelectableTableViewItem {
+public protocol SelectableTableViewElement {
     var selectionHandler: SelectionHandler? { get }
 }
 

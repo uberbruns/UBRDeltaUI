@@ -10,10 +10,10 @@ import Foundation
 
 class UBRDeltaContent {
     
-    typealias ItemUpdateHandler = (_ items: [ComparableItem], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> ()
-    typealias ItemReorderHandler = (_ items: [ComparableItem], _ section: Int, _ reorderMap: [Int:Int]) -> ()
-    typealias SectionUpdateHandler = (_ sections: [ComparableSectionItem], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> ()
-    typealias SectionReorderHandler = (_ sections: [ComparableSectionItem], _ reorderMap: [Int:Int]) -> ()
+    typealias ElementUpdateHandler = (_ items: [ComparableElement], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> ()
+    typealias ElementReorderHandler = (_ items: [ComparableElement], _ section: Int, _ reorderMap: [Int:Int]) -> ()
+    typealias SectionUpdateHandler = (_ sections: [ComparableSectionElement], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> ()
+    typealias SectionReorderHandler = (_ sections: [ComparableSectionElement], _ reorderMap: [Int:Int]) -> ()
     typealias StartHandler = () -> ()
     typealias CompletionHandler = () -> ()
     
@@ -21,8 +21,8 @@ class UBRDeltaContent {
     var debugOutput = false
     
     // Update handler
-    var itemUpdate: ItemUpdateHandler? = nil
-    var itemReorder: ItemReorderHandler? = nil
+    var itemUpdate: ElementUpdateHandler? = nil
+    var itemReorder: ElementReorderHandler? = nil
     var sectionUpdate: SectionUpdateHandler? = nil
     var sectionReorder: SectionReorderHandler? = nil
     
@@ -38,14 +38,14 @@ class UBRDeltaContent {
     private var lastUpdateTime: Date = Date(timeIntervalSince1970: 0)
     
     // Section data
-    private var oldSections: [ComparableSectionItem]? = nil
-    private var newSections: [ComparableSectionItem]? = nil
+    private var oldSections: [ComparableSectionElement]? = nil
+    private var newSections: [ComparableSectionElement]? = nil
     
     
     init() {}
     
     
-    func queueComparison(oldSections: [ComparableSectionItem], newSections: [ComparableSectionItem])
+    func queueComparison(oldSections: [ComparableSectionElement], newSections: [ComparableSectionElement])
     {
         // Set Sections
         if self.oldSections == nil {
@@ -84,9 +84,9 @@ class UBRDeltaContent {
 
         backgroundQueue.async {
 
-            let findDuplicatedItems = self.debugOutput
+            let findDuplicatedElements = self.debugOutput
             
-            // Diffing Items
+            // Diffing Elements
             var itemDiffs = [Int: DeltaComparisonResult]()
             for (oldSectionIndex, oldSection) in oldSections.enumerated() {
                 
@@ -97,17 +97,17 @@ class UBRDeltaContent {
                 
                 if let newIndex = newIndex {
                     // Diffing
-                    let oldItems = oldSection.subitems
-                    let newItems = newSections[newIndex].subitems
-                    let itemDiff = UBRDelta.diff(old: oldItems, new: newItems, findDuplicatedItems: findDuplicatedItems)
+                    let oldElements = oldSection.subitems
+                    let newElements = newSections[newIndex].subitems
+                    let itemDiff = UBRDelta.diff(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
                     itemDiffs[oldSectionIndex] = itemDiff
                     
-                    if findDuplicatedItems {
+                    if findDuplicatedElements {
                         if let duplicatedIndexes = itemDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
                             print("\n")
                             print("WARNING: Duplicated items detected. App will probably crash.")
                             print("Dublicated indexes:", duplicatedIndexes)
-                            print("Dublicated items:", duplicatedIndexes.map({ newItems[$0] }))
+                            print("Dublicated items:", duplicatedIndexes.map({ newElements[$0] }))
                             print("\n")
                         }
                     }
@@ -116,13 +116,13 @@ class UBRDeltaContent {
             }
             
             // Satisfy argument requirements of UBRDelta.diff()
-            let oldSectionAsItems = oldSections.map({ $0 as ComparableItem })
-            let newSectionsAsItems = newSections.map({ $0 as ComparableItem })
+            let oldSectionAsElements = oldSections.map({ $0 as ComparableElement })
+            let newSectionsAsElements = newSections.map({ $0 as ComparableElement })
             
             // Diffing sections
-            let sectionDiff = UBRDelta.diff(old: oldSectionAsItems, new: newSectionsAsItems, findDuplicatedItems: findDuplicatedItems)
+            let sectionDiff = UBRDelta.diff(old: oldSectionAsElements, new: newSectionsAsElements, findDuplicatedElements: findDuplicatedElements)
             
-            if findDuplicatedItems {
+            if findDuplicatedElements {
                 if let duplicatedIndexes = sectionDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
                     print("\n")
                     print("WARNING: Duplicated section items detected. App will probably crash.")
@@ -165,30 +165,30 @@ class UBRDeltaContent {
                 // Calling the handler functions
                 self.start?()
                 
-                // Item update for the old section order, because the sections
+                // Element update for the old section order, because the sections
                 // are not moved yet
                 for (oldSectionIndex, itemDiff) in itemDiffs.sorted(by: { $0.0 < $1.0 }) {
                     
                     // Call item handler functions
                     self.itemUpdate?(
-                        itemDiff.unmovedItems,
+                        itemDiff.unmovedElements,
                         oldSectionIndex,
                         itemDiff.insertionIndexes,
                         itemDiff.reloadIndexMap,
                         itemDiff.deletionIndexes
                     )
-                    self.itemReorder?(itemDiff.newItems, oldSectionIndex, itemDiff.moveIndexMap)
+                    self.itemReorder?(itemDiff.newElements, oldSectionIndex, itemDiff.moveIndexMap)
                     
                 }
                 
-                // Change type from ComparableItem to ComparableSectionItem.
+                // Change type from ComparableElement to ComparableSectionElement.
                 // Since this is expected to succeed a force unwrap is justified
-                let updateItems = sectionDiff.unmovedItems.map({ $0 as! ComparableSectionItem })
-                let reorderItems = sectionDiff.newItems.map({ $0 as! ComparableSectionItem })
+                let updateElements = sectionDiff.unmovedElements.map({ $0 as! ComparableSectionElement })
+                let reorderElements = sectionDiff.newElements.map({ $0 as! ComparableSectionElement })
                 
                 // Call section handler functions
-                self.sectionUpdate?(updateItems, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
-                self.sectionReorder?(reorderItems, sectionDiff.moveIndexMap)
+                self.sectionUpdate?(updateElements, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
+                self.sectionReorder?(reorderElements, sectionDiff.moveIndexMap)
                 
                 // Call completion block
                 self.completion?()

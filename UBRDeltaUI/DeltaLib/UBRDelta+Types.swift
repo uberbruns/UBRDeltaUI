@@ -48,7 +48,7 @@ extension DeltaComparisonLevel {
      The default return value is `true`.
      Usage:
      ```
-     let comparison = anItem.compareTo(anotherItem)
+     let comparison = anElement.compareTo(anotherElement)
      let valueDidChange = comparison.propertyDidChange("value")
      ```
      */
@@ -74,18 +74,18 @@ public struct DeltaComparisonResult {
     public let reloadIndexMap: [Int:Int] // Old Index, New Index
     public let moveIndexMap: [Int:Int]
 
-    public let oldItems: [ComparableItem]
-    public let unmovedItems: [ComparableItem]
-    public let newItems: [ComparableItem]
+    public let oldElements: [ComparableElement]
+    public let unmovedElements: [ComparableElement]
+    public let newElements: [ComparableElement]
     
     
     init(insertionIndexes: [Int],
                 deletionIndexes: [Int],
                 reloadIndexMap: [Int:Int],
                 moveIndexMap: [Int:Int],
-                oldItems: [ComparableItem],
-                unmovedItems: [ComparableItem],
-                newItems: [ComparableItem],
+                oldElements: [ComparableElement],
+                unmovedElements: [ComparableElement],
+                newElements: [ComparableElement],
                 duplicatedIndexes: [Int]? = nil)
     {
         self.insertionIndexes = insertionIndexes
@@ -93,9 +93,9 @@ public struct DeltaComparisonResult {
         self.reloadIndexMap = reloadIndexMap
         self.moveIndexMap = moveIndexMap
         
-        self.oldItems = oldItems
-        self.unmovedItems = unmovedItems
-        self.newItems = newItems
+        self.oldElements = oldElements
+        self.unmovedElements = unmovedElements
+        self.newElements = newElements
         self.duplicatedIndexes = duplicatedIndexes
     }
     

@@ -1,5 +1,5 @@
 //
-//  DeltaTableViewSectionItem.swift
+//  DeltaTableViewSectionElement.swift
 //
 //  Created by Karsten Bruns on 28/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -9,15 +9,15 @@ import Foundation
 
 
 
-public struct DeltaTableViewSectionItem : ComparableSectionItem {
+public struct DeltaTableViewSectionElement : ComparableSectionElement {
     
     public var uniqueIdentifier: Int { return id.hash }
     
-    internal var subitems: [ComparableItem] { return items.map { $0 as ComparableItem } }
-    public var items: [DeltaTableViewItem] = []
+    internal var subitems: [ComparableElement] { return items.map { $0 as ComparableElement } }
+    public var items: [DeltaTableViewElement] = []
     
-    public var headerItem: DeltaTableViewHeaderFooterItem?
-    public var footerItem: DeltaTableViewHeaderFooterItem?
+    public var headerElement: DeltaTableViewHeaderFooterElement?
+    public var footerElement: DeltaTableViewHeaderFooterElement?
     
     public let id: String
     
@@ -26,22 +26,22 @@ public struct DeltaTableViewSectionItem : ComparableSectionItem {
     }
     
     
-    public func compareTo(_ other: ComparableItem) -> DeltaComparisonLevel {
-        guard let other = other as? DeltaTableViewSectionItem else { return .different }
+    public func compareTo(_ other: ComparableElement) -> DeltaComparisonLevel {
+        guard let other = other as? DeltaTableViewSectionElement else { return .different }
         guard other.id == self.id else { return .different }
         
-        var headerItemChanged = (headerItem == nil) != (other.headerItem == nil)
-        if let headerItem = headerItem, let otherheaderItem = other.headerItem {
-            headerItemChanged = headerItem.compareTo(otherheaderItem) != .same
+        var headerElementChanged = (headerElement == nil) != (other.headerElement == nil)
+        if let headerElement = headerElement, let otherheaderElement = other.headerElement {
+            headerElementChanged = headerElement.compareTo(otherheaderElement) != .same
         }
 
-        var footerItemChanged = (footerItem == nil) != (other.footerItem == nil)
-        if let footerItem = footerItem, let otherFooterItem = other.footerItem {
-            footerItemChanged = footerItem.compareTo(otherFooterItem) != .same
+        var footerElementChanged = (footerElement == nil) != (other.footerElement == nil)
+        if let footerElement = footerElement, let otherFooterElement = other.footerElement {
+            footerElementChanged = footerElement.compareTo(otherFooterElement) != .same
         }
         
-        if  headerItemChanged || footerItemChanged {
-            return .changed(["headerItem": headerItemChanged, "footerItem": footerItemChanged])
+        if  headerElementChanged || footerElementChanged {
+            return .changed(["headerElement": headerElementChanged, "footerElement": footerElementChanged])
         } else {
             return .same
         }

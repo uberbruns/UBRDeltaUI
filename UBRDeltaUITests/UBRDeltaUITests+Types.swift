@@ -24,14 +24,14 @@ struct Captain {
 }
 
 
-extension Captain : ComparableItem {
+extension Captain : ComparableElement {
     
     var uniqueIdentifier: Int {
         return name.hash
     }
     
     
-    func compareTo(_ other: ComparableItem) -> DeltaComparisonLevel {
+    func compareTo(_ other: ComparableElement) -> DeltaComparisonLevel {
         guard uniqueIdentifier == other.uniqueIdentifier else { return .different }
         guard let otherPlayer = other as? Captain else { return .different }
         
