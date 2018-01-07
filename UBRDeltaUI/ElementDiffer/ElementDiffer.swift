@@ -1,5 +1,5 @@
 //
-//  UBRDelta.swift
+//  ElementDiffer.swift
 //
 //  Created by Karsten Bruns on 26/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -8,9 +8,9 @@
 import Foundation
 
 
-public struct UBRDelta {
+public struct ElementDiffer {
     
-    public static func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> DeltaComparisonResult {
+    public static func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> ElementDifferResult {
         // Init return vars
         var insertionIndexes = [Int]()
         var deletionIndexes = [Int]()
@@ -101,7 +101,7 @@ public struct UBRDelta {
         }
         
         // Bundle result
-        let comparisonResult = DeltaComparisonResult(
+        let comparisonResult = ElementDifferResult(
             insertionIndexes: insertionIndexes,
             deletionIndexes: deletionIndexes,
             reloadIndexMap: reloadIndexMap,

@@ -24,14 +24,11 @@ public protocol AnyElement {
 
 
 public protocol Element : AnyElement {
-
     func isEqual(to other: Self) -> Bool
-
 }
 
 
 public extension Element {
-    
     func isEqual(to other: AnyElement) -> Bool {
         if let otherOfSameType = other as? Self {
             return isEqual(to: otherOfSameType)
@@ -39,5 +36,9 @@ public extension Element {
             return false
         }
     }
-    
+}
+
+
+protocol SectionElement : AnyElement {
+    var subitems: [AnyElement] { get }
 }

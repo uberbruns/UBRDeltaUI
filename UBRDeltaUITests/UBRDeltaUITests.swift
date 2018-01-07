@@ -18,17 +18,20 @@ class UBRDeltaUITests: XCTestCase {
     let janeway = Captain(name: "Kathrin Janeway", ships: ["USS Voxager"], fistFights: 12)
 
     
-    func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> UBRDeltaUI.DeltaComparisonResult {
-        return UBRDelta.diff(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
+    func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> UBRDeltaUI.ElementDifferResult {
+        return ElementDiffer.diff(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
     }
+    
     
     override func setUp() {
         super.setUp()
     }
     
+    
     override func tearDown() {
         super.tearDown()
     }
+    
     
     func testNothingElement() {
         do {

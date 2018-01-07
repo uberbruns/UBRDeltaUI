@@ -8,7 +8,7 @@
 import Foundation
 
 
-public struct DeltaComparisonResult {
+public struct ElementDifferResult {
     
     public let insertionIndexes: [Int]
     public let deletionIndexes: [Int]

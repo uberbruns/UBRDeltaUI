@@ -85,7 +85,7 @@ class SectionDiffer {
             let reportDuplicatedElements = self.debugOutput
             
             // Diffing Elements
-            var itemDiffs = [Int: DeltaComparisonResult]()
+            var itemDiffs = [Int: ElementDifferResult]()
             for (oldSectionIndex, oldSection) in oldSections.enumerated() {
                 
                 let newIndex = newSections.index(where: { newSection -> Bool in
@@ -98,7 +98,7 @@ class SectionDiffer {
                     // Diffing
                     let oldElements = oldSection.subitems
                     let newElements = newSections[newIndex].subitems
-                    let itemDiff = UBRDelta.diff(old: oldElements, new: newElements, findDuplicatedElements: reportDuplicatedElements)
+                    let itemDiff = ElementDiffer.diff(old: oldElements, new: newElements, findDuplicatedElements: reportDuplicatedElements)
                     itemDiffs[oldSectionIndex] = itemDiff
                     
                     if reportDuplicatedElements {
@@ -119,7 +119,7 @@ class SectionDiffer {
             let newSectionsAsElements = newSections.map({ $0 as AnyElement })
             
             // Diffing sections
-            let sectionDiff = UBRDelta.diff(old: oldSectionAsElements, new: newSectionsAsElements, findDuplicatedElements: reportDuplicatedElements)
+            let sectionDiff = ElementDiffer.diff(old: oldSectionAsElements, new: newSectionsAsElements, findDuplicatedElements: reportDuplicatedElements)
             
             if reportDuplicatedElements {
                 if let duplicatedIndexes = sectionDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
