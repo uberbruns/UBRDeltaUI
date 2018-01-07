@@ -10,7 +10,7 @@ import XCTest
 @testable import UBRDeltaUI
 
 
-class UBRDeltaUITests: XCTestCase {
+class DeltaFoxTests: XCTestCase {
     
     let kirk = Captain(name: "James T. Kirk", ships: ["USS Enterprise", "USS Enterprise-A"], fistFights: Int.max)
     let picard = Captain(name: "Jean-Luc Picard", ships: ["USS Stargazer", "USS Enterprise-D", "USS Enterprise-E"], fistFights: 8)

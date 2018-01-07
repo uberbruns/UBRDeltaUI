@@ -11,6 +11,7 @@ import Foundation
 
 public struct SectionViewElement : SectionElement {
     
+    public let id: String
     public var uniqueIdentifier: Int { return id.hash }
     
     internal var subitems: [AnyElement] { return items.map { $0 as AnyElement } }
@@ -19,12 +20,11 @@ public struct SectionViewElement : SectionElement {
     public var headerElement: AnyViewElement?
     public var footerElement: AnyViewElement?
     
-    public let id: String
     
     public init(id: String) {
         self.id = id
     }
-    
+
     
     public func isEqual(to other: AnyElement) -> Bool {
         guard let other = other as? SectionViewElement else { return false }
@@ -52,5 +52,15 @@ public struct SectionViewElement : SectionElement {
         }()
         
         return headerElementIsEqual && footerElementIsEqual
+    }
+}
+
+
+extension Array where Element == SectionViewElement {
+    
+    public mutating func append(id: String, _ setup: (inout SectionViewElement) -> Void) {
+        var new = SectionViewElement(id: id)
+        setup(&new)
+        self.append(new)
     }
 }
