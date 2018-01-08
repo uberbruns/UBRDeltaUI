@@ -25,7 +25,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     open var reusableCellClasses = [String:UITableViewCell.Type]()
     open var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
-    public let elementSource: ElementSource
+    public let viewCore: ViewCore
     private let sectionDiffer = SectionDiffer()
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
@@ -62,8 +62,8 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: - Controller -
     // MARK: Life-Cycle
     
-    public init(elementSource: ElementSource) {
-        self.elementSource = elementSource
+    public init(viewCore: ViewCore) {
+        self.viewCore = viewCore
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -141,19 +141,19 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
      */
     open func updateTableView(_ options: UpdateOptions = .default) {
         var newSections = [SectionViewElement]()
-        elementSource.generateElements(sections: &newSections)
+        viewCore.generateElements(sections: &newSections)
         
         updateOptions = options
         
         if options == .dataOnly {
-            elementSource.sections = newSections
-        } else if elementSource.sections.isEmpty || options == .hardReload {
+            viewCore.sections = newSections
+        } else if viewCore.sections.isEmpty || options == .hardReload {
             tableViewWillUpdateCells(false)
-            elementSource.sections = newSections
+            viewCore.sections = newSections
             tableView.reloadData()
             tableViewDidUpdateCells(false)
         } else {
-            let oldSections = elementSource.sections.map({ $0 as SectionElement })
+            let oldSections = viewCore.sections.map({ $0 as SectionElement })
             let newSections = newSections.map({ $0 as SectionElement })
             sectionDiffer.queueComparison(oldSections: oldSections, newSections: newSections)
         }
@@ -188,7 +188,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         sectionDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
-            weakSelf.elementSource.sections[section].items = items.flatMap { $0 as? AnyViewElement }
+            weakSelf.viewCore.sections[section].items = items.flatMap { $0 as? AnyViewElement }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -239,7 +239,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         sectionDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let weakSelf = self else { return }
             
-            weakSelf.elementSource.sections[section].items = items.flatMap { $0 as? AnyViewElement }
+            weakSelf.viewCore.sections[section].items = items.flatMap { $0 as? AnyViewElement }
             
             if reorderMap.count == 0 {
                 return
@@ -262,7 +262,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         sectionDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
-            weakSelf.elementSource.sections = sections.flatMap({ $0 as? SectionViewElement })
+            weakSelf.viewCore.sections = sections.flatMap({ $0 as? SectionViewElement })
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -311,7 +311,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         sectionDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
             guard let weakSelf = self else { return }
             
-            weakSelf.elementSource.sections = sections.flatMap({ $0 as? SectionViewElement })
+            weakSelf.viewCore.sections = sections.flatMap({ $0 as? SectionViewElement })
             
             if reorderMap.count == 0 {
                 return
@@ -336,7 +336,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
                 var manualReloads = [IndexPath]()
                 for indexPath in weakSelf.tableView.indexPathsForVisibleRows ?? [] {
                     if let elementCell = weakSelf.tableView.cellForRow(at: indexPath) as? AnyElementTableViewCell {
-                        let element: AnyViewElement = weakSelf.elementSource.sections[indexPath.section].items[indexPath.row]
+                        let element: AnyViewElement = weakSelf.viewCore.sections[indexPath.section].items[indexPath.row]
                         let oldElement = elementCell.anyViewElement
                         elementCell.anyViewElement = element
                         elementCell.elementDidChange(oldElement: oldElement, animate: false)
@@ -367,13 +367,13 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     /// Returns the `SectionViewElement` that belongs to the provided section index.
     open func tableViewSectionElement(_ section: Int) -> SectionViewElement {
-        return elementSource.sections[section]
+        return viewCore.sections[section]
     }
     
 
     /// Returns the `Element` that belongs to the provided index path.
     open func tableViewElement(_ indexPath: IndexPath) -> AnyViewElement {
-        return elementSource.sections[indexPath.section].items[indexPath.row]
+        return viewCore.sections[indexPath.section].items[indexPath.row]
     }
 
     
@@ -414,7 +414,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
      is not needed.
      */
     open func tableViewCellForRowAtIndexPath(_ indexPath: IndexPath) -> UITableViewCell? {
-        let element = elementSource.sections[indexPath.section].items[indexPath.row]
+        let element = viewCore.sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: element).typeIdentifier) else { break getTableViewCell }
@@ -440,12 +440,12 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: UITableViewDataSource
     
     open func numberOfSections(in tableView: UITableView) -> Int {
-        return elementSource.sections.count
+        return viewCore.sections.count
     }
     
     
     open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return elementSource.sections[section].items.count
+        return viewCore.sections[section].items.count
     }
     
     
@@ -469,7 +469,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Header
     
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        guard elementSource.sections[section].headerElement != nil else {
+        guard viewCore.sections[section].headerElement != nil else {
             return 0
         }
         return UITableViewAutomaticDimension
@@ -478,7 +478,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     open func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         configureView : do {
-            let element = elementSource.sections[section]
+            let element = viewCore.sections[section]
             guard let headerElement = element.headerElement else { break configureView }
             guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerElement).typeIdentifier) else { break configureView }
             
@@ -497,7 +497,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: Footer
     public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        guard elementSource.sections[section].footerElement != nil else {
+        guard viewCore.sections[section].footerElement != nil else {
             return 0
         }
         return UITableViewAutomaticDimension
@@ -506,7 +506,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     open func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         configureView : do {
-            let element = elementSource.sections[section]
+            let element = viewCore.sections[section]
             guard let footerElement = element.footerElement else { break configureView }
             guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerElement).typeIdentifier) else { break configureView }
             
@@ -526,7 +526,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Selection
     
     open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let element = elementSource.sections[indexPath.section].items[indexPath.row]
+        let element = viewCore.sections[indexPath.section].items[indexPath.row]
         
         if let selectableElement = element as? SelectableTableViewElement {
             selectableElement.selectionHandler?()

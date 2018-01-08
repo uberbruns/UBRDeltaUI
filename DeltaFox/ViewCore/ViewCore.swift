@@ -9,7 +9,7 @@
 import Foundation
 
 
-open class ElementSource {
+open class ViewCore {
     
     public internal(set) var sections: [SectionViewElement] = []
 
