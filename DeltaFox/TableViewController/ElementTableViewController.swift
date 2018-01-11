@@ -25,7 +25,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     open var reusableCellClasses = [String:UITableViewCell.Type]()
     open var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
     
-    public let viewCore: ViewCore
+    public let viewModel: ViewModel
     private let sectionDiffer = SectionDiffer()
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
@@ -62,8 +62,8 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: - Controller -
     // MARK: Life-Cycle
     
-    public init(viewCore: ViewCore) {
-        self.viewCore = viewCore
+    public init(viewModel: ViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -140,21 +140,21 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
      
      */
     open func updateTableView(_ options: UpdateOptions = .default) {
-        var newSections = [SectionViewElement]()
-        viewCore.generateElements(sections: &newSections)
+        var newSections = [CellSectionModel]()
+        viewModel.generateCellModels(sections: &newSections)
         
         updateOptions = options
         
         if options == .dataOnly {
-            viewCore.sections = newSections
-        } else if viewCore.sections.isEmpty || options == .hardReload {
+            viewModel.sections = newSections
+        } else if viewModel.sections.isEmpty || options == .hardReload {
             tableViewWillUpdateCells(false)
-            viewCore.sections = newSections
+            viewModel.sections = newSections
             tableView.reloadData()
             tableViewDidUpdateCells(false)
         } else {
-            let oldSections = viewCore.sections.map({ $0 as SectionElement })
-            let newSections = newSections.map({ $0 as SectionElement })
+            let oldSections = viewModel.sections.map({ $0 as SectionModel })
+            let newSections = newSections.map({ $0 as SectionModel })
             sectionDiffer.queueComparison(oldSections: oldSections, newSections: newSections)
         }
     }
@@ -185,10 +185,10 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         }
         
         // Insert, reload and delete table view rows
-        sectionDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
+        sectionDiffer.modelUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
-            weakSelf.viewCore.sections[section].items = items.flatMap { $0 as? AnyViewElement }
+            weakSelf.viewModel.sections[section].items = items.flatMap { $0 as? AnyCellModel }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -207,10 +207,10 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
                         manualReloadMap.removeValue(forKey: itemIndexBefore)
                         continue
                     }
-                    guard let elementCell = cell as? AnyElementTableViewCell, let element = items[itemIndexAfter] as? AnyViewElement else { continue }
-                    let oldElement = elementCell.anyViewElement
-                    elementCell.anyViewElement = element
-                    elementCell.elementDidChange(oldElement: oldElement, animate: true)
+                    guard let modelCell = cell as? AnyDeltaTableViewCell, let model = items[itemIndexAfter] as? AnyCellModel else { continue }
+                    let oldModel = modelCell.anyModel
+                    modelCell.anyModel = model
+                    modelCell.modelDidChange(oldModel: oldModel, animate: true)
                     manualReloadMap.removeValue(forKey: itemIndexBefore)
                 }
             }
@@ -236,10 +236,10 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         }
         
         // Reorder table view rows
-        sectionDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
+        sectionDiffer.modelReorder = { [weak self] (items, section, reorderMap) in
             guard let weakSelf = self else { return }
             
-            weakSelf.viewCore.sections[section].items = items.flatMap { $0 as? AnyViewElement }
+            weakSelf.viewModel.sections[section].items = items.flatMap { $0 as? AnyCellModel }
             
             if reorderMap.count == 0 {
                 return
@@ -262,7 +262,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         sectionDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let weakSelf = self else { return }
             
-            weakSelf.viewCore.sections = sections.flatMap({ $0 as? SectionViewElement })
+            weakSelf.viewModel.sections = sections.flatMap({ $0 as? CellSectionModel })
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -285,18 +285,18 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
             
             for (sectionIndexBefore, sectionIndexAfter) in reloadIndexMap {
                 
-                if let sectionElement = sections[sectionIndexAfter] as? SectionViewElement {
+                if let sectionModel = sections[sectionIndexAfter] as? CellSectionModel {
                     
-                    if let headerView = weakSelf.tableView.headerView(forSection: sectionIndexBefore) as? AnyElementHeaderFooterView, let headerElement = sectionElement.headerElement {
-                        let oldElement = headerView.anyViewElement
-                        headerView.anyViewElement = headerElement
-                        headerView.elementDidChange(oldElement: oldElement, animate: true, type: .header)
+                    if let headerView = weakSelf.tableView.headerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let headerModel = sectionModel.headerModel {
+                        let oldModel = headerView.anyCellModel
+                        headerView.anyCellModel = headerModel
+                        headerView.modelDidChange(oldModel: oldModel, animate: true, type: .header)
                     }
                     
-                    if let footerView = weakSelf.tableView.footerView(forSection: sectionIndexBefore) as? AnyElementHeaderFooterView, let footerElement = sectionElement.footerElement {
-                        let oldElement = footerView.anyViewElement
-                        footerView.anyViewElement = footerElement
-                        footerView.elementDidChange(oldElement: oldElement, animate: true, type: .footer)
+                    if let footerView = weakSelf.tableView.footerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let footerModel = sectionModel.footerModel {
+                        let oldModel = footerView.anyCellModel
+                        footerView.anyCellModel = footerModel
+                        footerView.modelDidChange(oldModel: oldModel, animate: true, type: .footer)
                     }
                     
                 } else {
@@ -311,7 +311,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
         sectionDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
             guard let weakSelf = self else { return }
             
-            weakSelf.viewCore.sections = sections.flatMap({ $0 as? SectionViewElement })
+            weakSelf.viewModel.sections = sections.flatMap({ $0 as? CellSectionModel })
             
             if reorderMap.count == 0 {
                 return
@@ -335,11 +335,11 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
             if weakSelf.updateOptions == .updateVisibleCells {
                 var manualReloads = [IndexPath]()
                 for indexPath in weakSelf.tableView.indexPathsForVisibleRows ?? [] {
-                    if let elementCell = weakSelf.tableView.cellForRow(at: indexPath) as? AnyElementTableViewCell {
-                        let element: AnyViewElement = weakSelf.viewCore.sections[indexPath.section].items[indexPath.row]
-                        let oldElement = elementCell.anyViewElement
-                        elementCell.anyViewElement = element
-                        elementCell.elementDidChange(oldElement: oldElement, animate: false)
+                    if let modelCell = weakSelf.tableView.cellForRow(at: indexPath) as? AnyDeltaTableViewCell {
+                        let model: AnyCellModel = weakSelf.viewModel.sections[indexPath.section].items[indexPath.row]
+                        let oldModel = modelCell.anyModel
+                        modelCell.anyModel = model
+                        modelCell.modelDidChange(oldModel: oldModel, animate: false)
                     } else {
                         manualReloads.append(indexPath)
                     }
@@ -365,15 +365,15 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: - API -
     // MARK: Content
     
-    /// Returns the `SectionViewElement` that belongs to the provided section index.
-    open func tableViewSectionElement(_ section: Int) -> SectionViewElement {
-        return viewCore.sections[section]
+    /// Returns the `CellSectionModel` that belongs to the provided section index.
+    open func tableViewSectionModel(_ section: Int) -> CellSectionModel {
+        return viewModel.sections[section]
     }
     
 
-    /// Returns the `Element` that belongs to the provided index path.
-    open func tableViewElement(_ indexPath: IndexPath) -> AnyViewElement {
-        return viewCore.sections[indexPath.section].items[indexPath.row]
+    /// Returns the `Model` that belongs to the provided index path.
+    open func tableCellModel(_ indexPath: IndexPath) -> AnyCellModel {
+        return viewModel.sections[indexPath.section].items[indexPath.row]
     }
 
     
@@ -383,15 +383,15 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     open func prepareReusableTableViewCells() { }
     
     
-    public func register<EC: ElementTableViewCell & UITableViewCell>(_ elementTableViewCellType: EC.Type) {
-        let reuseIdentifier = elementTableViewCellType.VE.typeIdentifier
-        tableView.register(elementTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
+    public func register<EC: DeltaTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
+        let reuseIdentifier = modelTableViewCellType.Model.typeIdentifier
+        tableView.register(modelTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
     }
     
 
-    public func register<EC: ElementHeaderFooterView & UITableViewHeaderFooterView>(_ elementViewHeaderFooterViewType: EC.Type) {
-        let reuseIdentifier = elementViewHeaderFooterViewType.VE.typeIdentifier
-        tableView.register(elementViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
+    public func register<EC: ElementHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
+        let reuseIdentifier = modelViewHeaderFooterViewType.Model.typeIdentifier
+        tableView.register(modelViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
     }
 
     
@@ -404,8 +404,8 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     
     /**
-     Dequeues a reusable cell from table view as long the element for this index path is of type `DeltaTableViewElement`
-     and DeltaTableViewElement's `typeIdentifier` property was registered in `prepareReusableTableViewCells()`.
+     Dequeues a reusable cell from table view as long the model for this index path is of type `DeltaTableCellModel`
+     and DeltaTableCellModel's `typeIdentifier` property was registered in `prepareReusableTableViewCells()`.
      
      Use this method if you want to provide your own implementation of `tableView(tableView:cellForRowAtIndexPath:)` but
      you still want to be able to return cells provided by this class if needed.
@@ -414,19 +414,19 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
      is not needed.
      */
     open func tableViewCellForRowAtIndexPath(_ indexPath: IndexPath) -> UITableViewCell? {
-        let element = viewCore.sections[indexPath.section].items[indexPath.row]
+        let model = viewModel.sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: element).typeIdentifier) else { break getTableViewCell }
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: model).typeIdentifier) else { break getTableViewCell }
 
-            if let elementCell = cell as? AnyElementTableViewCell {
-                let oldElement = elementCell.anyViewElement
-                elementCell.anyViewElement = element
-                elementCell.elementDidChange(oldElement: oldElement, animate: false)
+            if let modelCell = cell as? AnyDeltaTableViewCell {
+                let oldModel = modelCell.anyModel
+                modelCell.anyModel = model
+                modelCell.modelDidChange(oldModel: oldModel, animate: false)
             }
             
-            if let selectableElement = element as? SelectableTableViewElement {
-                cell.selectionStyle = selectableElement.selectionHandler != nil ? .default : .none
+            if let selectableModel = model as? SelectableTableCellModel {
+                cell.selectionStyle = selectableModel.selectionHandler != nil ? .default : .none
             }
 
             return cell
@@ -440,12 +440,12 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: UITableViewDataSource
     
     open func numberOfSections(in tableView: UITableView) -> Int {
-        return viewCore.sections.count
+        return viewModel.sections.count
     }
     
     
     open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewCore.sections[section].items.count
+        return viewModel.sections[section].items.count
     }
     
     
@@ -469,7 +469,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Header
     
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        guard viewCore.sections[section].headerElement != nil else {
+        guard viewModel.sections[section].headerModel != nil else {
             return 0
         }
         return UITableViewAutomaticDimension
@@ -478,15 +478,15 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     open func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         configureView : do {
-            let element = viewCore.sections[section]
-            guard let headerElement = element.headerElement else { break configureView }
-            guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerElement).typeIdentifier) else { break configureView }
+            let model = viewModel.sections[section]
+            guard let headerModel = model.headerModel else { break configureView }
+            guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let headerView = headerView as? AnyElementHeaderFooterView {
-                let oldElement = headerView.anyViewElement
-                headerView.anyViewElement = headerElement
-                headerView.elementDidChange(oldElement: oldElement, animate: false, type: .header)
+            if let headerView = headerView as? AnyDiffableHeaderFooterView {
+                let oldModel = headerView.anyCellModel
+                headerView.anyCellModel = headerModel
+                headerView.modelDidChange(oldModel: oldModel, animate: false, type: .header)
             }
             return headerView
         }
@@ -497,7 +497,7 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     // MARK: Footer
     public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        guard viewCore.sections[section].footerElement != nil else {
+        guard viewModel.sections[section].footerModel != nil else {
             return 0
         }
         return UITableViewAutomaticDimension
@@ -506,15 +506,15 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     
     open func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         configureView : do {
-            let element = viewCore.sections[section]
-            guard let footerElement = element.footerElement else { break configureView }
-            guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerElement).typeIdentifier) else { break configureView }
+            let model = viewModel.sections[section]
+            guard let footerModel = model.footerModel else { break configureView }
+            guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let footerView = footerView as? AnyElementHeaderFooterView {
-                let oldElement = footerView.anyViewElement
-                footerView.anyViewElement = footerElement
-                footerView.elementDidChange(oldElement: oldElement, animate: false, type: .footer)
+            if let footerView = footerView as? AnyDiffableHeaderFooterView {
+                let oldModel = footerView.anyCellModel
+                footerView.anyCellModel = footerModel
+                footerView.modelDidChange(oldModel: oldModel, animate: false, type: .footer)
             }
             return footerView
         }
@@ -526,10 +526,10 @@ open class ElementTableViewController: UIViewController, UITableViewDelegate, UI
     // MARK: Selection
     
     open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let element = viewCore.sections[indexPath.section].items[indexPath.row]
+        let model = viewModel.sections[indexPath.section].items[indexPath.row]
         
-        if let selectableElement = element as? SelectableTableViewElement {
-            selectableElement.selectionHandler?()
+        if let selectableModel = model as? SelectableTableCellModel {
+            selectableModel.selectionHandler?()
         }
         
         tableView.deselectRow(at: indexPath, animated: true)

@@ -1,5 +1,5 @@
 //
-//  ElementDiffer.swift
+//  Differ.swift
 //
 //  Created by Karsten Bruns on 26/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -8,15 +8,15 @@
 import Foundation
 
 
-public struct ElementDiffer {
+public struct Differ {
     
-    public static func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> ElementDifferResult {
+    public static func compare(old oldElements: [AnyDiffable], new newElements: [AnyDiffable], findDuplicatedElements: Bool = false) -> DifferResult {
         // Init return vars
         var insertionIndexes = [Int]()
         var deletionIndexes = [Int]()
         var reloadIndexMap = [Int:Int]()
         var moveIndexMap = [Int:Int]()
-        var unmovedElements = [AnyElement]()
+        var unmovedElements = [AnyDiffable]()
         var duplicatedIndexes: [Int]? = findDuplicatedElements ? [Int]() : nil
         
         // Diffing
@@ -29,8 +29,8 @@ public struct ElementDiffer {
         // Test
         if findDuplicatedElements {
             var uniqueIndexes = Set<Int>()
-            for (newIndex, newElement) in newElements.enumerated() {
-                let newId = newElement.uniqueIdentifier
+            for (newIndex, newModel) in newElements.enumerated() {
+                let newId = newModel.uniqueIdentifier
                 if uniqueIndexes.contains(newId) {
                     duplicatedIndexes?.append(newIndex)
                 } else {
@@ -40,8 +40,8 @@ public struct ElementDiffer {
         }
         
         // Prepare mapping vars for new items
-        for (newIndex, newElement) in newElements.enumerated() {
-            let newId = newElement.uniqueIdentifier
+        for (newIndex, newModel) in newElements.enumerated() {
+            let newId = newModel.uniqueIdentifier
             newIDs.append(newId)
             newIDMap[newId] = newIndex
         }
@@ -49,12 +49,12 @@ public struct ElementDiffer {
         // - Prepare mapping vars for old items
         // - Create the unmoved array
         // - Search for deletions
-        for (oldIndex, oldElement) in oldElements.enumerated() {
-            let id = oldElement.uniqueIdentifier
+        for (oldIndex, oldModel) in oldElements.enumerated() {
+            let id = oldModel.uniqueIdentifier
             oldIDMap[id] = oldIndex
             if let newIndex = newIDMap[id] {
-                let newElement = newElements[newIndex]
-                unmovedElements.append(newElement)
+                let newModel = newElements[newIndex]
+                unmovedElements.append(newModel)
                 unmIDs.append(id)
             } else {
                 deletionIndexes.append(oldIndex)
@@ -62,26 +62,26 @@ public struct ElementDiffer {
         }
         
         // Search for insertions and updates
-        for (newIndex, newElement) in newElements.enumerated() {
+        for (newIndex, newModel) in newElements.enumerated() {
             // Looking for changes
-            let id = newElement.uniqueIdentifier
+            let id = newModel.uniqueIdentifier
             if let oldIndex = oldIDMap[id] {
-                let oldElement = oldElements[oldIndex]
-                if !oldElement.isEqual(to: newElement) {
+                let oldModel = oldElements[oldIndex]
+                if !oldModel.isEqual(to: newModel) {
                     // Found change
                     reloadIDs.insert(id)
                 }
             } else {
                 // Found insertion
                 insertionIndexes.append(newIndex)
-                unmovedElements.insert(newElement, at: newIndex)
+                unmovedElements.insert(newModel, at: newIndex)
                 unmIDs.insert(id, at: newIndex)
             }
         }
         
         // Reload
-        for (unmIndex, unmElement) in unmovedElements.enumerated() {
-            let id = unmElement.uniqueIdentifier
+        for (unmIndex, unmModel) in unmovedElements.enumerated() {
+            let id = unmModel.uniqueIdentifier
             if reloadIDs.contains(id) {
                 let oldIndex = oldIDMap[id]!
                 reloadIndexMap[oldIndex] = unmIndex
@@ -101,7 +101,7 @@ public struct ElementDiffer {
         }
         
         // Bundle result
-        let comparisonResult = ElementDifferResult(
+        let comparisonResult = DifferResult(
             insertionIndexes: insertionIndexes,
             deletionIndexes: deletionIndexes,
             reloadIndexMap: reloadIndexMap,

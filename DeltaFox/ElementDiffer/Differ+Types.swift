@@ -8,7 +8,7 @@
 import Foundation
 
 
-public struct ElementDifferResult {
+public struct DifferResult {
     
     public let insertionIndexes: [Int]
     public let deletionIndexes: [Int]
@@ -16,18 +16,18 @@ public struct ElementDifferResult {
     public let reloadIndexMap: [Int:Int] // Old Index, New Index
     public let moveIndexMap: [Int:Int]
 
-    public let oldElements: [AnyElement]
-    public let unmovedElements: [AnyElement]
-    public let newElements: [AnyElement]
+    public let oldElements: [AnyDiffable]
+    public let unmovedElements: [AnyDiffable]
+    public let newElements: [AnyDiffable]
     
     
     init(insertionIndexes: [Int],
                 deletionIndexes: [Int],
                 reloadIndexMap: [Int:Int],
                 moveIndexMap: [Int:Int],
-                oldElements: [AnyElement],
-                unmovedElements: [AnyElement],
-                newElements: [AnyElement],
+                oldElements: [AnyDiffable],
+                unmovedElements: [AnyDiffable],
+                newElements: [AnyDiffable],
                 duplicatedIndexes: [Int]? = nil) {
         self.insertionIndexes = insertionIndexes
         self.deletionIndexes = deletionIndexes

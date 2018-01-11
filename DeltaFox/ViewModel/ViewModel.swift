@@ -9,15 +9,15 @@
 import Foundation
 
 
-open class ViewCore {
+open class ViewModel {
     
-    public internal(set) var sections: [SectionViewElement] = []
+    public internal(set) var sections: [CellSectionModel] = []
 
     
     public init() { }
     
     
-    open func generateElements(sections: inout [SectionViewElement]) {
+    open func generateCellModels(sections: inout [CellSectionModel]) {
         
     }
 }

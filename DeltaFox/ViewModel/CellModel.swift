@@ -13,18 +13,18 @@ import UIKit
 public typealias SelectionHandler = () -> ()
 
 
-public protocol AnyViewElement : AnyElement {
+public protocol AnyCellModel : AnyDiffable {
     var id: String { get }
     static var typeIdentifier: String { get }
 }
 
 
-public protocol ViewElement: AnyViewElement, Element {
+public protocol CellModel: AnyCellModel, Diffable {
     static var placeholder: Self { get }
 }
 
 
-extension ViewElement {
+extension CellModel {
     public var uniqueIdentifier: Int {
         return id.hashValue
     }
@@ -36,7 +36,7 @@ public enum HeaderFooterType {
 }
 
 
-public protocol SelectableTableViewElement {
+public protocol SelectableTableCellModel {
     var selectionHandler: SelectionHandler? { get }
 }
 

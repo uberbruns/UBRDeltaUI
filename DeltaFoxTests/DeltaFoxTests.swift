@@ -18,8 +18,8 @@ class DeltaFoxTests: XCTestCase {
     let janeway = Captain(name: "Kathrin Janeway", ships: ["USS Voxager"], fistFights: 12)
 
     
-    func diff(old oldElements: [AnyElement], new newElements: [AnyElement], findDuplicatedElements: Bool = false) -> UBRDeltaUI.ElementDifferResult {
-        return ElementDiffer.diff(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
+    func diff(old oldElements: [AnyDiffable], new newElements: [AnyDiffable], findDuplicatedElements: Bool = false) -> UBRDeltaUI.DifferResult {
+        return Differ.compare(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
     }
     
     
@@ -33,7 +33,7 @@ class DeltaFoxTests: XCTestCase {
     }
     
     
-    func testNothingElement() {
+    func testNothingModel() {
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, picard, sisko, janeway])
             XCTAssertEqual(result.insertionIndexes, [], "Nothing Inserted")
@@ -42,25 +42,25 @@ class DeltaFoxTests: XCTestCase {
     }
     
     
-    func testInsertOneElement() {
+    func testInsertOneModel() {
         do {
             let result = diff(old: [kirk, picard], new: [sisko, kirk, picard])
-            XCTAssertEqual(result.insertionIndexes, [0], "Insert one element at index 0")
+            XCTAssertEqual(result.insertionIndexes, [0], "Insert one model at index 0")
         }
         
         do {
             let result = diff(old: [kirk, picard], new: [kirk, sisko, picard])
-            XCTAssertEqual(result.insertionIndexes, [1], "Insert one element at index 1")
+            XCTAssertEqual(result.insertionIndexes, [1], "Insert one model at index 1")
         }
         
         do {
             let result = diff(old: [kirk, picard], new: [kirk, picard, sisko])
-            XCTAssertEqual(result.insertionIndexes, [2], "Insert one element at index 2")
+            XCTAssertEqual(result.insertionIndexes, [2], "Insert one model at index 2")
         }
     }
     
     
-    func testInsertMultipleElement() {
+    func testInsertMultipleModel() {
         do {
             let result = diff(old: [kirk], new: [picard, sisko, kirk])
             XCTAssertEqual(result.insertionIndexes, [0,1], "Insert two items at index 0")
@@ -76,23 +76,23 @@ class DeltaFoxTests: XCTestCase {
     }
     
     
-    func testDeleteOneElement() {
+    func testDeleteOneModel() {
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [picard, sisko, janeway])
-            XCTAssertEqual(result.deletionIndexes, [0], "Delete one element at index 0")
+            XCTAssertEqual(result.deletionIndexes, [0], "Delete one model at index 0")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, picard, janeway])
-            XCTAssertEqual(result.deletionIndexes, [2], "Delete one element at index 2")
+            XCTAssertEqual(result.deletionIndexes, [2], "Delete one model at index 2")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, sisko, picard])
-            XCTAssertEqual(result.deletionIndexes, [3], "Delete one element at index 3")
+            XCTAssertEqual(result.deletionIndexes, [3], "Delete one model at index 3")
         }
     }
     
     
-    func testDeleteMultipleElement() {
+    func testDeleteMultipleModel() {
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [sisko, janeway])
             XCTAssertEqual(result.deletionIndexes, [0,1], "Delete two items at index 0")
@@ -116,16 +116,16 @@ class DeltaFoxTests: XCTestCase {
     }
     
     
-    func testInsertAndDeleteMultipleElement() {
+    func testInsertAndDeleteMultipleModel() {
         do {
             let result = diff(old: [kirk, picard, sisko], new: [kirk, sisko, janeway])
-            XCTAssertEqual(result.deletionIndexes, [1], "Delete one element at index 1")
-            XCTAssertEqual(result.insertionIndexes, [2], "Insert one element at index 2")
+            XCTAssertEqual(result.deletionIndexes, [1], "Delete one model at index 1")
+            XCTAssertEqual(result.insertionIndexes, [2], "Insert one model at index 2")
         }
         do {
             let result = diff(old: [kirk, picard], new: [sisko, janeway])
-            XCTAssertEqual(result.deletionIndexes, [0,1], "Delete one element at index 1")
-            XCTAssertEqual(result.insertionIndexes, [0,1], "Insert one element at index 2")
+            XCTAssertEqual(result.deletionIndexes, [0,1], "Delete one model at index 1")
+            XCTAssertEqual(result.insertionIndexes, [0,1], "Insert one model at index 2")
         }
     }
     
@@ -150,14 +150,14 @@ class DeltaFoxTests: XCTestCase {
     }
     
     
-    func testMoveOneElement() {
+    func testMoveOneModel() {
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [picard, kirk, sisko, janeway])
-            XCTAssertEqual(result.moveIndexMap, [0:1], "Move one element from index 0 to index 1")
+            XCTAssertEqual(result.moveIndexMap, [0:1], "Move one model from index 0 to index 1")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [picard, sisko, janeway, kirk])
-            XCTAssertEqual(result.moveIndexMap, [0:3], "Move one element from index 0 to index 3")
+            XCTAssertEqual(result.moveIndexMap, [0:3], "Move one model from index 0 to index 3")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [janeway, sisko, picard, kirk])
@@ -171,11 +171,11 @@ class DeltaFoxTests: XCTestCase {
         janeway2.ships.append("Delta Flyer")
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, picard, sisko, janeway2])
-            XCTAssertEqual(result.reloadIndexMap, [3:3], "Reload one element at index 3")
+            XCTAssertEqual(result.reloadIndexMap, [3:3], "Reload one model at index 3")
         }
         do {
             let result = diff(old: [kirk, picard, sisko, janeway], new: [kirk, janeway2])
-            XCTAssertEqual(result.reloadIndexMap, [3:1], "Reload one element at index 3 that ends up being at index 1")
+            XCTAssertEqual(result.reloadIndexMap, [3:1], "Reload one model at index 3 that ends up being at index 1")
         }
     }
     
@@ -185,11 +185,11 @@ class DeltaFoxTests: XCTestCase {
         janeway2.ships.append("Delta Flyer")
         do {
             let result = diff(old: [picard, sisko, janeway], new: [kirk, janeway2, picard])
-            XCTAssertEqual(result.reloadIndexMap, [2:2], "Reload one element")
-            XCTAssertEqual(result.insertionIndexes, [0], "Insert one element")
-            XCTAssertEqual(result.deletionIndexes, [1], "Insert one element")
+            XCTAssertEqual(result.reloadIndexMap, [2:2], "Reload one model")
+            XCTAssertEqual(result.insertionIndexes, [0], "Insert one model")
+            XCTAssertEqual(result.deletionIndexes, [1], "Insert one model")
             XCTAssertEqual(result.unmovedElements.flatMap({ $0 as? Captain }).map({ $0.name }), [kirk, picard, janeway2].map({ $0.name }), "Unmoved state")
-            XCTAssertEqual(result.moveIndexMap, [1:2], "Move one element")
+            XCTAssertEqual(result.moveIndexMap, [1:2], "Move one model")
         }
     }
     
@@ -238,7 +238,7 @@ class DeltaFoxTests: XCTestCase {
             }
             
             // Diff Captains
-            let result = self.diff(old: oldCaptains.map({ $0 as AnyElement }), new: newCaptains.map({ $0 as AnyElement }))
+            let result = self.diff(old: oldCaptains.map({ $0 as AnyDiffable }), new: newCaptains.map({ $0 as AnyDiffable }))
             
             // Apply comparison result to oldCaptians
             // Expectation is that the changed `oldCaptains` in the end equals `newCaptians`
@@ -260,7 +260,7 @@ class DeltaFoxTests: XCTestCase {
                 let a = oldCaptains[oldIndex]
                 let b = result.unmovedElements[unmIndex] as! Captain
                 unmovedCaptainsRef[unmIndex] = b
-                XCTAssertEqual(a.uniqueIdentifier, b.uniqueIdentifier, "Reloading same element")
+                XCTAssertEqual(a.uniqueIdentifier, b.uniqueIdentifier, "Reloading same model")
             }
             
             // Move Elements
@@ -272,8 +272,8 @@ class DeltaFoxTests: XCTestCase {
             }
             
             for (_, to) in result.moveIndexMap.sorted(by: { $0.1 < $1.1 }) {
-                let element = newCaptains[to]
-                newCaptainsRef.insert(element, at: to)
+                let model = newCaptains[to]
+                newCaptainsRef.insert(model, at: to)
             }
             
             // Test
@@ -323,8 +323,8 @@ class DeltaFoxTests: XCTestCase {
         }
         
         // Diff Captains
-        let oldElements = oldCaptains.map({ $0 as AnyElement })
-        let newElements = newCaptains.map({ $0 as AnyElement })
+        let oldElements = oldCaptains.map({ $0 as AnyDiffable })
+        let newElements = newCaptains.map({ $0 as AnyDiffable })
         
         measure {
             _ = self.diff(old: oldElements, new: newElements)

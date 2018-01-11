@@ -24,7 +24,7 @@ struct Captain {
 }
 
 
-extension Captain : Element {
+extension Captain : Diffable {
 
     var uniqueIdentifier: Int {
         return name.hash
