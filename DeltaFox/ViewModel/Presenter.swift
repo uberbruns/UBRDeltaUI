@@ -9,7 +9,7 @@
 import Foundation
 
 
-open class ViewModel {
+open class Presenter {
     
     public internal(set) var sections: [CellSectionModel] = []
 
