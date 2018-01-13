@@ -9,88 +9,73 @@
 import UIKit
 
 
-/// Options to fine tune the debug output. Please note, that the options .Debug and .Warnings have an impact on performance
-public enum DeltaDebugOutput {
-    case none
-    case debug
-    case warnings
+public protocol TableViewPresenterAdapterDelegate: class {
+    func presenterAdapterDidUpdateCells(_ presenterAdapter: TableViewPresenterAdapter, animated: Bool)
+    func presenterAdapterWillUpdateCells(_ presenterAdapter: TableViewPresenterAdapter, animated: Bool)
+    func registerPresentableTableViewCell(with presenterAdapter: TableViewPresenterAdapter)
 }
 
 
-
-open class PresentingTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Properties -
 
-    open var reusableCellClasses = [String:UITableViewCell.Type]()
-    open var reusableHeaderFooterClasses = [String:UITableViewHeaderFooterView.Type]()
-    
-    public let presenter: Presenter
-    private let sectionDiffer = SectionDiffer()
+    public private(set) weak var tableView: UITableView?
+    public private(set) weak var delegate: TableViewPresenterAdapterDelegate?
+
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
-    open var deltaDebugOutput = DeltaDebugOutput.none
+
+    public let presenter: Presenter
+    private let sectionDiffer = SectionDiffer()
+    public var logging = LoggingOptions.none
+
     
-    open class var tableView: UITableView {
-        return UITableView(frame: .zero, style: .grouped)        
-    }
-    
-    public private(set) lazy var tableView: UITableView = { return type(of: self).tableView }()
-    
-    
-    // Table View API
+    // MARK: Table View API
     
     /// The type of animation when rows are deleted.
-    open var rowDeletionAnimation = UITableViewRowAnimation.automatic
+    public var rowDeletionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when rows are inserted.
-    open var rowInsertionAnimation = UITableViewRowAnimation.automatic
+    public var rowInsertionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when rows are reloaded (not updated)
-    open var rowReloadAnimation = UITableViewRowAnimation.automatic
+    public var rowReloadAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when sections are deleted.
-    open var sectionDeletionAnimation = UITableViewRowAnimation.automatic
+    public var sectionDeletionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when sections are inserted.
-    open var sectionInsertionAnimation = UITableViewRowAnimation.automatic
+    public var sectionInsertionAnimation = UITableViewRowAnimation.automatic
     
     /// The type of animation when sections are reloaded (not updated)
-    open var sectionReloadAnimation = UITableViewRowAnimation.automatic
+    public var sectionReloadAnimation = UITableViewRowAnimation.automatic
     
 
-    // MARK: - Controller -
+    // MARK: - Adapter -
     // MARK: Life-Cycle
     
-    public init(viewModel: Presenter) {
-        self.presenter = viewModel
-        super.init(nibName: nil, bundle: nil)
+    public init(presenter: Presenter, delegate: TableViewPresenterAdapterDelegate) {
+        self.presenter = presenter
+        self.delegate = delegate
+        super.init()
     }
+
     
-    
-    public required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    
-    // MARK: - View -
-    // MARK: Life-Cycle
-    
-    override open func viewDidLoad() {
-        super.viewDidLoad()
+    public func connect(tableView: UITableView) {
+        self.tableView = tableView
+        
         configureContentDiffer()
-        prepareReusableTableViewCells()
-        addTableView()
+        configureTableView()
         updateTableView()
     }
     
     
-    // MARK: Add Views
+    // MARK: Views
     
-    /// Adds and configures the table view to the controller
-    private func addTableView() {
-        // Add
-        view.addSubview(tableView)
+    /// Configures the table view to the controller
+    private func configureTableView() {
+        guard let tableView = tableView else { return }
         
         // Configure
         tableView.delegate = self
@@ -103,56 +88,37 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
         tableView.sectionFooterHeight = UITableViewAutomaticDimension
 
         // Add reusable cells
-        prepareReusableTableViewCells()
-        
-        // Constraints
-        let viewDict = ["tableView" : tableView]
-        let v = NSLayoutConstraint.constraints(withVisualFormat: "V:|-0-[tableView]-0-|", options: [], metrics: nil, views: viewDict)
-        let h = NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[tableView]-0-|", options: [], metrics: nil, views: viewDict)
-        view.addConstraints(v + h)
-    }
-    
-    
-    // MARK: Update Views
-    
-    /**
-     Default way of updating the table view
-     
-     - Parameter animated: if true (default) performs a partial table view that will only update changes cells
-     */
-    open func updateView(_ animated: Bool = true) {
-        if animated {
-            animateViews = animated
-            updateTableView()
-        } else {
-            updateTableView(.hardReload)
-        }
+        delegate?.registerPresentableTableViewCell(with: self)
     }
     
     
     /**
-     Advanced way of updating the table view
-
-     __Discussion:__ this functions and `updateView` should be replaced with another approach.
-     For example `setTableViewNeedsUpdate`.
+     Updates the table view
 
      - Parameter options: Enum with instructions on how to update the table view. Default is `.Default`.
      
      */
-    open func updateTableView(_ options: UpdateOptions = .default) {
+    public func updateTableView(options: UpdateOptions = .default, animated: Bool = true) {
+        guard let tableView = tableView else { return }
+        
         var newSections = [CellSectionModel]()
         presenter.generateCellModels(sections: &newSections)
         
         updateOptions = options
         
         if options == .dataOnly {
+            animateViews = false
             presenter.sections = newSections
+            
         } else if presenter.sections.isEmpty || options == .hardReload {
+            animateViews = false
             tableViewWillUpdateCells(false)
             presenter.sections = newSections
             tableView.reloadData()
             tableViewDidUpdateCells(false)
+            
         } else {
+            animateViews = animated
             let oldSections = presenter.sections.map({ $0 as SectionModel })
             let newSections = newSections.map({ $0 as SectionModel })
             sectionDiffer.queueComparison(oldSections: oldSections, newSections: newSections)
@@ -170,44 +136,44 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
     private func configureContentDiffer() {
         
         sectionDiffer.throttleTimeInterval = 0.16667
-        sectionDiffer.debugOutput = deltaDebugOutput != .none
+        sectionDiffer.debugOutput = logging != .none
         
         // Start updating table view
         sectionDiffer.start = { [weak self] in
-            guard let weakSelf = self else { return }
-            if weakSelf.deltaDebugOutput == .debug {
+            guard let adapter = self else { return }
+            if adapter.logging == .debug {
                 print("Start updating table view", separator: "\n", terminator: "\n\n")
             }
-            if weakSelf.animateViews == false {
+            if adapter.animateViews == false {
                 UIView.setAnimationsEnabled(false)
             }
-            weakSelf.tableViewWillUpdateCells(weakSelf.animateViews)
+            adapter.tableViewWillUpdateCells(adapter.animateViews)
         }
         
         // Insert, reload and delete table view rows
         sectionDiffer.modelUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
-            guard let weakSelf = self else { return }
+            guard let adapter = self, let tableView = adapter.tableView else { return }
             
-            weakSelf.presenter.sections[section].items = items.flatMap { $0 as? AnyCellModel }
+            adapter.presenter.sections[section].items = items.flatMap { $0 as? AnyCellModel }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
             }
             
-            if weakSelf.deltaDebugOutput == .debug {
+            if adapter.logging == .debug {
                 print("Updating rows in section \(section)", "items: \(items.map({ $0.uniqueIdentifier }))", "insertIndexes: \(insertIndexes)", "reloadIndexMap: \(reloadIndexMap)", "deleteIndexes: \(deleteIndexes)", separator: "\n", terminator: "\n\n")
             }
             
             var manualReloadMap = reloadIndexMap
             
-            if weakSelf.updateOptions != .updateVisibleCells {
+            if adapter.updateOptions != .updateVisibleCells {
                 for (itemIndexBefore, itemIndexAfter) in reloadIndexMap {
                     let indexPathBefore = IndexPath(row: itemIndexBefore, section: section)
-                    guard let cell = weakSelf.tableView.cellForRow(at: indexPathBefore) else {
+                    guard let cell = tableView.cellForRow(at: indexPathBefore) else {
                         manualReloadMap.removeValue(forKey: itemIndexBefore)
                         continue
                     }
-                    guard let modelCell = cell as? AnyDeltaTableViewCell, let model = items[itemIndexAfter] as? AnyCellModel else { continue }
+                    guard let modelCell = cell as? AnyPresentableTableViewCell, let model = items[itemIndexAfter] as? AnyCellModel else { continue }
                     let oldModel = modelCell.anyModel
                     modelCell.anyModel = model
                     modelCell.modelDidChange(oldModel: oldModel, animate: true)
@@ -215,64 +181,64 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
                 }
             }
             
-            weakSelf.tableView.beginUpdates()
+            tableView.beginUpdates()
             
-            if manualReloadMap.count > 0 && weakSelf.updateOptions != .updateVisibleCells {
+            if manualReloadMap.count > 0 && adapter.updateOptions != .updateVisibleCells {
                 for (itemIndexBefore, _) in manualReloadMap {
                     let indexPathBefore = IndexPath(row: itemIndexBefore, section: section)
-                    weakSelf.tableView.reloadRows(at: [indexPathBefore], with: weakSelf.rowReloadAnimation)
+                    tableView.reloadRows(at: [indexPathBefore], with: adapter.rowReloadAnimation)
                 }
             }
             
             if deleteIndexes.count > 0 {
-                weakSelf.tableView.deleteRows(at: deleteIndexes.map({ IndexPath(row: $0, section: section) }), with: weakSelf.rowDeletionAnimation)
+                tableView.deleteRows(at: deleteIndexes.map({ IndexPath(row: $0, section: section) }), with: adapter.rowDeletionAnimation)
             }
             
             if insertIndexes.count > 0 {
-                weakSelf.tableView.insertRows(at: insertIndexes.map({ IndexPath(row: $0, section: section) }), with: weakSelf.rowInsertionAnimation)
+                tableView.insertRows(at: insertIndexes.map({ IndexPath(row: $0, section: section) }), with: adapter.rowInsertionAnimation)
             }
             
-            weakSelf.tableView.endUpdates()
+            tableView.endUpdates()
         }
         
         // Reorder table view rows
         sectionDiffer.modelReorder = { [weak self] (items, section, reorderMap) in
-            guard let weakSelf = self else { return }
-            
-            weakSelf.presenter.sections[section].items = items.flatMap { $0 as? AnyCellModel }
+            guard let adapter = self, let tableView = adapter.tableView else { return }
+
+            adapter.presenter.sections[section].items = items.flatMap { $0 as? AnyCellModel }
             
             if reorderMap.count == 0 {
                 return
             }
             
-            if weakSelf.deltaDebugOutput == .debug {
+            if adapter.logging == .debug {
                 print("Reorder rows in section \(section)", "items: \(items.map({ $0.uniqueIdentifier }))", "reorderMap: \(reorderMap)", separator: "\n", terminator: "\n\n")
             }
             
-            weakSelf.tableView.beginUpdates()
+            tableView.beginUpdates()
             for (from, to) in reorderMap {
                 let fromIndexPath = IndexPath(row: from, section: section)
                 let toIndexPath = IndexPath(row: to, section: section)
-                weakSelf.tableView.moveRow(at: fromIndexPath, to: toIndexPath)
+                tableView.moveRow(at: fromIndexPath, to: toIndexPath)
             }
-            weakSelf.tableView.endUpdates()
+            tableView.endUpdates()
         }
         
         // Insert, reload and delete table view sections
         sectionDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
-            guard let weakSelf = self else { return }
-            
-            weakSelf.presenter.sections = sections.flatMap({ $0 as? CellSectionModel })
+            guard let adapter = self, let tableView = adapter.tableView else { return }
+
+            adapter.presenter.sections = sections.flatMap({ $0 as? CellSectionModel })
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
             }
             
-            if weakSelf.deltaDebugOutput == .debug {
+            if adapter.logging == .debug {
                 print("Updating sections", "sections: \(sections.map({ $0.uniqueIdentifier }))", "insertIndexes: \(insertIndexes)", "reloadIndexMap: \(reloadIndexMap)", "deleteIndexes: \(deleteIndexes)", separator: "\n", terminator: "\n\n")
             }
             
-            weakSelf.tableView.beginUpdates()
+            tableView.beginUpdates()
             
             let insertSet = NSMutableIndexSet()
             insertIndexes.forEach({ insertSet.add($0) })
@@ -280,63 +246,63 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
             let deleteSet = NSMutableIndexSet()
             deleteIndexes.forEach({ deleteSet.add($0) })
             
-            weakSelf.tableView.insertSections(insertSet as IndexSet, with: weakSelf.sectionInsertionAnimation)
-            weakSelf.tableView.deleteSections(deleteSet as IndexSet, with: weakSelf.sectionDeletionAnimation)
+            tableView.insertSections(insertSet as IndexSet, with: adapter.sectionInsertionAnimation)
+            tableView.deleteSections(deleteSet as IndexSet, with: adapter.sectionDeletionAnimation)
             
             for (sectionIndexBefore, sectionIndexAfter) in reloadIndexMap {
                 
                 if let sectionModel = sections[sectionIndexAfter] as? CellSectionModel {
                     
-                    if let headerView = weakSelf.tableView.headerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let headerModel = sectionModel.headerModel {
+                    if let headerView = tableView.headerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let headerModel = sectionModel.headerModel {
                         let oldModel = headerView.anyCellModel
                         headerView.anyCellModel = headerModel
                         headerView.modelDidChange(oldModel: oldModel, animate: true, type: .header)
                     }
                     
-                    if let footerView = weakSelf.tableView.footerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let footerModel = sectionModel.footerModel {
+                    if let footerView = tableView.footerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let footerModel = sectionModel.footerModel {
                         let oldModel = footerView.anyCellModel
                         footerView.anyCellModel = footerModel
                         footerView.modelDidChange(oldModel: oldModel, animate: true, type: .footer)
                     }
                     
                 } else {
-                    weakSelf.tableView.reloadSections(IndexSet(integer: sectionIndexBefore), with: weakSelf.sectionDeletionAnimation)
+                    tableView.reloadSections(IndexSet(integer: sectionIndexBefore), with: adapter.sectionDeletionAnimation)
                 }
             }
             
-            weakSelf.tableView.endUpdates()
+            tableView.endUpdates()
         }
         
         // Reorder table view sections
         sectionDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
-            guard let weakSelf = self else { return }
-            
-            weakSelf.presenter.sections = sections.flatMap({ $0 as? CellSectionModel })
+            guard let adapter = self, let tableView = adapter.tableView else { return }
+
+            adapter.presenter.sections = sections.flatMap({ $0 as? CellSectionModel })
             
             if reorderMap.count == 0 {
                 return
             }
             
-            if weakSelf.deltaDebugOutput == .debug {
+            if adapter.logging == .debug {
                 print("Reorder sections", "sections: \(sections.map({ $0.uniqueIdentifier }))", "reorderMap: \(reorderMap)", separator: "\n", terminator: "\n\n")
             }
             
-            weakSelf.tableView.beginUpdates()
+            tableView.beginUpdates()
             for (from, to) in reorderMap {
-                weakSelf.tableView.moveSection(from, toSection: to)
+                tableView.moveSection(from, toSection: to)
             }
-            weakSelf.tableView.endUpdates()
+            tableView.endUpdates()
         }
         
         // Updating table view did end
         sectionDiffer.completion = { [weak self] in
-            guard let weakSelf = self else { return }
-            
-            if weakSelf.updateOptions == .updateVisibleCells {
+            guard let adapter = self, let tableView = adapter.tableView else { return }
+
+            if adapter.updateOptions == .updateVisibleCells {
                 var manualReloads = [IndexPath]()
-                for indexPath in weakSelf.tableView.indexPathsForVisibleRows ?? [] {
-                    if let modelCell = weakSelf.tableView.cellForRow(at: indexPath) as? AnyDeltaTableViewCell {
-                        let model: AnyCellModel = weakSelf.presenter.sections[indexPath.section].items[indexPath.row]
+                for indexPath in tableView.indexPathsForVisibleRows ?? [] {
+                    if let modelCell = tableView.cellForRow(at: indexPath) as? AnyPresentableTableViewCell {
+                        let model: AnyCellModel = adapter.presenter.sections[indexPath.section].items[indexPath.row]
                         let oldModel = modelCell.anyModel
                         modelCell.anyModel = model
                         modelCell.modelDidChange(oldModel: oldModel, animate: false)
@@ -345,45 +311,28 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
                     }
                 }
                 if manualReloads.count > 0 {
-                    weakSelf.tableView.beginUpdates()
-                    weakSelf.tableView.reloadRows(at: manualReloads, with: weakSelf.rowReloadAnimation)
-                    weakSelf.tableView.endUpdates()
+                    tableView.beginUpdates()
+                    tableView.reloadRows(at: manualReloads, with: adapter.rowReloadAnimation)
+                    tableView.endUpdates()
                 }
             }
             
-            if weakSelf.deltaDebugOutput == .debug {
+            if adapter.logging == .debug {
                 print("Updating table view ended", separator: "\n", terminator: "\n\n")
             }
             
             UIView.setAnimationsEnabled(true)
-            weakSelf.tableViewDidUpdateCells(weakSelf.animateViews)
-            weakSelf.animateViews = true
+            adapter.tableViewDidUpdateCells(adapter.animateViews)
+            adapter.animateViews = true
         }
     }
     
     
     // MARK: - API -
-    // MARK: Content
-    
-    /// Returns the `CellSectionModel` that belongs to the provided section index.
-    open func tableViewSectionModel(_ section: Int) -> CellSectionModel {
-        return presenter.sections[section]
-    }
-    
-
-    /// Returns the `Model` that belongs to the provided index path.
-    open func tableCellModel(_ indexPath: IndexPath) -> AnyCellModel {
-        return presenter.sections[indexPath.section].items[indexPath.row]
-    }
-
-    
     // MARK: Table View
     
-    /// Use this function in your subclass to update `reusableCellClasses` and `reusableHeaderFooterClasses`.
-    open func prepareReusableTableViewCells() { }
-    
-    
-    public func register<EC: DeltaTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
+    public func register<EC: PresentableTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
+        guard let tableView = tableView else { return }
         let reuseIdentifier = modelTableViewCellType.Model.typeIdentifier
         tableView.register(modelTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
     }
@@ -391,21 +340,23 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
 
     public func register<EC: ElementHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
         let reuseIdentifier = modelViewHeaderFooterViewType.Model.typeIdentifier
+        guard let tableView = tableView else { return }
         tableView.register(modelViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
     }
 
     
-    /// Subclass this function in your subclass to execute code when a table view will update.
-    open func tableViewWillUpdateCells(_ animated: Bool) {}
+    private func tableViewWillUpdateCells(_ animated: Bool) {
+        delegate?.presenterAdapterWillUpdateCells(self, animated: animated)
+    }
     
     
-    /// Subclass this function in your subclass to execute code when a table view did update.
-    open func tableViewDidUpdateCells(_ animated: Bool) {}
+    private func tableViewDidUpdateCells(_ animated: Bool) {
+        delegate?.presenterAdapterDidUpdateCells(self, animated: animated)
+    }
     
     
     /**
-     Dequeues a reusable cell from table view as long the model for this index path is of type `DeltaTableCellModel`
-     and DeltaTableCellModel's `typeIdentifier` property was registered in `prepareReusableTableViewCells()`.
+     Dequeues a reusable cell from table view as long the model for this index path is of type `DeltaTableCellModel`.
      
      Use this method if you want to provide your own implementation of `tableView(tableView:cellForRowAtIndexPath:)` but
      you still want to be able to return cells provided by this class if needed.
@@ -417,9 +368,9 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
         let model = presenter.sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell : do {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: model).typeIdentifier) else { break getTableViewCell }
+            guard let cell = tableView?.dequeueReusableCell(withIdentifier: type(of: model).typeIdentifier) else { break getTableViewCell }
 
-            if let modelCell = cell as? AnyDeltaTableViewCell {
+            if let modelCell = cell as? AnyPresentableTableViewCell {
                 let oldModel = modelCell.anyModel
                 modelCell.anyModel = model
                 modelCell.modelDidChange(oldModel: oldModel, animate: false)
@@ -439,17 +390,17 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
     // MARK: - Protocols -
     // MARK: UITableViewDataSource
     
-    open func numberOfSections(in tableView: UITableView) -> Int {
+    public func numberOfSections(in tableView: UITableView) -> Int {
         return presenter.sections.count
     }
     
     
-    open func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return presenter.sections[section].items.count
     }
     
     
-    open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if let cell = tableViewCellForRowAtIndexPath(indexPath) {
             return cell
         } else {
@@ -476,7 +427,7 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
     }
 
     
-    open func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         configureView : do {
             let model = presenter.sections[section]
             guard let headerModel = model.headerModel else { break configureView }
@@ -504,10 +455,10 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
     }
 
     
-    open func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+    public func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         configureView : do {
-            let model = presenter.sections[section]
-            guard let footerModel = model.footerModel else { break configureView }
+            let sectionModel = presenter.sections[section]
+            guard let footerModel = sectionModel.footerModel else { break configureView }
             guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerModel).typeIdentifier) else { break configureView }
             
             // Update View
@@ -525,10 +476,10 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
     
     // MARK: Selection
     
-    open func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let model = presenter.sections[indexPath.section].items[indexPath.row]
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cellModel = presenter.sections[indexPath.section].items[indexPath.row]
         
-        if let selectableModel = model as? SelectableTableCellModel {
+        if let selectableModel = cellModel as? SelectableTableCellModel {
             selectableModel.selectionHandler?()
         }
         
@@ -537,7 +488,7 @@ open class PresentingTableViewController: UIViewController, UITableViewDelegate,
 }
 
 
-extension PresentingTableViewController {
+extension TableViewPresenterAdapter {
     
     /// Options to finetune the update process
     public enum UpdateOptions {
@@ -552,5 +503,12 @@ extension PresentingTableViewController {
         
         /// Use this if you know the table view is in a valid, but the data is in an invalid state
         case dataOnly
+    }
+    
+    /// Options to fine tune the debug output. Please note, that the options .Debug and .Warnings have an impact on performance
+    public enum LoggingOptions {
+        case none
+        case debug
+        case warnings
     }
 }

@@ -1,5 +1,5 @@
 //
-//  DeltaTableViewCell.swift
+//  PresentableTableViewCell.swift
 //  UBRDeltaUI
 //
 //  Created by Karsten Bruns on 06.01.18.
@@ -8,20 +8,20 @@
 
 import UIKit
 
-public protocol AnyDeltaTableViewCell : class {
+public protocol AnyPresentableTableViewCell : class {
     var anyModel: AnyCellModel { get set }
     func modelDidChange(oldModel: AnyCellModel, animate: Bool)
 }
 
 
-public protocol DeltaTableViewCell : AnyDeltaTableViewCell {
+public protocol PresentableTableViewCell : AnyPresentableTableViewCell {
     associatedtype Model: CellModel
     var model: Model { get set }
     func modelDidChange(oldModel: Model, animate: Bool)
 }
 
 
-extension DeltaTableViewCell {
+extension PresentableTableViewCell {
     public var anyModel: AnyCellModel {
         get {
             return model
