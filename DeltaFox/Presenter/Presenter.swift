@@ -8,17 +8,27 @@
 
 import Foundation
 
+public protocol PresenterDelegate: class {
+    func presenter(_ presenter: Presenter, cellModelNeedUpdateAnimated animated: Bool)
+}
+
 
 open class Presenter {
     
     public internal(set) var sections: [CellSectionModel] = []
+    public weak var delegate: PresenterDelegate?
 
     
     public init() { }
     
     
-    open func generateCellModels(sections: inout [CellSectionModel]) {
+    open func generateCellModel(sections: inout [CellSectionModel]) {
         
+    }
+    
+    
+    public func cellModelNeedUpdate(animated: Bool) {
+        delegate?.presenter(self, cellModelNeedUpdateAnimated: animated)
     }
     
     

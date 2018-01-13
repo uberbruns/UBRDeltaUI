@@ -58,9 +58,9 @@ public struct CellSectionModel : SectionModel {
 
 extension Array where Element == CellSectionModel {
     
-    public mutating func append(id: String, _ setup: (inout CellSectionModel) -> Void) {
+    public mutating func append(id: String, _ setup: (String, inout CellSectionModel) -> Void) {
         var new = CellSectionModel(id: id)
-        setup(&new)
+        setup(id, &new)
         self.append(new)
     }
 }

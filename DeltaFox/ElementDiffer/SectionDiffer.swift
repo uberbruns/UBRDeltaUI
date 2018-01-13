@@ -10,17 +10,19 @@ import Foundation
 
 class SectionDiffer {
     
-    typealias ElementUpdateHandler = (_ items: [AnyDiffable], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> ()
-    typealias ElementReorderHandler = (_ items: [AnyDiffable], _ section: Int, _ reorderMap: [Int:Int]) -> ()
-    typealias SectionUpdateHandler = (_ sections: [SectionModel], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> ()
-    typealias SectionReorderHandler = (_ sections: [SectionModel], _ reorderMap: [Int:Int]) -> ()
-    typealias StartHandler = () -> ()
-    typealias CompletionHandler = () -> ()
-    
+    typealias ElementUpdateHandler = (_ items: [AnyDiffable], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> Void
+    typealias ElementReorderHandler = (_ items: [AnyDiffable], _ section: Int, _ reorderMap: [Int:Int]) -> Void
+    typealias SectionUpdateHandler = (_ sections: [SectionModel], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> Void
+    typealias SectionReorderHandler = (_ sections: [SectionModel], _ reorderMap: [Int:Int]) -> Void
+    typealias StartHandler = () -> Void
+    typealias CompletionHandler = () -> Void
+    typealias AnimationWrapper = (() -> Void, @escaping () -> Void) -> Void
+
     var throttleTimeInterval: Double = 0.2
     var debugOutput = false
     
     // Update handler
+    var animationWrapper: AnimationWrapper? = nil
     var modelUpdate: ElementUpdateHandler? = nil
     var modelReorder: ElementReorderHandler? = nil
     var sectionUpdate: SectionUpdateHandler? = nil
@@ -69,6 +71,8 @@ class SectionDiffer {
     
     
     private func diff() {
+        print(#function)
+        
         // Guarding
         guard let oldSections = self.oldSections else { return }
         guard let newSections = self.newSections else { return }
@@ -134,62 +138,63 @@ class SectionDiffer {
             // Diffing is done - doing UI updates on the main thread
             let mainQueue = DispatchQueue.main
             mainQueue.async {
-                
-                // Guardings
-                if self.resultIsOutOfDate == true {
-                    // In the meantime 'newResults' came in, this means
-                    // a new diff() and we are stopping the update
-                    self.diff()
-                    return
-                }
-                
-                if self.timeLockEnabled == true {
-                    // There is already a future diff() scheduled
-                    // we are stopping here
-                    return
-                }
-                
-                let updateAllowedIn = self.lastUpdateTime.timeIntervalSinceNow + self.throttleTimeInterval
-                if  updateAllowedIn > 0 {
-                    // updateAllowedIn > 0 means the allowed update time is in the future
-                    // so we schedule a new diff() for this point in time
-                    self.timeLockEnabled = true
-                    SectionDiffer.executeDelayed(updateAllowedIn) {
-                        self.timeLockEnabled = false
+                self.animationWrapper?({
+                    // Guardings
+                    if self.resultIsOutOfDate == true {
+                        // In the meantime 'newResults' came in, this means
+                        // a new diff() and we are stopping the update
                         self.diff()
+                        return
                     }
-                    return
-                }
-                
-                // Calling the handler functions
-                self.start?()
-                
-                // Diffable update for the old section order, because the sections
-                // are not moved yet
-                for (oldSectionIndex, diff) in diffs.sorted(by: { $0.0 < $1.0 }) {
                     
-                    // Call model handler functions
-                    self.modelUpdate?(
-                        diff.unmovedElements,
-                        oldSectionIndex,
-                        diff.insertionIndexes,
-                        diff.reloadIndexMap,
-                        diff.deletionIndexes
-                    )
-                    self.modelReorder?(diff.newElements, oldSectionIndex, diff.moveIndexMap)
-                }
-                
-                // Change type from Diffable to SectionModel.
-                // Since this is expected to succeed a force unwrap is justified
-                let updateElements = sectionDiff.unmovedElements.map({ $0 as! SectionModel })
-                let reorderElements = sectionDiff.newElements.map({ $0 as! SectionModel })
-                
-                // Call section handler functions
-                self.sectionUpdate?(updateElements, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
-                self.sectionReorder?(reorderElements, sectionDiff.moveIndexMap)
-                
-                // Call completion block
-                self.completion?()
+                    if self.timeLockEnabled == true {
+                        // There is already a future diff() scheduled
+                        // we are stopping here
+                        return
+                    }
+                    
+                    let updateAllowedIn = self.lastUpdateTime.timeIntervalSinceNow + self.throttleTimeInterval
+                    if  updateAllowedIn > 0 {
+                        // updateAllowedIn > 0 means the allowed update time is in the future
+                        // so we schedule a new diff() for this point in time
+                        self.timeLockEnabled = true
+                        SectionDiffer.executeDelayed(updateAllowedIn) {
+                            self.timeLockEnabled = false
+                            self.diff()
+                        }
+                        return
+                    }
+                    
+                    // Calling the handler functions
+                    self.start?()
+                    
+                    // Diffable update for the old section order, because the sections
+                    // are not moved yet
+                    for (oldSectionIndex, diff) in diffs.sorted(by: { $0.0 < $1.0 }) {
+                        
+                        // Call model handler functions
+                        self.modelUpdate?(
+                            diff.unmovedElements,
+                            oldSectionIndex,
+                            diff.insertionIndexes,
+                            diff.reloadIndexMap,
+                            diff.deletionIndexes
+                        )
+                        self.modelReorder?(diff.newElements, oldSectionIndex, diff.moveIndexMap)
+                    }
+                    
+                    // Change type from Diffable to SectionModel.
+                    // Since this is expected to succeed a force unwrap is justified
+                    let updateElements = sectionDiff.unmovedElements.map({ $0 as! SectionModel })
+                    let reorderElements = sectionDiff.newElements.map({ $0 as! SectionModel })
+                    
+                    // Call section handler functions
+                    self.sectionUpdate?(updateElements, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
+                    self.sectionReorder?(reorderElements, sectionDiff.moveIndexMap)
+                }, {
+                    // Call completion block
+                    self.completion?()
+                })
                 
                 // Reset state
                 self.lastUpdateTime = Date()
@@ -197,18 +202,16 @@ class SectionDiffer {
                 self.newSections = nil
                 self.isDiffing = false
             }
-            
         }
-        
     }
     
     
-    static private func executeDelayed(_ time: Int, action: @escaping () -> ()) {
+    static private func executeDelayed(_ time: Int, action: @escaping () -> Void) {
         self.executeDelayed(Double(time), action: action)
     }
     
     
-    static private func executeDelayed(_ time: Double, action: @escaping () -> ()) {
+    static private func executeDelayed(_ time: Double, action: @escaping () -> Void) {
         if time == 0 {
             action()
             return

@@ -1,5 +1,5 @@
 //
-//  ElementTableViewController.swift
+//  PresenterTableViewAdapter
 //  CompareApp
 //
 //  Created by Karsten Bruns on 30/08/15.
@@ -9,24 +9,24 @@
 import UIKit
 
 
-public protocol TableViewPresenterAdapterDelegate: class {
-    func presenterAdapterDidUpdateCells(_ presenterAdapter: TableViewPresenterAdapter, animated: Bool)
-    func presenterAdapterWillUpdateCells(_ presenterAdapter: TableViewPresenterAdapter, animated: Bool)
-    func registerPresentableTableViewCell(with presenterAdapter: TableViewPresenterAdapter)
+public protocol PresenterTableViewAdapterDelegate: class {
+    func presenterAdapterDidUpdateCells(_ presenterAdapter: PresenterTableViewAdapter, animated: Bool)
+    func presenterAdapterWillUpdateCells(_ presenterAdapter: PresenterTableViewAdapter, animated: Bool)
+    func registerPresentableTableViewCell(with presenterAdapter: PresenterTableViewAdapter)
 }
 
 
-open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableViewDataSource {
+open class PresenterTableViewAdapter: NSObject, UITableViewDelegate, UITableViewDataSource, PresenterDelegate {
     
     // MARK: - Properties -
 
     public private(set) weak var tableView: UITableView?
-    public private(set) weak var delegate: TableViewPresenterAdapterDelegate?
+    public private(set) weak var presenter: Presenter!
+    public weak var delegate: PresenterTableViewAdapterDelegate?
 
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
 
-    public let presenter: Presenter
     private let sectionDiffer = SectionDiffer()
     public var logging = LoggingOptions.none
 
@@ -55,10 +55,10 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
     // MARK: - Adapter -
     // MARK: Life-Cycle
     
-    public init(presenter: Presenter, delegate: TableViewPresenterAdapterDelegate) {
+    public init(presenter: Presenter) {
         self.presenter = presenter
-        self.delegate = delegate
         super.init()
+        presenter.delegate = self
     }
 
     
@@ -102,7 +102,7 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
         guard let tableView = tableView else { return }
         
         var newSections = [CellSectionModel]()
-        presenter.generateCellModels(sections: &newSections)
+        presenter.generateCellModel(sections: &newSections)
         
         updateOptions = options
         
@@ -135,8 +135,17 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
     */
     private func configureContentDiffer() {
         
-        sectionDiffer.throttleTimeInterval = 0.16667
+        sectionDiffer.throttleTimeInterval = 0.001
         sectionDiffer.debugOutput = logging != .none
+        
+        sectionDiffer.animationWrapper = { [weak self] (work, completion) in
+            guard let adapter = self, let tableView = adapter.tableView else { return }
+            tableView.performBatchUpdates({
+                work()
+            }, completion: { (_) in
+                completion()
+            })
+        }
         
         // Start updating table view
         sectionDiffer.start = { [weak self] in
@@ -154,6 +163,8 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
         sectionDiffer.modelUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let adapter = self, let tableView = adapter.tableView else { return }
             
+            print("sectionDiffer.modelUpdate")
+
             adapter.presenter.sections[section].items = items.flatMap { $0 as? AnyCellModel }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
@@ -180,7 +191,11 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
                     manualReloadMap.removeValue(forKey: itemIndexBefore)
                 }
             }
-            
+
+            if insertIndexes.count == 0 && manualReloadMap.count == 0 && deleteIndexes.count == 0 {
+                return
+            }
+
             tableView.beginUpdates()
             
             if manualReloadMap.count > 0 && adapter.updateOptions != .updateVisibleCells {
@@ -253,13 +268,13 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
                 
                 if let sectionModel = sections[sectionIndexAfter] as? CellSectionModel {
                     
-                    if let headerView = tableView.headerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let headerModel = sectionModel.headerModel {
+                    if let headerView = tableView.headerView(forSection: sectionIndexBefore) as? AnyPresentableHeaderFooterView, let headerModel = sectionModel.headerModel {
                         let oldModel = headerView.anyCellModel
                         headerView.anyCellModel = headerModel
                         headerView.modelDidChange(oldModel: oldModel, animate: true, type: .header)
                     }
                     
-                    if let footerView = tableView.footerView(forSection: sectionIndexBefore) as? AnyDiffableHeaderFooterView, let footerModel = sectionModel.footerModel {
+                    if let footerView = tableView.footerView(forSection: sectionIndexBefore) as? AnyPresentableHeaderFooterView, let footerModel = sectionModel.footerModel {
                         let oldModel = footerView.anyCellModel
                         footerView.anyCellModel = footerModel
                         footerView.modelDidChange(oldModel: oldModel, animate: true, type: .footer)
@@ -338,7 +353,7 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
     }
     
 
-    public func register<EC: ElementHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
+    public func register<EC: PresentableHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
         let reuseIdentifier = modelViewHeaderFooterViewType.Model.typeIdentifier
         guard let tableView = tableView else { return }
         tableView.register(modelViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
@@ -367,7 +382,7 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
     open func tableViewCellForRowAtIndexPath(_ indexPath: IndexPath) -> UITableViewCell? {
         let model = presenter.sections[indexPath.section].items[indexPath.row]
         
-        getTableViewCell : do {
+        getTableViewCell: do {
             guard let cell = tableView?.dequeueReusableCell(withIdentifier: type(of: model).typeIdentifier) else { break getTableViewCell }
 
             if let modelCell = cell as? AnyPresentableTableViewCell {
@@ -376,7 +391,7 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
                 modelCell.modelDidChange(oldModel: oldModel, animate: false)
             }
             
-            if let selectableModel = model as? SelectableTableCellModel {
+            if let selectableModel = model as? SelectableCellModel {
                 cell.selectionStyle = selectableModel.selectionHandler != nil ? .default : .none
             }
 
@@ -410,14 +425,11 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
     
     
     // MARK: UITableViewDelegate
-    // MARK: Row
     
     public func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableViewAutomaticDimension
     }
 
-    
-    // MARK: Header
     
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         guard presenter.sections[section].headerModel != nil else {
@@ -434,7 +446,7 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
             guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let headerView = headerView as? AnyDiffableHeaderFooterView {
+            if let headerView = headerView as? AnyPresentableHeaderFooterView {
                 let oldModel = headerView.anyCellModel
                 headerView.anyCellModel = headerModel
                 headerView.modelDidChange(oldModel: oldModel, animate: false, type: .header)
@@ -446,7 +458,6 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
     }
     
     
-    // MARK: Footer
     public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         guard presenter.sections[section].footerModel != nil else {
             return 0
@@ -462,7 +473,7 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
             guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let footerView = footerView as? AnyDiffableHeaderFooterView {
+            if let footerView = footerView as? AnyPresentableHeaderFooterView {
                 let oldModel = footerView.anyCellModel
                 footerView.anyCellModel = footerModel
                 footerView.modelDidChange(oldModel: oldModel, animate: false, type: .footer)
@@ -474,21 +485,26 @@ open class TableViewPresenterAdapter: NSObject, UITableViewDelegate, UITableView
     }
 
     
-    // MARK: Selection
-    
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cellModel = presenter.sections[indexPath.section].items[indexPath.row]
         
-        if let selectableModel = cellModel as? SelectableTableCellModel {
+        if let selectableModel = cellModel as? SelectableCellModel {
             selectableModel.selectionHandler?()
         }
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
+    
+    
+    // MARK: PresenterDelegate
+    
+    public func presenter(_ presenter: Presenter, cellModelNeedUpdateAnimated animated: Bool) {
+        updateTableView(options: .default, animated: animated)
+    }
 }
 
 
-extension TableViewPresenterAdapter {
+extension PresenterTableViewAdapter {
     
     /// Options to finetune the update process
     public enum UpdateOptions {

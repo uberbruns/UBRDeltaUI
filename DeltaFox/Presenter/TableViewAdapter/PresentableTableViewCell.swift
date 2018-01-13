@@ -48,20 +48,20 @@ extension PresentableTableViewCell {
 }
 
 
-public protocol AnyDiffableHeaderFooterView : class {
+public protocol AnyPresentableHeaderFooterView : class {
     var anyCellModel: AnyCellModel { get set }
     func modelDidChange(oldModel: AnyCellModel, animate: Bool, type: HeaderFooterType)
 }
 
 
-public protocol ElementHeaderFooterView : AnyDiffableHeaderFooterView {
+public protocol PresentableHeaderFooterView : AnyPresentableHeaderFooterView {
     associatedtype Model: CellModel
     var model: Model { get set }
     func modelDidChange(oldModel: Model, animate: Bool, type: HeaderFooterType)
 }
 
 
-extension ElementHeaderFooterView {
+extension PresentableHeaderFooterView {
     public var anyCellModel: AnyCellModel {
         get {
             return model

@@ -36,7 +36,7 @@ public enum HeaderFooterType {
 }
 
 
-public protocol SelectableTableCellModel {
+public protocol SelectableCellModel {
     var selectionHandler: SelectionHandler? { get }
 }
 
