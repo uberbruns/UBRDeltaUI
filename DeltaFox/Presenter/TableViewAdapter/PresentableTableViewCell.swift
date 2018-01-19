@@ -10,14 +10,14 @@ import UIKit
 
 public protocol AnyPresentableTableViewCell : class {
     var anyModel: AnyCellModel { get set }
-    func modelDidChange(oldModel: AnyCellModel, animate: Bool)
+    func modelDidChange(previousModel: AnyCellModel, animate: Bool)
 }
 
 
 public protocol PresentableTableViewCell : AnyPresentableTableViewCell {
     associatedtype Model: CellModel
     var model: Model { get set }
-    func modelDidChange(oldModel: Model, animate: Bool)
+    func modelDidChange(previousModel: Model, animate: Bool)
 }
 
 
@@ -33,31 +33,31 @@ extension PresentableTableViewCell {
         }
     }
 
-    public func modelDidChange(oldModel: AnyCellModel, animate: Bool) {
-        if let expectedOldModel = oldModel as? Model {
-            modelDidChange(oldModel: expectedOldModel, animate: animate)
+    public func modelDidChange(previousModel: AnyCellModel, animate: Bool) {
+        if let expectedOldModel = previousModel as? Model {
+            modelDidChange(previousModel: expectedOldModel, animate: animate)
         }
     }
 
     
     public func setModel(_ model: Model, animated: Bool) {
-        let oldModel = self.model
+        let previousModel = self.model
         self.model = model
-        self.modelDidChange(oldModel: oldModel, animate: animated)
+        self.modelDidChange(previousModel: previousModel, animate: animated)
     }
 }
 
 
 public protocol AnyPresentableHeaderFooterView : class {
     var anyCellModel: AnyCellModel { get set }
-    func modelDidChange(oldModel: AnyCellModel, animate: Bool, type: HeaderFooterType)
+    func modelDidChange(previousModel: AnyCellModel, animate: Bool, type: HeaderFooterType)
 }
 
 
 public protocol PresentableHeaderFooterView : AnyPresentableHeaderFooterView {
     associatedtype Model: CellModel
     var model: Model { get set }
-    func modelDidChange(oldModel: Model, animate: Bool, type: HeaderFooterType)
+    func modelDidChange(previousModel: Model, animate: Bool, type: HeaderFooterType)
 }
 
 
@@ -73,9 +73,9 @@ extension PresentableHeaderFooterView {
         }
     }
     
-    public func modelDidChange(oldModel: AnyCellModel, animate: Bool, type: HeaderFooterType) {
-        if let expectedOldModel = oldModel as? Model {
-            modelDidChange(oldModel: expectedOldModel, animate: animate, type: type)
+    public func modelDidChange(previousModel: AnyCellModel, animate: Bool, type: HeaderFooterType) {
+        if let expectedOldModel = previousModel as? Model {
+            modelDidChange(previousModel: expectedOldModel, animate: animate, type: type)
         }
     }
 }
