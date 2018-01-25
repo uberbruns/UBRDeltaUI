@@ -1,5 +1,5 @@
 //
-//  PresentableTableViewCell.swift
+//  CellModelTableViewCell.swift
 //  UBRDeltaUI
 //
 //  Created by Karsten Bruns on 06.01.18.
@@ -8,20 +8,20 @@
 
 import UIKit
 
-public protocol AnyPresentableTableViewCell : class {
+public protocol AnyCellModelTableViewCell : class {
     var anyModel: AnyCellModel { get set }
     func modelDidChange(previousModel: AnyCellModel, animate: Bool)
 }
 
 
-public protocol PresentableTableViewCell : AnyPresentableTableViewCell {
+public protocol CellModelTableViewCell : AnyCellModelTableViewCell {
     associatedtype Model: CellModel
     var model: Model { get set }
     func modelDidChange(previousModel: Model, animate: Bool)
 }
 
 
-extension PresentableTableViewCell {
+extension CellModelTableViewCell {
     public var anyModel: AnyCellModel {
         get {
             return model
@@ -48,20 +48,20 @@ extension PresentableTableViewCell {
 }
 
 
-public protocol AnyPresentableHeaderFooterView : class {
+public protocol AnyCellModelHeaderFooterView : class {
     var anyCellModel: AnyCellModel { get set }
     func modelDidChange(previousModel: AnyCellModel, animate: Bool, type: HeaderFooterType)
 }
 
 
-public protocol PresentableHeaderFooterView : AnyPresentableHeaderFooterView {
+public protocol CellModelHeaderFooterView : AnyCellModelHeaderFooterView {
     associatedtype Model: CellModel
     var model: Model { get set }
     func modelDidChange(previousModel: Model, animate: Bool, type: HeaderFooterType)
 }
 
 
-extension PresentableHeaderFooterView {
+extension CellModelHeaderFooterView {
     public var anyCellModel: AnyCellModel {
         get {
             return model

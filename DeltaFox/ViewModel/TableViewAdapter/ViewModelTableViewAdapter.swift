@@ -15,7 +15,7 @@ public protocol ViewModelTableViewController: class {
 
     func viewModelAdapterDidUpdateTableViewCells(_ viewModelAdapter: ViewModelTableViewAdapter, animated: Bool)
     func viewModelAdapterWillUpdateTableViewCells(_ viewModelAdapter: ViewModelTableViewAdapter, animated: Bool)
-    func registerPresentableTableViewCell(with viewModelAdapter: ViewModelTableViewAdapter)
+    func registerCellModelTableViewCell(with viewModelAdapter: ViewModelTableViewAdapter)
 }
 
 
@@ -92,7 +92,7 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
         tableView.sectionFooterHeight = UITableViewAutomaticDimension
 
         // Add reusable cells
-        tableViewController?.registerPresentableTableViewCell(with: self)
+        tableViewController?.registerCellModelTableViewCell(with: self)
     }
     
     
@@ -186,7 +186,7 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
                         manualReloadMap.removeValue(forKey: itemIndexBefore)
                         continue
                     }
-                    guard let modelCell = cell as? AnyPresentableTableViewCell, let model = items[itemIndexAfter] as? AnyCellModel else { continue }
+                    guard let modelCell = cell as? AnyCellModelTableViewCell, let model = items[itemIndexAfter] as? AnyCellModel else { continue }
                     let previousModel = modelCell.anyModel
                     modelCell.anyModel = model
                     modelCell.modelDidChange(previousModel: previousModel, animate: true)
@@ -270,13 +270,13 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
                 
                 if let sectionModel = sections[sectionIndexAfter] as? CellSectionModel {
                     
-                    if let headerView = tableView.headerView(forSection: sectionIndexBefore) as? AnyPresentableHeaderFooterView, let headerModel = sectionModel.headerModel {
+                    if let headerView = tableView.headerView(forSection: sectionIndexBefore) as? AnyCellModelHeaderFooterView, let headerModel = sectionModel.headerModel {
                         let previousModel = headerView.anyCellModel
                         headerView.anyCellModel = headerModel
                         headerView.modelDidChange(previousModel: previousModel, animate: true, type: .header)
                     }
                     
-                    if let footerView = tableView.footerView(forSection: sectionIndexBefore) as? AnyPresentableHeaderFooterView, let footerModel = sectionModel.footerModel {
+                    if let footerView = tableView.footerView(forSection: sectionIndexBefore) as? AnyCellModelHeaderFooterView, let footerModel = sectionModel.footerModel {
                         let previousModel = footerView.anyCellModel
                         footerView.anyCellModel = footerModel
                         footerView.modelDidChange(previousModel: previousModel, animate: true, type: .footer)
@@ -318,7 +318,7 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
             if adapter.updateOptions == .updateVisibleCells {
                 var manualReloads = [IndexPath]()
                 for indexPath in tableView.indexPathsForVisibleRows ?? [] {
-                    if let modelCell = tableView.cellForRow(at: indexPath) as? AnyPresentableTableViewCell {
+                    if let modelCell = tableView.cellForRow(at: indexPath) as? AnyCellModelTableViewCell {
                         let model: AnyCellModel = adapter.viewModel.sections[indexPath.section].items[indexPath.row]
                         let previousModel = modelCell.anyModel
                         modelCell.anyModel = model
@@ -348,14 +348,14 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
     // MARK: - API -
     // MARK: Table View
     
-    public func register<EC: PresentableTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
+    public func register<EC: CellModelTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
         guard let tableView = tableView else { return }
         let reuseIdentifier = modelTableViewCellType.Model.typeIdentifier
         tableView.register(modelTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
     }
     
 
-    public func register<EC: PresentableHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
+    public func register<EC: CellModelHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
         let reuseIdentifier = modelViewHeaderFooterViewType.Model.typeIdentifier
         guard let tableView = tableView else { return }
         tableView.register(modelViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
@@ -387,7 +387,7 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
         getTableViewCell: do {
             guard let cell = tableView?.dequeueReusableCell(withIdentifier: type(of: model).typeIdentifier) else { break getTableViewCell }
 
-            if let modelCell = cell as? AnyPresentableTableViewCell {
+            if let modelCell = cell as? AnyCellModelTableViewCell {
                 let previousModel = modelCell.anyModel
                 modelCell.anyModel = model
                 modelCell.modelDidChange(previousModel: previousModel, animate: false)
@@ -448,7 +448,7 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
             guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let headerView = headerView as? AnyPresentableHeaderFooterView {
+            if let headerView = headerView as? AnyCellModelHeaderFooterView {
                 let previousModel = headerView.anyCellModel
                 headerView.anyCellModel = headerModel
                 headerView.modelDidChange(previousModel: previousModel, animate: false, type: .header)
@@ -475,7 +475,7 @@ open class ViewModelTableViewAdapter: NSObject, UITableViewDelegate, UITableView
             guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let footerView = footerView as? AnyPresentableHeaderFooterView {
+            if let footerView = footerView as? AnyCellModelHeaderFooterView {
                 let previousModel = footerView.anyCellModel
                 footerView.anyCellModel = footerModel
                 footerView.modelDidChange(previousModel: previousModel, animate: false, type: .footer)

@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		901BE5D2200147E300D5275A /* PresentableTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901BE5D1200147E300D5275A /* PresentableTableViewCell.swift */; };
+		901BE5D2200147E300D5275A /* CellModelTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901BE5D1200147E300D5275A /* CellModelTableViewCell.swift */; };
 		906CBBA920016DE900FBA905 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 906CBBA820016DE900FBA905 /* ViewModel.swift */; };
 		9B2DD3B41CB6944F00005992 /* DeltaFoxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3B31CB6944F00005992 /* DeltaFoxTests.swift */; };
 		9B2DD3B61CB6944F00005992 /* UBRDeltaUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */; };
 		9B2DD3BD1CB6945C00005992 /* DeltaFoxTests+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3BC1CB6945C00005992 /* DeltaFoxTests+Types.swift */; };
 		9B78BD851C5A5D59002D3CE4 /* UBRDeltaUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9B78BDA11C5A660B002D3CE4 /* PresenterTableViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* PresenterTableViewAdapter.swift */; };
+		9B78BDA11C5A660B002D3CE4 /* ViewModelTableViewAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* ViewModelTableViewAdapter.swift */; };
 		9B78BDA21C5A660B002D3CE4 /* CellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* CellModel.swift */; };
 		9B78BDA31C5A660B002D3CE4 /* CellSectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* CellSectionModel.swift */; };
 		9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DD1C5D1127002B105A /* Dwifft.swift */; };
@@ -34,7 +34,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		901BE5D1200147E300D5275A /* PresentableTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentableTableViewCell.swift; sourceTree = "<group>"; };
+		901BE5D1200147E300D5275A /* CellModelTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellModelTableViewCell.swift; sourceTree = "<group>"; };
 		906CBBA820016DE900FBA905 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		9B2DD3B11CB6944F00005992 /* UBRDeltaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UBRDeltaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B2DD3B31CB6944F00005992 /* DeltaFoxTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaFoxTests.swift; sourceTree = "<group>"; };
@@ -43,7 +43,7 @@
 		9B78BD811C5A5D59002D3CE4 /* UBRDeltaUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = UBRDeltaUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B78BD841C5A5D59002D3CE4 /* UBRDeltaUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UBRDeltaUI.h; sourceTree = "<group>"; };
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B78BD971C5A660B002D3CE4 /* PresenterTableViewAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = PresenterTableViewAdapter.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD971C5A660B002D3CE4 /* ViewModelTableViewAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = ViewModelTableViewAdapter.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B78BD981C5A660B002D3CE4 /* CellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = CellModel.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B78BD991C5A660B002D3CE4 /* CellSectionModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = CellSectionModel.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DD1C5D1127002B105A /* Dwifft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dwifft.swift; sourceTree = "<group>"; };
@@ -75,8 +75,8 @@
 		9030FB1B200A2A250061B02C /* TableViewAdapter */ = {
 			isa = PBXGroup;
 			children = (
-				901BE5D1200147E300D5275A /* PresentableTableViewCell.swift */,
-				9B78BD971C5A660B002D3CE4 /* PresenterTableViewAdapter.swift */,
+				901BE5D1200147E300D5275A /* CellModelTableViewCell.swift */,
+				9B78BD971C5A660B002D3CE4 /* ViewModelTableViewAdapter.swift */,
 			);
 			path = TableViewAdapter;
 			sourceTree = "<group>";
@@ -272,8 +272,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				901BE5D2200147E300D5275A /* PresentableTableViewCell.swift in Sources */,
-				9B78BDA11C5A660B002D3CE4 /* PresenterTableViewAdapter.swift in Sources */,
+				901BE5D2200147E300D5275A /* CellModelTableViewCell.swift in Sources */,
+				9B78BDA11C5A660B002D3CE4 /* ViewModelTableViewAdapter.swift in Sources */,
 				9B8FF2E71C5D1127002B105A /* SectionDiffer.swift in Sources */,
 				9B8FF2E51C5D1127002B105A /* Diffable.swift in Sources */,
 				9B78BDA21C5A660B002D3CE4 /* CellModel.swift in Sources */,
