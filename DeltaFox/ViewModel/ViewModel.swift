@@ -8,15 +8,15 @@
 
 import Foundation
 
-public protocol PresenterDelegate: class {
-    func presenter(_ presenter: Presenter, cellModelNeedUpdateAnimated animated: Bool)
+public protocol ViewModelDelegate: class {
+    func viewModel(_ viewModel: ViewModel, cellModelsNeedUpdate animated: Bool)
 }
 
 
-open class Presenter {
+open class ViewModel {
     
     public internal(set) var sections: [CellSectionModel] = []
-    public weak var delegate: PresenterDelegate?
+    public weak var delegate: ViewModelDelegate?
 
     
     public init() { }
@@ -28,7 +28,7 @@ open class Presenter {
     
     
     public func cellModelNeedUpdate(animated: Bool) {
-        delegate?.presenter(self, cellModelNeedUpdateAnimated: animated)
+        delegate?.viewModel(self, cellModelsNeedUpdate: animated)
     }
     
     

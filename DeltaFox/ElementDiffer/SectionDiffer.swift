@@ -71,8 +71,6 @@ class SectionDiffer {
     
     
     private func diff() {
-        print(#function)
-        
         // Guarding
         guard let oldSections = self.oldSections else { return }
         guard let newSections = self.newSections else { return }
