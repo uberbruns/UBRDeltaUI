@@ -1,6 +1,6 @@
 //
-//  CellModelTableViewCell.swift
-//  UBRDeltaUI
+//  ModelableTableViewCell.swift
+//  DeltaFox
 //
 //  Created by Karsten Bruns on 06.01.18.
 //  Copyright © 2018 bruns.me. All rights reserved.
@@ -8,39 +8,39 @@
 
 import UIKit
 
-public protocol AnyCellModelTableViewCell : class {
+public protocol AnyModelableTableViewCell: AnyObject {
     var anyModel: AnyCellModel { get set }
     func modelDidChange(previousModel: AnyCellModel, animate: Bool)
 }
 
 
-public protocol CellModelTableViewCell : AnyCellModelTableViewCell {
-    associatedtype Model: CellModel
-    var model: Model { get set }
-    func modelDidChange(previousModel: Model, animate: Bool)
+public protocol ModelableTableViewCell: AnyModelableTableViewCell {
+    associatedtype ModelType: CellModel
+    var model: ModelType { get set }
+    func modelDidChange(previousModel: ModelType, animate: Bool)
 }
 
 
-extension CellModelTableViewCell {
+extension ModelableTableViewCell {
     public var anyModel: AnyCellModel {
         get {
             return model
         }
         set {
-            if let model = newValue as? Model {
+            if let model = newValue as? ModelType {
                 self.model = model
             }
         }
     }
 
     public func modelDidChange(previousModel: AnyCellModel, animate: Bool) {
-        if let expectedOldModel = previousModel as? Model {
+        if let expectedOldModel = previousModel as? ModelType {
             modelDidChange(previousModel: expectedOldModel, animate: animate)
         }
     }
 
     
-    public func setModel(_ model: Model, animated: Bool) {
+    public func setModel(_ model: ModelType, animated: Bool) {
         let previousModel = self.model
         self.model = model
         self.modelDidChange(previousModel: previousModel, animate: animated)
@@ -48,16 +48,16 @@ extension CellModelTableViewCell {
 }
 
 
-public protocol AnyCellModelHeaderFooterView : class {
+public protocol AnyCellModelHeaderFooterView: AnyObject {
     var anyCellModel: AnyCellModel { get set }
     func modelDidChange(previousModel: AnyCellModel, animate: Bool, type: HeaderFooterType)
 }
 
 
-public protocol CellModelHeaderFooterView : AnyCellModelHeaderFooterView {
-    associatedtype Model: CellModel
-    var model: Model { get set }
-    func modelDidChange(previousModel: Model, animate: Bool, type: HeaderFooterType)
+public protocol CellModelHeaderFooterView: AnyCellModelHeaderFooterView {
+    associatedtype ModelType: CellModel
+    var model: ModelType { get set }
+    func modelDidChange(previousModel: ModelType, animate: Bool, type: HeaderFooterType)
 }
 
 
@@ -67,14 +67,14 @@ extension CellModelHeaderFooterView {
             return model
         }
         set {
-            if let model = newValue as? Model {
+            if let model = newValue as? ModelType {
                 self.model = model
             }
         }
     }
     
     public func modelDidChange(previousModel: AnyCellModel, animate: Bool, type: HeaderFooterType) {
-        if let expectedOldModel = previousModel as? Model {
+        if let expectedOldModel = previousModel as? ModelType {
             modelDidChange(previousModel: expectedOldModel, animate: animate, type: type)
         }
     }

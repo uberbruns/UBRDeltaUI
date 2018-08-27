@@ -37,7 +37,7 @@ public enum HeaderFooterType {
 
 
 public protocol SelectableCell {
-    func performSelectionAction(sourceViewController: UIViewController)
+    func performSelectionAction()
 }
 
 

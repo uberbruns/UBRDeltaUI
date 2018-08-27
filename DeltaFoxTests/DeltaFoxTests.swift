@@ -1,13 +1,13 @@
 //
-//  UBRDeltaUITests.swift
-//  UBRDeltaUITests
+//  DeltaFoxTests.swift
+//  DeltaFoxTests
 //
 //  Created by Karsten Bruns on 07/04/16.
 //  Copyright © 2016 bruns.me. All rights reserved.
 //
 
 import XCTest
-@testable import UBRDeltaUI
+@testable import DeltaFox
 
 
 class DeltaFoxTests: XCTestCase {
@@ -18,7 +18,7 @@ class DeltaFoxTests: XCTestCase {
     let janeway = Captain(name: "Kathrin Janeway", ships: ["USS Voxager"], fistFights: 12)
 
     
-    func diff(old oldElements: [AnyDiffable], new newElements: [AnyDiffable], findDuplicatedElements: Bool = false) -> UBRDeltaUI.DifferResult {
+    func diff(old oldElements: [AnyDiffable], new newElements: [AnyDiffable], findDuplicatedElements: Bool = false) -> DeltaFox.DifferResult {
         return Differ.compare(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
     }
     

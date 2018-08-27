@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:UBRDeltaUI.xcodeproj">
+      location = "self:/Users/karstenbruns/Repositories/UBRDeltaUI/DeltaFox.xcodeproj">
    </FileRef>
 </Workspace>

@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "9B78BD801C5A5D59002D3CE4"
-               BuildableName = "UBRDeltaUI.framework"
-               BlueprintName = "UBRDeltaUI"
-               ReferencedContainer = "container:UBRDeltaUI.xcodeproj">
+               BuildableName = "DeltaFox.framework"
+               BlueprintName = "DeltaFox"
+               ReferencedContainer = "container:DeltaFox.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9B78BD801C5A5D59002D3CE4"
-            BuildableName = "UBRDeltaUI.framework"
-            BlueprintName = "UBRDeltaUI"
-            ReferencedContainer = "container:UBRDeltaUI.xcodeproj">
+            BuildableName = "DeltaFox.framework"
+            BlueprintName = "DeltaFox"
+            ReferencedContainer = "container:DeltaFox.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -64,9 +64,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "9B78BD801C5A5D59002D3CE4"
-            BuildableName = "UBRDeltaUI.framework"
-            BlueprintName = "UBRDeltaUI"
-            ReferencedContainer = "container:UBRDeltaUI.xcodeproj">
+            BuildableName = "DeltaFox.framework"
+            BlueprintName = "DeltaFox"
+            ReferencedContainer = "container:DeltaFox.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
