@@ -9,7 +9,7 @@ import Foundation
 
 
 
-public struct CellSectionModel : SectionModel {
+public struct CellSectionModel: SectionModel {
     
     public let id: String
     public var uniqueIdentifier: Int { return id.hash }

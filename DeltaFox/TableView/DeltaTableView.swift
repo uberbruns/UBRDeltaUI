@@ -279,13 +279,13 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
                 
                 if let sectionModel = sections[sectionIndexAfter] as? CellSectionModel {
                     
-                    if let headerView = this.tableView.headerView(forSection: sectionIndexBefore) as? AnyCellModelHeaderFooterView, let headerModel = sectionModel.headerModel {
+                    if let headerView = this.tableView.headerView(forSection: sectionIndexBefore) as? AnyModelableHeaderFooterView, let headerModel = sectionModel.headerModel {
                         let previousModel = headerView.anyCellModel
                         headerView.anyCellModel = headerModel
                         headerView.modelDidChange(previousModel: previousModel, animate: true, type: .header)
                     }
                     
-                    if let footerView = this.tableView.footerView(forSection: sectionIndexBefore) as? AnyCellModelHeaderFooterView, let footerModel = sectionModel.footerModel {
+                    if let footerView = this.tableView.footerView(forSection: sectionIndexBefore) as? AnyModelableHeaderFooterView, let footerModel = sectionModel.footerModel {
                         let previousModel = footerView.anyCellModel
                         footerView.anyCellModel = footerModel
                         footerView.modelDidChange(previousModel: previousModel, animate: true, type: .footer)
@@ -374,7 +374,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     }
     
 
-    public func register<EC: CellModelHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
+    public func register<EC: ModelableHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
         let reuseIdentifier = modelViewHeaderFooterViewType.ModelType.typeIdentifier
         tableView.register(modelViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
     }
@@ -471,7 +471,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
             guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let headerView = headerView as? AnyCellModelHeaderFooterView {
+            if let headerView = headerView as? AnyModelableHeaderFooterView {
                 let previousModel = headerView.anyCellModel
                 headerView.anyCellModel = headerModel
                 headerView.modelDidChange(previousModel: previousModel, animate: false, type: .header)
@@ -498,7 +498,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
             guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerModel).typeIdentifier) else { break configureView }
             
             // Update View
-            if let footerView = footerView as? AnyCellModelHeaderFooterView {
+            if let footerView = footerView as? AnyModelableHeaderFooterView {
                 let previousModel = footerView.anyCellModel
                 footerView.anyCellModel = footerModel
                 footerView.modelDidChange(previousModel: previousModel, animate: false, type: .footer)

@@ -48,20 +48,20 @@ extension ModelableTableViewCell {
 }
 
 
-public protocol AnyCellModelHeaderFooterView: AnyObject {
+public protocol AnyModelableHeaderFooterView: AnyObject {
     var anyCellModel: AnyCellModel { get set }
     func modelDidChange(previousModel: AnyCellModel, animate: Bool, type: HeaderFooterType)
 }
 
 
-public protocol CellModelHeaderFooterView: AnyCellModelHeaderFooterView {
+public protocol ModelableHeaderFooterView: AnyModelableHeaderFooterView {
     associatedtype ModelType: CellModel
     var model: ModelType { get set }
     func modelDidChange(previousModel: ModelType, animate: Bool, type: HeaderFooterType)
 }
 
 
-extension CellModelHeaderFooterView {
+extension ModelableHeaderFooterView {
     public var anyCellModel: AnyCellModel {
         get {
             return model
