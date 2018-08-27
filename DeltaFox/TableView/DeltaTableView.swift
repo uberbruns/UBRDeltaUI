@@ -56,30 +56,21 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: - View -
     // MARK: Life-Cycle
 
-    public init(frame: CGRect, style: UITableViewStyle) {
-        self.tableView = UITableView(frame: frame, style: style)
-        super.init(frame: frame)
-        commonInit()
-    }
+    public init(delegate: DeltaTableViewDelegate, style: UITableViewStyle) {
+        let preliminaryFrame = CGRect(x: 0, y: 0, width: 1024, height: 1024)
 
-    public override init(frame: CGRect) {
-        self.tableView = UITableView(frame: frame, style: .grouped)
-        super.init(frame: frame)
-        commonInit()
-    }
+        self.tableView = UITableView(frame: preliminaryFrame, style: style)
+        self.delegate = delegate
 
-    public required init?(coder aDecoder: NSCoder) {
-        self.tableView = UITableView(frame: .zero, style: .grouped)
-        super.init(coder: aDecoder)
-        commonInit()
-    }
+        super.init(frame: preliminaryFrame)
 
-    public func commonInit() {
         configureContentDiffer()
         addSubviews()
         addConstraints()
+    }
 
-        setCellModels(sections: [])
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     
@@ -88,14 +79,13 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     /// Configures the table view to the controller
     private func addSubviews() {
         // Configure
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Cell dimensions
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.sectionHeaderHeight = UITableViewAutomaticDimension
         tableView.sectionFooterHeight = UITableViewAutomaticDimension
+        addSubview(tableView)
 
         // Add reusable cells
         delegate?.registerModelableTableViewCells(in: self)
