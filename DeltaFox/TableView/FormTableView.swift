@@ -9,19 +9,19 @@
 import UIKit
 
 
-public protocol DeltaTableViewDelegate: AnyObject {
-    func deltaTableViewDidUpdate(_ deltaTableView: DeltaTableView, animated: Bool)
-    func deltaTableViewWillUpdate(_ deltaTableView: DeltaTableView, animated: Bool)
-    func registerModelableTableViewCells(in deltaTableView: DeltaTableView)
+public protocol FormTableViewDelegate: AnyObject {
+    func formTableViewDidUpdate(_ formTableView: FormTableView, animated: Bool)
+    func formTableViewWillUpdate(_ formTableView: FormTableView, animated: Bool)
+    func registerFormTableViewCells(in formTableView: FormTableView)
 }
 
 
-open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
+open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Properties -
     
     private var tableView: UITableView
-    public weak var delegate: DeltaTableViewDelegate?
+    public weak var delegate: FormTableViewDelegate?
 
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
@@ -29,7 +29,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     private let sectionDiffer = SectionDiffer()
     public var logging = LoggingOptions.none
 
-    public private(set) var sections = [CellSectionModel]()
+    public private(set) var sections = [FormSection]()
 
     
     // MARK: Table View API
@@ -56,7 +56,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: - View -
     // MARK: Life-Cycle
 
-    public init(delegate: DeltaTableViewDelegate, style: UITableViewStyle) {
+    public init(delegate: FormTableViewDelegate, style: UITableViewStyle) {
         let preliminaryFrame = CGRect(x: 0, y: 0, width: 1024, height: 1024)
 
         self.tableView = UITableView(frame: preliminaryFrame, style: style)
@@ -88,7 +88,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         addSubview(tableView)
 
         // Add reusable cells
-        delegate?.registerModelableTableViewCells(in: self)
+        delegate?.registerFormTableViewCells(in: self)
     }
     
     private func addConstraints() {
@@ -106,7 +106,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
      - Parameter options: Enum with instructions on how to update the table view. Default is `.Default`.
      
      */
-    public func setCellModels(sections newSections: [CellSectionModel], options: UpdateOptions = .default, animated: Bool = true) {
+    public func setSections(_ newSections: [FormSection], options: UpdateOptions = .default, animated: Bool = true) {
         updateOptions = options
         
         if options == .dataOnly {
@@ -122,8 +122,8 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
             
         } else {
             animateViews = animated
-            let oldSections = sections.map({ $0 as SectionModel })
-            let newSections = newSections.map({ $0 as SectionModel })
+            let oldSections = sections.map({ $0 as DiffableSection })
+            let newSections = newSections.map({ $0 as DiffableSection })
             sectionDiffer.queueComparison(oldSections: oldSections, newSections: newSections)
         }
     }
@@ -166,7 +166,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         sectionDiffer.modelUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let this = self else { return }
             
-            this.sections[section].items = items.compactMap { $0 as? AnyCellModel }
+            this.sections[section].items = items.compactMap { $0 as? AnyFormItem }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -185,10 +185,10 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
                         manualReloadMap.removeValue(forKey: itemIndexBefore)
                         continue
                     }
-                    guard let modelCell = cell as? AnyModelableTableViewCell, let model = items[itemIndexAfter] as? AnyCellModel else { continue }
-                    let previousModel = modelCell.anyModel
-                    modelCell.anyModel = model
-                    modelCell.modelDidChange(previousModel: previousModel, animate: true)
+                    guard let formCell = cell as? AnyFormTableViewCell, let item = items[itemIndexAfter] as? AnyFormItem else { continue }
+                    let oldItem = formCell.anyFormItem
+                    formCell.anyFormItem = item
+                    formCell.itemDidChange(oldItem: oldItem, animate: true)
                     manualReloadMap.removeValue(forKey: itemIndexBefore)
                 }
             }
@@ -221,7 +221,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         sectionDiffer.modelReorder = { [weak self] (items, section, reorderMap) in
             guard let this = self else { return }
 
-            this.sections[section].items = items.compactMap { $0 as? AnyCellModel }
+            this.sections[section].items = items.compactMap { $0 as? AnyFormItem }
             
             if reorderMap.count == 0 {
                 return
@@ -244,7 +244,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         sectionDiffer.sectionUpdate = { [weak self] (sections, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let this = self else { return }
 
-            this.sections = sections.compactMap({ $0 as? CellSectionModel })
+            this.sections = sections.compactMap({ $0 as? FormSection })
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -267,18 +267,18 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
             
             for (sectionIndexBefore, sectionIndexAfter) in reloadIndexMap {
                 
-                if let sectionModel = sections[sectionIndexAfter] as? CellSectionModel {
+                if let sectionItem = sections[sectionIndexAfter] as? FormSection {
                     
-                    if let headerView = this.tableView.headerView(forSection: sectionIndexBefore) as? AnyModelableHeaderFooterView, let headerModel = sectionModel.headerModel {
-                        let previousModel = headerView.anyCellModel
-                        headerView.anyCellModel = headerModel
-                        headerView.modelDidChange(previousModel: previousModel, animate: true, type: .header)
+                    if let headerView = this.tableView.headerView(forSection: sectionIndexBefore) as? AnyFormHeaderFooterView, let headerItem = sectionItem.headerItem {
+                        let oldItem = headerView.anyFormItem
+                        headerView.anyFormItem = headerItem
+                        headerView.itemDidChange(oldItem: oldItem, animate: true, type: .header)
                     }
                     
-                    if let footerView = this.tableView.footerView(forSection: sectionIndexBefore) as? AnyModelableHeaderFooterView, let footerModel = sectionModel.footerModel {
-                        let previousModel = footerView.anyCellModel
-                        footerView.anyCellModel = footerModel
-                        footerView.modelDidChange(previousModel: previousModel, animate: true, type: .footer)
+                    if let footerView = this.tableView.footerView(forSection: sectionIndexBefore) as? AnyFormHeaderFooterView, let footerItem = sectionItem.footerItem {
+                        let oldItem = footerView.anyFormItem
+                        footerView.anyFormItem = footerItem
+                        footerView.itemDidChange(oldItem: oldItem, animate: true, type: .footer)
                     }
                     
                 } else {
@@ -293,7 +293,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         sectionDiffer.sectionReorder = { [weak self] (sections, reorderMap) in
             guard let this = self else { return }
 
-            this.sections = sections.compactMap({ $0 as? CellSectionModel })
+            this.sections = sections.compactMap({ $0 as? FormSection })
             
             if reorderMap.count == 0 {
                 return
@@ -317,11 +317,11 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
             if this.updateOptions == .updateVisibleCells {
                 var manualReloads = [IndexPath]()
                 for indexPath in this.tableView.indexPathsForVisibleRows ?? [] {
-                    if let modelCell = this.tableView.cellForRow(at: indexPath) as? AnyModelableTableViewCell {
-                        let model: AnyCellModel = this.sections[indexPath.section].items[indexPath.row]
-                        let previousModel = modelCell.anyModel
-                        modelCell.anyModel = model
-                        modelCell.modelDidChange(previousModel: previousModel, animate: false)
+                    if let formCell = this.tableView.cellForRow(at: indexPath) as? AnyFormTableViewCell {
+                        let item: AnyFormItem = this.sections[indexPath.section].items[indexPath.row]
+                        let oldItem = formCell.anyFormItem
+                        formCell.anyFormItem = item
+                        formCell.itemDidChange(oldItem: oldItem, animate: false)
                     } else {
                         manualReloads.append(indexPath)
                     }
@@ -346,47 +346,47 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: Delegate Callbacks
 
     private func tableViewWillUpdateCells(_ animated: Bool) {
-        delegate?.deltaTableViewWillUpdate(self, animated: animated)
+        delegate?.formTableViewWillUpdate(self, animated: animated)
     }
 
 
     private func tableViewDidUpdateCells(_ animated: Bool) {
-        delegate?.deltaTableViewDidUpdate(self, animated: animated)
+        delegate?.formTableViewDidUpdate(self, animated: animated)
     }
 
     
     // MARK: - API -
     // MARK: Table View
     
-    public func register<EC: ModelableTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
-        let reuseIdentifier = modelTableViewCellType.ModelType.typeIdentifier
+    public func register<EC: FormTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
+        let reuseIdentifier = modelTableViewCellType.FormItemType.typeIdentifier
         tableView.register(modelTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
     }
     
 
-    public func register<EC: ModelableHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
-        let reuseIdentifier = modelViewHeaderFooterViewType.ModelType.typeIdentifier
+    public func register<EC: FormHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
+        let reuseIdentifier = modelViewHeaderFooterViewType.FormItemType.typeIdentifier
         tableView.register(modelViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
     }
 
     
     // MARK: Access Cell Models
 
-    /// Returns the `CellSectionModel` that belongs to the provided section index.
-    public func cellSectionModel(at sectionIndex: Int) -> CellSectionModel {
+    /// Returns the `CellSectionItem` that belongs to the provided section index.
+    public func cellSectionItem(at sectionIndex: Int) -> FormSection {
         return sections[sectionIndex]
     }
 
 
-    /// Returns the `CellModel` that belongs to the provided index path.
-    public func cellModel(at indexPath: IndexPath) -> AnyCellModel {
+    /// Returns the `CellItem` that belongs to the provided index path.
+    public func cellItem(at indexPath: IndexPath) -> AnyFormItem {
         return sections[indexPath.section].items[indexPath.row]
     }
 
     // MARK: Override Hooks
 
     /**
-     Dequeues a reusable cell from table view as long the model for this index path is of type `DeltaTableCellModel`.
+     Dequeues a reusable cell from table view as long the item for this index path is of type `DeltaTableCellItem`.
      
      Use this method if you want to provide your own implementation of `tableView(tableView:cellForRowAtIndexPath:)` but
      you still want to be able to return cells provided by this class if needed.
@@ -395,19 +395,19 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
      is not needed.
      */
     open func tableViewCellForRowAtIndexPath(_ indexPath: IndexPath) -> UITableViewCell? {
-        let model = sections[indexPath.section].items[indexPath.row]
+        let item = sections[indexPath.section].items[indexPath.row]
         
         getTableViewCell: do {
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: model).typeIdentifier) else { break getTableViewCell }
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: item).typeIdentifier) else { break getTableViewCell }
 
-            if let modelCell = cell as? AnyModelableTableViewCell {
-                let previousModel = modelCell.anyModel
-                modelCell.anyModel = model
-                modelCell.modelDidChange(previousModel: previousModel, animate: false)
+            if let formCell = cell as? AnyFormTableViewCell {
+                let oldItem = formCell.anyFormItem
+                formCell.anyFormItem = item
+                formCell.itemDidChange(oldItem: oldItem, animate: false)
             }
             
-            if let selectableModel = model as? SelectableCellModel {
-                cell.selectionStyle = selectableModel.selectionHandler != nil ? .default : .none
+            if let selectableItem = item as? SelectableFormItem {
+                cell.selectionStyle = selectableItem.selectionHandler != nil ? .default : .none
             }
 
             return cell
@@ -447,7 +447,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
 
     
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        guard sections[section].headerModel != nil else {
+        guard sections[section].headerItem != nil else {
             return 0
         }
         return UITableViewAutomaticDimension
@@ -456,15 +456,15 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         configureView : do {
-            let model = sections[section]
-            guard let headerModel = model.headerModel else { break configureView }
-            guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerModel).typeIdentifier) else { break configureView }
+            let item = sections[section]
+            guard let headerItem = item.headerItem else { break configureView }
+            guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerItem).typeIdentifier) else { break configureView }
             
             // Update View
-            if let headerView = headerView as? AnyModelableHeaderFooterView {
-                let previousModel = headerView.anyCellModel
-                headerView.anyCellModel = headerModel
-                headerView.modelDidChange(previousModel: previousModel, animate: false, type: .header)
+            if let headerView = headerView as? AnyFormHeaderFooterView {
+                let oldItem = headerView.anyFormItem
+                headerView.anyFormItem = headerItem
+                headerView.itemDidChange(oldItem: oldItem, animate: false, type: .header)
             }
             return headerView
         }
@@ -474,7 +474,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     
     public func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        guard sections[section].footerModel != nil else {
+        guard sections[section].footerItem != nil else {
             return 0
         }
         return UITableViewAutomaticDimension
@@ -483,15 +483,15 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     public func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         configureView : do {
-            let sectionModel = sections[section]
-            guard let footerModel = sectionModel.footerModel else { break configureView }
-            guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerModel).typeIdentifier) else { break configureView }
+            let sectionItem = sections[section]
+            guard let footerItem = sectionItem.footerItem else { break configureView }
+            guard let footerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: footerItem).typeIdentifier) else { break configureView }
             
             // Update View
-            if let footerView = footerView as? AnyModelableHeaderFooterView {
-                let previousModel = footerView.anyCellModel
-                footerView.anyCellModel = footerModel
-                footerView.modelDidChange(previousModel: previousModel, animate: false, type: .footer)
+            if let footerView = footerView as? AnyFormHeaderFooterView {
+                let oldItem = footerView.anyFormItem
+                footerView.anyFormItem = footerItem
+                footerView.itemDidChange(oldItem: oldItem, animate: false, type: .footer)
             }
             return footerView
         }
@@ -501,14 +501,14 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
 
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let cellModel = sections[indexPath.section].items[indexPath.row]
+        let cellItem = sections[indexPath.section].items[indexPath.row]
         
         if let selectableCell = tableView.cellForRow(at: indexPath) as? SelectableCell {
             selectableCell.performSelectionAction()
         }
         
-        if let selectableModel = cellModel as? SelectableCellModel {
-            selectableModel.selectionHandler?()
+        if let selectableItem = cellItem as? SelectableFormItem {
+            selectableItem.selectionHandler?()
         }
         
         tableView.deselectRow(at: indexPath, animated: true)
@@ -516,7 +516,7 @@ open class DeltaTableView: UIView, UITableViewDelegate, UITableViewDataSource {
 }
 
 
-extension DeltaTableView {
+extension FormTableView {
     
     /// Options to finetune the update process
     public enum UpdateOptions {

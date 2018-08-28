@@ -1,5 +1,5 @@
 //
-//  CellSectionModel.swift
+//  FormSection.swift
 //
 //  Created by Karsten Bruns on 28/08/15.
 //  Copyright © 2015 bruns.me. All rights reserved.
@@ -9,16 +9,16 @@ import Foundation
 
 
 
-public struct CellSectionModel: SectionModel {
+public struct FormSection: DiffableSection {
     
     public let id: String
     public var uniqueIdentifier: Int { return id.hash }
     
-    internal var subitems: [AnyDiffable] { return items.map { $0 as AnyDiffable } }
-    public var items: [AnyCellModel] = []
+    internal var diffableSubitems: [AnyDiffable] { return items.map { $0 as AnyDiffable } }
+    public var items: [AnyFormItem] = []
     
-    public var headerModel: AnyCellModel?
-    public var footerModel: AnyCellModel?
+    public var headerItem: AnyFormItem?
+    public var footerItem: AnyFormItem?
     
     
     public init(id: String) {
@@ -27,10 +27,10 @@ public struct CellSectionModel: SectionModel {
 
     
     public func isEqual(to other: AnyDiffable) -> Bool {
-        guard let other = other as? CellSectionModel else { return false }
+        guard let other = other as? FormSection else { return false }
     
-        let headerElementIsEqual = { () -> Bool in
-            switch (headerModel, other.headerModel) {
+        let headerItemIsEqual = { () -> Bool in
+            switch (headerItem, other.headerItem) {
             case (let model?, let otherModel?):
                 return model.isEqual(to: otherModel)
             case (nil, nil):
@@ -40,8 +40,8 @@ public struct CellSectionModel: SectionModel {
             }
         }()
 
-        let footerElementIsEqual = { () -> Bool in
-            switch (footerModel, other.footerModel) {
+        let footerItemIsEqual = { () -> Bool in
+            switch (footerItem, other.footerItem) {
             case (let model?, let otherModel?):
                 return model.isEqual(to: otherModel)
             case (nil, nil):
@@ -51,15 +51,15 @@ public struct CellSectionModel: SectionModel {
             }
         }()
         
-        return headerElementIsEqual && footerElementIsEqual
+        return headerItemIsEqual && footerItemIsEqual
     }
 }
 
 
-extension Array where Element == CellSectionModel {
+extension Array where Element == FormSection {
     
-    public mutating func append(id: String, _ setup: (String, inout CellSectionModel) -> Void) {
-        var new = CellSectionModel(id: id)
+    public mutating func append(id: String, _ setup: (String, inout FormSection) -> Void) {
+        var new = FormSection(id: id)
         setup(id, &new)
         self.append(new)
     }

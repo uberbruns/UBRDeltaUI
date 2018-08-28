@@ -23,7 +23,7 @@ public protocol AnyDiffable {
 }
 
 
-public protocol Diffable : AnyDiffable {
+public protocol Diffable: AnyDiffable {
     func isEqual(to other: Self) -> Bool
 }
 
@@ -39,6 +39,6 @@ public extension Diffable {
 }
 
 
-protocol SectionModel : AnyDiffable {
-    var subitems: [AnyDiffable] { get }
+protocol DiffableSection: AnyDiffable {
+    var diffableSubitems: [AnyDiffable] { get }
 }

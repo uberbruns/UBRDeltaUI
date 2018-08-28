@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		901BE5D2200147E300D5275A /* ModelableTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901BE5D1200147E300D5275A /* ModelableTableViewCell.swift */; };
+		901BE5D2200147E300D5275A /* FormTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901BE5D1200147E300D5275A /* FormTableViewCell.swift */; };
 		9B2DD3B41CB6944F00005992 /* DeltaFoxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3B31CB6944F00005992 /* DeltaFoxTests.swift */; };
 		9B2DD3B61CB6944F00005992 /* DeltaFox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B78BD811C5A5D59002D3CE4 /* DeltaFox.framework */; };
 		9B2DD3BD1CB6945C00005992 /* DeltaFoxTests+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3BC1CB6945C00005992 /* DeltaFoxTests+Types.swift */; };
 		9B754A49213494980004095E /* GeneratorSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B754A47213494270004095E /* GeneratorSource.swift */; };
 		9B78BD851C5A5D59002D3CE4 /* DeltaFox.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B78BD841C5A5D59002D3CE4 /* DeltaFox.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9B78BDA11C5A660B002D3CE4 /* DeltaTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* DeltaTableView.swift */; };
-		9B78BDA21C5A660B002D3CE4 /* CellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* CellModel.swift */; };
-		9B78BDA31C5A660B002D3CE4 /* CellSectionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* CellSectionModel.swift */; };
+		9B78BDA11C5A660B002D3CE4 /* FormTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* FormTableView.swift */; };
+		9B78BDA21C5A660B002D3CE4 /* FormItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* FormItem.swift */; };
+		9B78BDA31C5A660B002D3CE4 /* FormSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* FormSection.swift */; };
 		9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DD1C5D1127002B105A /* Dwifft.swift */; };
 		9B8FF2E41C5D1127002B105A /* Differ.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DE1C5D1127002B105A /* Differ.swift */; };
 		9B8FF2E51C5D1127002B105A /* Diffable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DF1C5D1127002B105A /* Diffable.swift */; };
@@ -34,7 +34,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		901BE5D1200147E300D5275A /* ModelableTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelableTableViewCell.swift; sourceTree = "<group>"; };
+		901BE5D1200147E300D5275A /* FormTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormTableViewCell.swift; sourceTree = "<group>"; };
 		9B2DD3B11CB6944F00005992 /* DeltaFoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DeltaFoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B2DD3B31CB6944F00005992 /* DeltaFoxTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaFoxTests.swift; sourceTree = "<group>"; };
 		9B2DD3B51CB6944F00005992 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -43,9 +43,9 @@
 		9B78BD811C5A5D59002D3CE4 /* DeltaFox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DeltaFox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B78BD841C5A5D59002D3CE4 /* DeltaFox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeltaFox.h; sourceTree = "<group>"; };
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B78BD971C5A660B002D3CE4 /* DeltaTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = DeltaTableView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		9B78BD981C5A660B002D3CE4 /* CellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = CellModel.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		9B78BD991C5A660B002D3CE4 /* CellSectionModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = CellSectionModel.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD971C5A660B002D3CE4 /* FormTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = FormTableView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD981C5A660B002D3CE4 /* FormItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = FormItem.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD991C5A660B002D3CE4 /* FormSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = FormSection.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DD1C5D1127002B105A /* Dwifft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dwifft.swift; sourceTree = "<group>"; };
 		9B8FF2DE1C5D1127002B105A /* Differ.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Differ.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DF1C5D1127002B105A /* Diffable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Diffable.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -75,8 +75,8 @@
 		906CBBA720016DCC00FBA905 /* CellModel */ = {
 			isa = PBXGroup;
 			children = (
-				9B78BD981C5A660B002D3CE4 /* CellModel.swift */,
-				9B78BD991C5A660B002D3CE4 /* CellSectionModel.swift */,
+				9B78BD981C5A660B002D3CE4 /* FormItem.swift */,
+				9B78BD991C5A660B002D3CE4 /* FormSection.swift */,
 			);
 			path = CellModel;
 			sourceTree = "<group>";
@@ -133,8 +133,8 @@
 			isa = PBXGroup;
 			children = (
 				9B754A462134940B0004095E /* GeneratorSource */,
-				901BE5D1200147E300D5275A /* ModelableTableViewCell.swift */,
-				9B78BD971C5A660B002D3CE4 /* DeltaTableView.swift */,
+				901BE5D1200147E300D5275A /* FormTableViewCell.swift */,
+				9B78BD971C5A660B002D3CE4 /* FormTableView.swift */,
 			);
 			path = TableView;
 			sourceTree = "<group>";
@@ -273,15 +273,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				9B754A49213494980004095E /* GeneratorSource.swift in Sources */,
-				901BE5D2200147E300D5275A /* ModelableTableViewCell.swift in Sources */,
-				9B78BDA11C5A660B002D3CE4 /* DeltaTableView.swift in Sources */,
+				901BE5D2200147E300D5275A /* FormTableViewCell.swift in Sources */,
+				9B78BDA11C5A660B002D3CE4 /* FormTableView.swift in Sources */,
 				9B8FF2E71C5D1127002B105A /* SectionDiffer.swift in Sources */,
 				9B8FF2E51C5D1127002B105A /* Diffable.swift in Sources */,
-				9B78BDA21C5A660B002D3CE4 /* CellModel.swift in Sources */,
+				9B78BDA21C5A660B002D3CE4 /* FormItem.swift in Sources */,
 				9B8FF2E41C5D1127002B105A /* Differ.swift in Sources */,
 				9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */,
 				9B8FF2E61C5D1127002B105A /* Differ+Types.swift in Sources */,
-				9B78BDA31C5A660B002D3CE4 /* CellSectionModel.swift in Sources */,
+				9B78BDA31C5A660B002D3CE4 /* FormSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,8 +12,8 @@ class SectionDiffer {
     
     typealias ElementUpdateHandler = (_ items: [AnyDiffable], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> Void
     typealias ElementReorderHandler = (_ items: [AnyDiffable], _ section: Int, _ reorderMap: [Int:Int]) -> Void
-    typealias SectionUpdateHandler = (_ sections: [SectionModel], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> Void
-    typealias SectionReorderHandler = (_ sections: [SectionModel], _ reorderMap: [Int:Int]) -> Void
+    typealias SectionUpdateHandler = (_ sections: [DiffableSection], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> Void
+    typealias SectionReorderHandler = (_ sections: [DiffableSection], _ reorderMap: [Int:Int]) -> Void
     typealias StartHandler = () -> Void
     typealias CompletionHandler = () -> Void
     typealias AnimationWrapper = (() -> Void, @escaping () -> Void) -> Void
@@ -40,14 +40,14 @@ class SectionDiffer {
     private var lastUpdateTime: Date = Date(timeIntervalSince1970: 0)
     
     // Section data
-    private var oldSections: [SectionModel]? = nil
-    private var newSections: [SectionModel]? = nil
+    private var oldSections: [DiffableSection]? = nil
+    private var newSections: [DiffableSection]? = nil
     
     
     init() {}
     
     
-    func queueComparison(oldSections: [SectionModel], newSections: [SectionModel]) {
+    func queueComparison(oldSections: [DiffableSection], newSections: [DiffableSection]) {
         // Set Sections
         if self.oldSections == nil {
             // Old section should change only when a diff completes
@@ -98,8 +98,8 @@ class SectionDiffer {
                 
                 if let newIndex = newIndex {
                     // Diffing
-                    let oldElements = oldSection.subitems
-                    let newElements = newSections[newIndex].subitems
+                    let oldElements = oldSection.diffableSubitems
+                    let newElements = newSections[newIndex].diffableSubitems
                     let diff = Differ.compare(old: oldElements, new: newElements, findDuplicatedElements: reportDuplicatedElements)
                     diffs[oldSectionIndex] = diff
                     
@@ -183,8 +183,8 @@ class SectionDiffer {
                     
                     // Change type from Diffable to SectionModel.
                     // Since this is expected to succeed a force unwrap is justified
-                    let updateElements = sectionDiff.unmovedElements.map({ $0 as! SectionModel })
-                    let reorderElements = sectionDiff.newElements.map({ $0 as! SectionModel })
+                    let updateElements = sectionDiff.unmovedElements.map({ $0 as! DiffableSection })
+                    let reorderElements = sectionDiff.newElements.map({ $0 as! DiffableSection })
                     
                     // Call section handler functions
                     self.sectionUpdate?(updateElements, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)

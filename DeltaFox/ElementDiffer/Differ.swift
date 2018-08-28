@@ -49,8 +49,8 @@ public struct Differ {
         // - Prepare mapping vars for old items
         // - Create the unmoved array
         // - Search for deletions
-        for (oldIndex, previousModel) in oldElements.enumerated() {
-            let id = previousModel.uniqueIdentifier
+        for (oldIndex, oldItem) in oldElements.enumerated() {
+            let id = oldItem.uniqueIdentifier
             oldIDMap[id] = oldIndex
             if let newIndex = newIDMap[id] {
                 let newModel = newElements[newIndex]
@@ -66,8 +66,8 @@ public struct Differ {
             // Looking for changes
             let id = newModel.uniqueIdentifier
             if let oldIndex = oldIDMap[id] {
-                let previousModel = oldElements[oldIndex]
-                if !previousModel.isEqual(to: newModel) {
+                let oldItem = oldElements[oldIndex]
+                if !oldItem.isEqual(to: newModel) {
                     // Found change
                     reloadIDs.insert(id)
                 }
