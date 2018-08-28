@@ -13,18 +13,18 @@ import UIKit
 public typealias SelectionHandler = () -> ()
 
 
-public protocol AnyFormItem : AnyDiffable {
+public protocol AnyFormItemProtocol: AnyDiffable {
     var id: String { get }
     static var typeIdentifier: String { get }
 }
 
 
-public protocol FormItem: AnyFormItem, Diffable {
+public protocol FormItemProtocol: AnyFormItemProtocol, Diffable {
     static var placeholder: Self { get }
 }
 
 
-extension FormItem {
+extension FormItemProtocol {
     public var uniqueIdentifier: Int {
         return id.hashValue
     }

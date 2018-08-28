@@ -13,7 +13,7 @@
 		9B2DD3BD1CB6945C00005992 /* DeltaFoxTests+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B2DD3BC1CB6945C00005992 /* DeltaFoxTests+Types.swift */; };
 		9B754A49213494980004095E /* GeneratorSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B754A47213494270004095E /* GeneratorSource.swift */; };
 		9B78BD851C5A5D59002D3CE4 /* DeltaFox.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B78BD841C5A5D59002D3CE4 /* DeltaFox.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		9B78BDA11C5A660B002D3CE4 /* FormTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* FormTableView.swift */; };
+		9B78BDA11C5A660B002D3CE4 /* FormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD971C5A660B002D3CE4 /* FormView.swift */; };
 		9B78BDA21C5A660B002D3CE4 /* FormItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD981C5A660B002D3CE4 /* FormItem.swift */; };
 		9B78BDA31C5A660B002D3CE4 /* FormSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78BD991C5A660B002D3CE4 /* FormSection.swift */; };
 		9B8FF2E31C5D1127002B105A /* Dwifft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8FF2DD1C5D1127002B105A /* Dwifft.swift */; };
@@ -43,7 +43,7 @@
 		9B78BD811C5A5D59002D3CE4 /* DeltaFox.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DeltaFox.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B78BD841C5A5D59002D3CE4 /* DeltaFox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeltaFox.h; sourceTree = "<group>"; };
 		9B78BD861C5A5D59002D3CE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9B78BD971C5A660B002D3CE4 /* FormTableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = FormTableView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		9B78BD971C5A660B002D3CE4 /* FormView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = FormView.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B78BD981C5A660B002D3CE4 /* FormItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = FormItem.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B78BD991C5A660B002D3CE4 /* FormSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = FormSection.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		9B8FF2DD1C5D1127002B105A /* Dwifft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Dwifft.swift; sourceTree = "<group>"; };
@@ -134,7 +134,7 @@
 			children = (
 				9B754A462134940B0004095E /* GeneratorSource */,
 				901BE5D1200147E300D5275A /* FormTableViewCell.swift */,
-				9B78BD971C5A660B002D3CE4 /* FormTableView.swift */,
+				9B78BD971C5A660B002D3CE4 /* FormView.swift */,
 			);
 			path = TableView;
 			sourceTree = "<group>";
@@ -274,7 +274,7 @@
 			files = (
 				9B754A49213494980004095E /* GeneratorSource.swift in Sources */,
 				901BE5D2200147E300D5275A /* FormTableViewCell.swift in Sources */,
-				9B78BDA11C5A660B002D3CE4 /* FormTableView.swift in Sources */,
+				9B78BDA11C5A660B002D3CE4 /* FormView.swift in Sources */,
 				9B8FF2E71C5D1127002B105A /* SectionDiffer.swift in Sources */,
 				9B8FF2E51C5D1127002B105A /* Diffable.swift in Sources */,
 				9B78BDA21C5A660B002D3CE4 /* FormItem.swift in Sources */,

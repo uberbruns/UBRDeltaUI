@@ -9,19 +9,19 @@
 import UIKit
 
 
-public protocol FormTableViewDelegate: AnyObject {
-    func formTableViewDidUpdate(_ formTableView: FormTableView, animated: Bool)
-    func formTableViewWillUpdate(_ formTableView: FormTableView, animated: Bool)
-    func registerFormTableViewCells(in formTableView: FormTableView)
+public protocol FormViewDelegate: AnyObject {
+    func formViewDidUpdate(_ formView: FormView, animated: Bool)
+    func formViewWillUpdate(_ formView: FormView, animated: Bool)
+    func registerFormTableViewCells(in formView: FormView)
 }
 
 
-open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
+open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Properties -
     
-    private var tableView: UITableView
-    public weak var delegate: FormTableViewDelegate?
+    public private(set) var tableView: UITableView
+    public weak var delegate: FormViewDelegate?
 
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
@@ -56,7 +56,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: - View -
     // MARK: Life-Cycle
 
-    public init(delegate: FormTableViewDelegate, style: UITableViewStyle) {
+    public init(delegate: FormViewDelegate, style: UITableViewStyle) {
         let preliminaryFrame = CGRect(x: 0, y: 0, width: 1024, height: 1024)
 
         self.tableView = UITableView(frame: preliminaryFrame, style: style)
@@ -166,7 +166,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         sectionDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let this = self else { return }
             
-            this.sections[section].items = items.compactMap { $0 as? AnyFormItem }
+            this.sections[section].items = items.compactMap { $0 as? AnyFormItemProtocol }
             
             if insertIndexes.count == 0 && reloadIndexMap.count == 0 && deleteIndexes.count == 0 {
                 return
@@ -185,7 +185,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
                         manualReloadMap.removeValue(forKey: itemIndexBefore)
                         continue
                     }
-                    guard let formCell = cell as? AnyFormTableViewCell, let item = items[itemIndexAfter] as? AnyFormItem else { continue }
+                    guard let formCell = cell as? AnyFormTableViewCellProtocol, let item = items[itemIndexAfter] as? AnyFormItemProtocol else { continue }
                     let oldItem = formCell.anyFormItem
                     formCell.anyFormItem = item
                     formCell.itemDidChange(oldItem: oldItem, animate: true)
@@ -221,7 +221,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         sectionDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let this = self else { return }
 
-            this.sections[section].items = items.compactMap { $0 as? AnyFormItem }
+            this.sections[section].items = items.compactMap { $0 as? AnyFormItemProtocol }
             
             if reorderMap.count == 0 {
                 return
@@ -317,8 +317,8 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
             if this.updateOptions == .updateVisibleCells {
                 var manualReloads = [IndexPath]()
                 for indexPath in this.tableView.indexPathsForVisibleRows ?? [] {
-                    if let formCell = this.tableView.cellForRow(at: indexPath) as? AnyFormTableViewCell {
-                        let item: AnyFormItem = this.sections[indexPath.section].items[indexPath.row]
+                    if let formCell = this.tableView.cellForRow(at: indexPath) as? AnyFormTableViewCellProtocol {
+                        let item: AnyFormItemProtocol = this.sections[indexPath.section].items[indexPath.row]
                         let oldItem = formCell.anyFormItem
                         formCell.anyFormItem = item
                         formCell.itemDidChange(oldItem: oldItem, animate: false)
@@ -346,27 +346,27 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: Delegate Callbacks
 
     private func tableViewWillUpdateCells(_ animated: Bool) {
-        delegate?.formTableViewWillUpdate(self, animated: animated)
+        delegate?.formViewWillUpdate(self, animated: animated)
     }
 
 
     private func tableViewDidUpdateCells(_ animated: Bool) {
-        delegate?.formTableViewDidUpdate(self, animated: animated)
+        delegate?.formViewDidUpdate(self, animated: animated)
     }
 
     
     // MARK: - API -
     // MARK: Table View
     
-    public func register<EC: FormTableViewCell & UITableViewCell>(_ modelTableViewCellType: EC.Type) {
-        let reuseIdentifier = modelTableViewCellType.FormItemType.typeIdentifier
-        tableView.register(modelTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
+    public func register<FC: FormTableViewCellProtocol & UITableViewCell>(_ formTableViewCellType: FC.Type) {
+        let reuseIdentifier = formTableViewCellType.FormItemType.typeIdentifier
+        tableView.register(formTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
     }
     
 
-    public func register<EC: FormHeaderFooterView & UITableViewHeaderFooterView>(_ modelViewHeaderFooterViewType: EC.Type) {
-        let reuseIdentifier = modelViewHeaderFooterViewType.FormItemType.typeIdentifier
-        tableView.register(modelViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
+    public func register<FC: FormHeaderFooterView & UITableViewHeaderFooterView>(_ formViewHeaderFooterViewType: FC.Type) {
+        let reuseIdentifier = formViewHeaderFooterViewType.FormItemType.typeIdentifier
+        tableView.register(formViewHeaderFooterViewType, forHeaderFooterViewReuseIdentifier: reuseIdentifier)
     }
 
     
@@ -379,7 +379,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
 
 
     /// Returns the `AnyFormItem` that belongs to the provided index path.
-    public func cellItem(at indexPath: IndexPath) -> AnyFormItem {
+    public func cellItem(at indexPath: IndexPath) -> AnyFormItemProtocol {
         return sections[indexPath.section].items[indexPath.row]
     }
 
@@ -400,10 +400,11 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         getTableViewCell: do {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: item).typeIdentifier) else { break getTableViewCell }
 
-            if let formCell = cell as? AnyFormTableViewCell {
+            if let formCell = cell as? AnyFormTableViewCellProtocol & UITableViewCell {
                 let oldItem = formCell.anyFormItem
                 formCell.anyFormItem = item
                 formCell.itemDidChange(oldItem: oldItem, animate: false)
+                formCell.tintColor = tableView.tintColor
             }
             
             if let selectableItem = item as? SelectableFormItem {
@@ -516,7 +517,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
 }
 
 
-extension FormTableView {
+extension FormView {
     
     /// Options to finetune the update process
     public enum UpdateOptions {

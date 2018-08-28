@@ -15,10 +15,10 @@ public struct FormSection: DiffableSection {
     public var uniqueIdentifier: Int { return id.hash }
     
     internal var diffableSubitems: [AnyDiffable] { return items.map { $0 as AnyDiffable } }
-    public var items: [AnyFormItem] = []
+    public var items: [AnyFormItemProtocol] = []
     
-    public var headerItem: AnyFormItem?
-    public var footerItem: AnyFormItem?
+    public var headerItem: AnyFormItemProtocol?
+    public var footerItem: AnyFormItemProtocol?
     
     
     public init(id: String) {
