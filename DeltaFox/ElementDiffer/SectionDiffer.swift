@@ -10,21 +10,21 @@ import Foundation
 
 class SectionDiffer {
     
-    typealias ElementUpdateHandler = (_ items: [AnyDiffable], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> Void
-    typealias ElementReorderHandler = (_ items: [AnyDiffable], _ section: Int, _ reorderMap: [Int:Int]) -> Void
+    typealias ItemUpdateHandler = (_ items: [AnyDiffable], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> Void
+    typealias ItemReorderHandler = (_ items: [AnyDiffable], _ section: Int, _ reorderMap: [Int:Int]) -> Void
     typealias SectionUpdateHandler = (_ sections: [DiffableSection], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> Void
     typealias SectionReorderHandler = (_ sections: [DiffableSection], _ reorderMap: [Int:Int]) -> Void
     typealias StartHandler = () -> Void
     typealias CompletionHandler = () -> Void
-    typealias AnimationWrapper = (() -> Void, @escaping () -> Void) -> Void
+    typealias AnimationContext = (() -> Void, @escaping () -> Void) -> Void
 
-    var throttleTimeInterval: Double = 0.2
+    var throttleTimeInterval: Double = 4.0 / 60.0
     var debugOutput = false
     
     // Update handler
-    var animationWrapper: AnimationWrapper? = nil
-    var modelUpdate: ElementUpdateHandler? = nil
-    var modelReorder: ElementReorderHandler? = nil
+    var animationContext: AnimationContext? = nil
+    var itemUpdate: ItemUpdateHandler? = nil
+    var itemReorder: ItemReorderHandler? = nil
     var sectionUpdate: SectionUpdateHandler? = nil
     var sectionReorder: SectionReorderHandler? = nil
     
@@ -32,12 +32,12 @@ class SectionDiffer {
     var completion: CompletionHandler? = nil
     
     // State vars for background operations
-    private var isDiffing: Bool = false
-    private var resultIsOutOfDate: Bool = false
+    private var isDiffing = false
+    private var resultIsOutOfDate = false
     
     // State vars to throttle UI update
-    private var timeLockEnabled: Bool = false
-    private var lastUpdateTime: Date = Date(timeIntervalSince1970: 0)
+    private var nextDiffIsScheduled = false
+    private var lastUpdateTime = Date.distantPast
     
     // Section data
     private var oldSections: [DiffableSection]? = nil
@@ -51,7 +51,7 @@ class SectionDiffer {
         // Set Sections
         if self.oldSections == nil {
             // Old section should change only when a diff completes
-            // and it got nilled
+            // and it got niled out
             self.oldSections = oldSections
         }
         
@@ -62,7 +62,7 @@ class SectionDiffer {
         if isDiffing == true {
             // We declare the current result as out-of-date
             // because more recent 'newSections' are available
-            self.resultIsOutOfDate = true
+            resultIsOutOfDate = true
             return
         }
         
@@ -72,154 +72,145 @@ class SectionDiffer {
     
     private func diff() {
         // Guarding
-        guard let oldSections = self.oldSections else { return }
-        guard let newSections = self.newSections else { return }
-        
+        guard let oldSections = self.oldSections,
+            let newSections = self.newSections
+            else { return }
+
+        // Prepare
+        let backgroundQueue = DispatchQueue.global(qos: .userInteractive)
+        let reportDuplicatedItems = self.debugOutput
+
         // Define State
-        self.isDiffing = true
-        self.resultIsOutOfDate = false
+        isDiffing = true
+        resultIsOutOfDate = false
 
         // Do the diffing on a background thread
-        let backgroundQueue = DispatchQueue.global(qos: .background)
-
         backgroundQueue.async {
 
-            let reportDuplicatedElements = self.debugOutput
-            
-            // Diffing Elements
-            var diffs = [Int: DifferResult]()
+            // Diffing Items
+            var diffs = [Int:DifferResult]()
             for (oldSectionIndex, oldSection) in oldSections.enumerated() {
                 
-                let newIndex = newSections.index(where: { newSection -> Bool in
+                let newIndex = newSections.index { newSection -> Bool in
                     let isSame = newSection.uniqueIdentifier == oldSection.uniqueIdentifier
                     let isEqual = newSection.isEqual(to: oldSection)
                     return isSame && isEqual
-                })
+                }
                 
                 if let newIndex = newIndex {
                     // Diffing
-                    let oldElements = oldSection.diffableSubitems
-                    let newElements = newSections[newIndex].diffableSubitems
-                    let diff = Differ.compare(old: oldElements, new: newElements, findDuplicatedElements: reportDuplicatedElements)
+                    let oldItems = oldSection.diffableSubitems
+                    let newItems = newSections[newIndex].diffableSubitems
+                    let diff = Differ.compare(old: oldItems, new: newItems, findDuplicatedItems: reportDuplicatedItems)
                     diffs[oldSectionIndex] = diff
                     
-                    if reportDuplicatedElements {
-                        if let duplicatedIndexes = diff.duplicatedIndexes, duplicatedIndexes.count > 0 {
-                            print("\n")
-                            print("WARNING: Duplicated items detected. App will probably crash.")
-                            print("Dublicated indexes:", duplicatedIndexes)
-                            print("Dublicated items:", duplicatedIndexes.map({ newElements[$0] }))
-                            print("\n")
-                        }
+                    if reportDuplicatedItems, let duplicatedIndexes = diff.duplicatedIndexes, duplicatedIndexes.count > 0 {
+                        print("\n")
+                        print("WARNING: Duplicated items detected. App will probably crash.")
+                        print("Dublicated indexes:", duplicatedIndexes)
+                        print("Dublicated items:", duplicatedIndexes.map({ newItems[$0] }))
+                        print("\n")
                     }
                 }
-                
             }
             
             // Satisfy argument requirements of UBRDelta.diff()
-            let oldSectionAsElements = oldSections.map({ $0 as AnyDiffable })
-            let newSectionsAsElements = newSections.map({ $0 as AnyDiffable })
+            let oldSectionAsItems = oldSections.map({ $0 as AnyDiffable })
+            let newSectionsAsItems = newSections.map({ $0 as AnyDiffable })
             
             // Diffing sections
-            let sectionDiff = Differ.compare(old: oldSectionAsElements, new: newSectionsAsElements, findDuplicatedElements: reportDuplicatedElements)
+            let sectionDiff = Differ.compare(old: oldSectionAsItems, new: newSectionsAsItems, findDuplicatedItems: reportDuplicatedItems)
             
-            if reportDuplicatedElements {
-                if let duplicatedIndexes = sectionDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
-                    print("\n")
-                    print("WARNING: Duplicated section items detected. App will probably crash.")
-                    print("Dublicated indexes:", duplicatedIndexes)
-                    print("Dublicated section items:", duplicatedIndexes.map({ newSections[$0] }))
-                    print("\n")
-                }
+            if reportDuplicatedItems, let duplicatedIndexes = sectionDiff.duplicatedIndexes, duplicatedIndexes.count > 0 {
+                print("\n")
+                print("WARNING: Duplicated section items detected. App will probably crash.")
+                print("Dublicated indexes:", duplicatedIndexes)
+                print("Dublicated section items:", duplicatedIndexes.map({ newSections[$0] }))
+                print("\n")
             }
 
             // Diffing is done - doing UI updates on the main thread
-            let mainQueue = DispatchQueue.main
-            mainQueue.async {
-                self.animationWrapper?({
+            DispatchQueue.main.async { [weak self] in
+                guard let this = self else { return }
+
+                this.animationContext?({
                     // Guardings
-                    if self.resultIsOutOfDate == true {
+                    if this.resultIsOutOfDate == true {
                         // In the meantime 'newResults' came in, this means
                         // a new diff() and we are stopping the update
-                        self.diff()
+                        this.diff()
                         return
                     }
                     
-                    if self.timeLockEnabled == true {
+                    if this.nextDiffIsScheduled {
                         // There is already a future diff() scheduled
                         // we are stopping here
                         return
                     }
                     
-                    let updateAllowedIn = self.lastUpdateTime.timeIntervalSinceNow + self.throttleTimeInterval
+                    let updateAllowedIn = this.lastUpdateTime.timeIntervalSinceNow + this.throttleTimeInterval
                     if  updateAllowedIn > 0 {
                         // updateAllowedIn > 0 means the allowed update time is in the future
                         // so we schedule a new diff() for this point in time
-                        self.timeLockEnabled = true
+                        this.nextDiffIsScheduled = true
                         SectionDiffer.executeDelayed(updateAllowedIn) {
-                            self.timeLockEnabled = false
-                            self.diff()
+                            this.nextDiffIsScheduled = false
+                            this.diff()
                         }
                         return
                     }
                     
                     // Calling the handler functions
-                    self.start?()
+                    this.start?()
                     
                     // Diffable update for the old section order, because the sections
                     // are not moved yet
                     for (oldSectionIndex, diff) in diffs.sorted(by: { $0.0 < $1.0 }) {
                         
-                        // Call model handler functions
-                        self.modelUpdate?(
-                            diff.unmovedElements,
+                        // Call item handler functions
+                        this.itemUpdate?(
+                            diff.unmovedItems,
                             oldSectionIndex,
                             diff.insertionIndexes,
                             diff.reloadIndexMap,
                             diff.deletionIndexes
                         )
-                        self.modelReorder?(diff.newElements, oldSectionIndex, diff.moveIndexMap)
+                        this.itemReorder?(diff.newItems, oldSectionIndex, diff.moveIndexMap)
                     }
                     
-                    // Change type from Diffable to SectionModel.
+                    // Change type from Diffable to DiffableSection.
                     // Since this is expected to succeed a force unwrap is justified
-                    let updateElements = sectionDiff.unmovedElements.map({ $0 as! DiffableSection })
-                    let reorderElements = sectionDiff.newElements.map({ $0 as! DiffableSection })
+                    let updateItems = sectionDiff.unmovedItems.map({ $0 as! DiffableSection })
+                    let reorderItems = sectionDiff.newItems.map({ $0 as! DiffableSection })
                     
                     // Call section handler functions
-                    self.sectionUpdate?(updateElements, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
-                    self.sectionReorder?(reorderElements, sectionDiff.moveIndexMap)
+                    this.sectionUpdate?(updateItems, sectionDiff.insertionIndexes, sectionDiff.reloadIndexMap, sectionDiff.deletionIndexes)
+                    this.sectionReorder?(reorderItems, sectionDiff.moveIndexMap)
                 }, {
                     // Call completion block
-                    self.completion?()
+                    this.completion?()
                 })
                 
                 // Reset state
-                self.lastUpdateTime = Date()
-                self.oldSections = nil
-                self.newSections = nil
-                self.isDiffing = false
+                this.lastUpdateTime = Date()
+                this.oldSections = nil
+                this.newSections = nil
+                this.isDiffing = false
             }
         }
     }
     
     
     static private func executeDelayed(_ time: Int, action: @escaping () -> Void) {
-        self.executeDelayed(Double(time), action: action)
+        executeDelayed(Double(time), action: action)
     }
     
     
     static private func executeDelayed(_ time: Double, action: @escaping () -> Void) {
-        if time == 0 {
+        if time > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + time, execute: action)
+        } else {
             action()
-            return
         }
-        
-        let nanoSeconds: Int64 = Int64(Double(NSEC_PER_SEC) * time);
-        let when = DispatchTime.now() + Double(nanoSeconds) / Double(NSEC_PER_SEC)
-
-        DispatchQueue.main.asyncAfter(deadline: when, execute: {
-            action()
-        })
     }
 }

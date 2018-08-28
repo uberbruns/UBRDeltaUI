@@ -141,7 +141,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         sectionDiffer.throttleTimeInterval = 0.001
         sectionDiffer.debugOutput = logging != .none
         
-        sectionDiffer.animationWrapper = { [weak self] (work, completion) in
+        sectionDiffer.animationContext = { [weak self] (work, completion) in
             guard let this = self else { return }
             this.tableView.performBatchUpdates({
                 work()
@@ -163,7 +163,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         }
         
         // Insert, reload and delete table view rows
-        sectionDiffer.modelUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
+        sectionDiffer.itemUpdate = { [weak self] (items, section, insertIndexes, reloadIndexMap, deleteIndexes) in
             guard let this = self else { return }
             
             this.sections[section].items = items.compactMap { $0 as? AnyFormItem }
@@ -218,7 +218,7 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
         }
         
         // Reorder table view rows
-        sectionDiffer.modelReorder = { [weak self] (items, section, reorderMap) in
+        sectionDiffer.itemReorder = { [weak self] (items, section, reorderMap) in
             guard let this = self else { return }
 
             this.sections[section].items = items.compactMap { $0 as? AnyFormItem }
@@ -372,13 +372,13 @@ open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: Access Cell Models
 
-    /// Returns the `CellSectionItem` that belongs to the provided section index.
+    /// Returns the `FormSection` that belongs to the provided section index.
     public func cellSectionItem(at sectionIndex: Int) -> FormSection {
         return sections[sectionIndex]
     }
 
 
-    /// Returns the `CellItem` that belongs to the provided index path.
+    /// Returns the `AnyFormItem` that belongs to the provided index path.
     public func cellItem(at indexPath: IndexPath) -> AnyFormItem {
         return sections[indexPath.section].items[indexPath.row]
     }

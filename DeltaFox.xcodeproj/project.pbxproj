@@ -72,13 +72,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		906CBBA720016DCC00FBA905 /* CellModel */ = {
+		906CBBA720016DCC00FBA905 /* FormItem */ = {
 			isa = PBXGroup;
 			children = (
 				9B78BD981C5A660B002D3CE4 /* FormItem.swift */,
 				9B78BD991C5A660B002D3CE4 /* FormSection.swift */,
 			);
-			path = CellModel;
+			path = FormItem;
 			sourceTree = "<group>";
 		};
 		9B2DD3B21CB6944F00005992 /* DeltaFoxTests */ = {
@@ -121,7 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				9B78BDAB1C5A66AD002D3CE4 /* ElementDiffer */,
-				906CBBA720016DCC00FBA905 /* CellModel */,
+				906CBBA720016DCC00FBA905 /* FormItem */,
 				9B78BD961C5A660B002D3CE4 /* TableView */,
 				9B78BD861C5A5D59002D3CE4 /* Info.plist */,
 				9B78BD841C5A5D59002D3CE4 /* DeltaFox.h */,

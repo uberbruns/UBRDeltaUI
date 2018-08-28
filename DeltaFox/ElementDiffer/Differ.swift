@@ -10,14 +10,14 @@ import Foundation
 
 public struct Differ {
     
-    public static func compare(old oldElements: [AnyDiffable], new newElements: [AnyDiffable], findDuplicatedElements: Bool = false) -> DifferResult {
+    public static func compare(old oldItems: [AnyDiffable], new newItems: [AnyDiffable], findDuplicatedItems: Bool = false) -> DifferResult {
         // Init return vars
         var insertionIndexes = [Int]()
         var deletionIndexes = [Int]()
         var reloadIndexMap = [Int:Int]()
         var moveIndexMap = [Int:Int]()
-        var unmovedElements = [AnyDiffable]()
-        var duplicatedIndexes: [Int]? = findDuplicatedElements ? [Int]() : nil
+        var unmovedItems = [AnyDiffable]()
+        var duplicatedIndexes: [Int]? = findDuplicatedItems ? [Int]() : nil
         
         // Diffing
         var newIDs = [Int]()
@@ -27,9 +27,9 @@ public struct Differ {
         var newIDMap = [Int:Int]()
         
         // Test
-        if findDuplicatedElements {
+        if findDuplicatedItems {
             var uniqueIndexes = Set<Int>()
-            for (newIndex, newModel) in newElements.enumerated() {
+            for (newIndex, newModel) in newItems.enumerated() {
                 let newId = newModel.uniqueIdentifier
                 if uniqueIndexes.contains(newId) {
                     duplicatedIndexes?.append(newIndex)
@@ -40,7 +40,7 @@ public struct Differ {
         }
         
         // Prepare mapping vars for new items
-        for (newIndex, newModel) in newElements.enumerated() {
+        for (newIndex, newModel) in newItems.enumerated() {
             let newId = newModel.uniqueIdentifier
             newIDs.append(newId)
             newIDMap[newId] = newIndex
@@ -49,12 +49,12 @@ public struct Differ {
         // - Prepare mapping vars for old items
         // - Create the unmoved array
         // - Search for deletions
-        for (oldIndex, oldItem) in oldElements.enumerated() {
+        for (oldIndex, oldItem) in oldItems.enumerated() {
             let id = oldItem.uniqueIdentifier
             oldIDMap[id] = oldIndex
             if let newIndex = newIDMap[id] {
-                let newModel = newElements[newIndex]
-                unmovedElements.append(newModel)
+                let newModel = newItems[newIndex]
+                unmovedItems.append(newModel)
                 unmIDs.append(id)
             } else {
                 deletionIndexes.append(oldIndex)
@@ -62,11 +62,11 @@ public struct Differ {
         }
         
         // Search for insertions and updates
-        for (newIndex, newModel) in newElements.enumerated() {
+        for (newIndex, newModel) in newItems.enumerated() {
             // Looking for changes
             let id = newModel.uniqueIdentifier
             if let oldIndex = oldIDMap[id] {
-                let oldItem = oldElements[oldIndex]
+                let oldItem = oldItems[oldIndex]
                 if !oldItem.isEqual(to: newModel) {
                     // Found change
                     reloadIDs.insert(id)
@@ -74,13 +74,13 @@ public struct Differ {
             } else {
                 // Found insertion
                 insertionIndexes.append(newIndex)
-                unmovedElements.insert(newModel, at: newIndex)
+                unmovedItems.insert(newModel, at: newIndex)
                 unmIDs.insert(id, at: newIndex)
             }
         }
         
         // Reload
-        for (unmIndex, unmModel) in unmovedElements.enumerated() {
+        for (unmIndex, unmModel) in unmovedItems.enumerated() {
             let id = unmModel.uniqueIdentifier
             if reloadIDs.contains(id) {
                 let oldIndex = oldIDMap[id]!
@@ -106,9 +106,9 @@ public struct Differ {
             deletionIndexes: deletionIndexes,
             reloadIndexMap: reloadIndexMap,
             moveIndexMap: moveIndexMap,
-            oldElements: newElements,
-            unmovedElements: unmovedElements,
-            newElements: newElements,
+            oldItems: newItems,
+            unmovedItems: unmovedItems,
+            newItems: newItems,
             duplicatedIndexes: duplicatedIndexes
         )
         
