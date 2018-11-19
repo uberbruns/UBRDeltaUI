@@ -1,5 +1,5 @@
 //
-//  FormTableViewCell.swift
+//  FormCell.swift
 //  DeltaFox
 //
 //  Created by Karsten Bruns on 06.01.18.
@@ -8,20 +8,20 @@
 
 import UIKit
 
-public protocol AnyFormTableViewCellProtocol: AnyObject {
+public protocol AnyFormCellProtocol: AnyObject {
     var anyFormItem: AnyFormItemProtocol { get set }
     func itemDidChange(oldItem: AnyFormItemProtocol, animate: Bool)
 }
 
 
-public protocol FormTableViewCellProtocol: AnyFormTableViewCellProtocol {
+public protocol FormCellProtocol: AnyFormCellProtocol {
     associatedtype FormItemType: FormItemProtocol
     var item: FormItemType { get set }
     func itemDidChange(oldItem: FormItemType, animate: Bool)
 }
 
 
-extension FormTableViewCellProtocol {
+extension FormCellProtocol {
     public var anyFormItem: AnyFormItemProtocol {
         get {
             return item

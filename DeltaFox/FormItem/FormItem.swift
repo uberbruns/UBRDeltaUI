@@ -14,7 +14,7 @@ public typealias SelectionHandler = () -> ()
 
 
 public protocol AnyFormItemProtocol: AnyDiffable {
-    var id: String { get }
+    var id: FormItemIdentifier { get }
     static var typeIdentifier: String { get }
 }
 
@@ -27,6 +27,36 @@ public protocol FormItemProtocol: AnyFormItemProtocol, Diffable {
 extension FormItemProtocol {
     public var uniqueIdentifier: Int {
         return id.hashValue
+    }
+}
+
+
+public struct FormItemIdentifier: Hashable {
+    let rawValue: String
+}
+
+
+extension FormItemIdentifier: ExpressibleByStringLiteral {
+    public typealias StringLiteralType = String
+
+    public init(stringLiteral value: String) {
+        self.rawValue = value
+    }
+}
+
+public extension FormItemIdentifier {
+    static func auto(file: String = #file, line: Int = #line) -> FormItemIdentifier {
+        return autoFormItemIdentifier(file: file, line: line, other: [])
+    }
+
+    static func auto(file: String = #file, line: Int = #line, _ other: AnyHashable...) -> FormItemIdentifier {
+        return autoFormItemIdentifier(file: file, line: line, other: other)
+    }
+
+    private static func autoFormItemIdentifier(file: String, line: Int, other: [AnyHashable]) -> FormItemIdentifier {
+        let resolvedFile = URL(fileURLWithPath: file).lastPathComponent
+        let resolvedOther = other.map { ":\($0.hashValue)" }
+        return FormItemIdentifier(rawValue: "\(resolvedFile):\(line)\(resolvedOther)")
     }
 }
 

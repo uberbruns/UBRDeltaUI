@@ -9,19 +9,20 @@
 import UIKit
 
 
-public protocol FormViewDelegate: AnyObject {
-    func formViewDidUpdate(_ formView: FormView, animated: Bool)
-    func formViewWillUpdate(_ formView: FormView, animated: Bool)
-    func registerFormTableViewCells(in formView: FormView)
+public protocol FormTableViewDelegate: AnyObject {
+    func formTableViewDidUpdate(_ formTableView: FormTableView, animated: Bool)
+    func formTableViewWillUpdate(_ formTableView: FormTableView, animated: Bool)
+    func prepareFormTableView(_ formTableView: FormTableView)
 }
 
 
-open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
+open class FormTableView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     // MARK: - Properties -
     
     public private(set) var tableView: UITableView
-    public weak var delegate: FormViewDelegate?
+    public private(set) var configuration: Configuration
+    public weak var delegate: FormTableViewDelegate?
 
     private var animateViews = true
     private var updateOptions = UpdateOptions.default
@@ -56,17 +57,18 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: - View -
     // MARK: Life-Cycle
 
-    public init(delegate: FormViewDelegate, style: UITableViewStyle) {
+    public init(delegate: FormTableViewDelegate, configuration: Configuration) {
         let preliminaryFrame = CGRect(x: 0, y: 0, width: 1024, height: 1024)
 
-        self.tableView = UITableView(frame: preliminaryFrame, style: style)
+        self.configuration = configuration
+        self.tableView = UITableView(frame: preliminaryFrame, style: configuration.tableStyle)
         self.delegate = delegate
 
         super.init(frame: preliminaryFrame)
 
         configureContentDiffer()
-        addSubviews()
-        addConstraints()
+        setupViews()
+        setupConstraints()
     }
 
     public required init?(coder aDecoder: NSCoder) {
@@ -77,7 +79,7 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: Subviews
 
     /// Configures the table view to the controller
-    private func addSubviews() {
+    private func setupViews() {
         // Configure
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
@@ -85,18 +87,20 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.sectionHeaderHeight = UITableViewAutomaticDimension
         tableView.sectionFooterHeight = UITableViewAutomaticDimension
+        tableView.contentInset = UIEdgeInsets(top: configuration.hiddenContentInsetForAnimationOptimization.top, left: 0, bottom: configuration.hiddenContentInsetForAnimationOptimization.bottom, right: 0)
+        tableView.scrollIndicatorInsets = UIEdgeInsets(top: configuration.hiddenContentInsetForAnimationOptimization.top, left: 0, bottom: configuration.hiddenContentInsetForAnimationOptimization.bottom, right: 0)
         addSubview(tableView)
 
         // Add reusable cells
-        delegate?.registerFormTableViewCells(in: self)
+        delegate?.prepareFormTableView(self)
     }
     
-    private func addConstraints() {
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            tableView.topAnchor.constraint(equalTo: topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            tableView.topAnchor.constraint(equalTo: topAnchor, constant: -configuration.hiddenContentInsetForAnimationOptimization.top),
+            tableView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: configuration.hiddenContentInsetForAnimationOptimization.bottom)
         ])
     }
 
@@ -185,7 +189,7 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
                         manualReloadMap.removeValue(forKey: itemIndexBefore)
                         continue
                     }
-                    guard let formCell = cell as? AnyFormTableViewCellProtocol, let item = items[itemIndexAfter] as? AnyFormItemProtocol else { continue }
+                    guard let formCell = cell as? AnyFormCellProtocol, let item = items[itemIndexAfter] as? AnyFormItemProtocol else { continue }
                     let oldItem = formCell.anyFormItem
                     formCell.anyFormItem = item
                     formCell.itemDidChange(oldItem: oldItem, animate: true)
@@ -317,7 +321,7 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
             if this.updateOptions == .updateVisibleCells {
                 var manualReloads = [IndexPath]()
                 for indexPath in this.tableView.indexPathsForVisibleRows ?? [] {
-                    if let formCell = this.tableView.cellForRow(at: indexPath) as? AnyFormTableViewCellProtocol {
+                    if let formCell = this.tableView.cellForRow(at: indexPath) as? AnyFormCellProtocol {
                         let item: AnyFormItemProtocol = this.sections[indexPath.section].items[indexPath.row]
                         let oldItem = formCell.anyFormItem
                         formCell.anyFormItem = item
@@ -346,19 +350,19 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
     // MARK: Delegate Callbacks
 
     private func tableViewWillUpdateCells(_ animated: Bool) {
-        delegate?.formViewWillUpdate(self, animated: animated)
+        delegate?.formTableViewWillUpdate(self, animated: animated)
     }
 
 
     private func tableViewDidUpdateCells(_ animated: Bool) {
-        delegate?.formViewDidUpdate(self, animated: animated)
+        delegate?.formTableViewDidUpdate(self, animated: animated)
     }
 
     
     // MARK: - API -
     // MARK: Table View
     
-    public func register<FC: FormTableViewCellProtocol & UITableViewCell>(_ formTableViewCellType: FC.Type) {
+    public func register<FC: FormCellProtocol & UITableViewCell>(_ formTableViewCellType: FC.Type) {
         let reuseIdentifier = formTableViewCellType.FormItemType.typeIdentifier
         tableView.register(formTableViewCellType, forCellReuseIdentifier: reuseIdentifier)
     }
@@ -400,7 +404,7 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
         getTableViewCell: do {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: type(of: item).typeIdentifier) else { break getTableViewCell }
 
-            if let formCell = cell as? AnyFormTableViewCellProtocol & UITableViewCell {
+            if let formCell = cell as? AnyFormCellProtocol & UITableViewCell {
                 let oldItem = formCell.anyFormItem
                 formCell.anyFormItem = item
                 formCell.itemDidChange(oldItem: oldItem, animate: false)
@@ -449,14 +453,14 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
     
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         guard sections[section].headerItem != nil else {
-            return 0
+            return 15
         }
         return UITableViewAutomaticDimension
     }
 
     
     public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        configureView : do {
+        configureView: do {
             let item = sections[section]
             guard let headerItem = item.headerItem else { break configureView }
             guard let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: type(of: headerItem).typeIdentifier) else { break configureView }
@@ -517,7 +521,7 @@ open class FormView: UIView, UITableViewDelegate, UITableViewDataSource {
 }
 
 
-extension FormView {
+extension FormTableView {
     
     /// Options to finetune the update process
     public enum UpdateOptions {
@@ -539,5 +543,15 @@ extension FormView {
         case none
         case debug
         case warnings
+    }
+
+    public struct Configuration {
+        public var tableStyle: UITableViewStyle
+        public var hiddenContentInsetForAnimationOptimization: UIEdgeInsets
+
+        public init(tableStyle: UITableViewStyle = .grouped, hiddenContentInsetForAnimationOptimization: UIEdgeInsets = .zero) {
+            self.tableStyle = tableStyle
+            self.hiddenContentInsetForAnimationOptimization = hiddenContentInsetForAnimationOptimization
+        }
     }
 }

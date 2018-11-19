@@ -11,8 +11,8 @@ import Foundation
 
 public struct FormSection: DiffableSection {
     
-    public let id: String
-    public var uniqueIdentifier: Int { return id.hash }
+    public let id: FormItemIdentifier
+    public var uniqueIdentifier: Int { return id.hashValue }
     
     internal var diffableSubitems: [AnyDiffable] { return items.map { $0 as AnyDiffable } }
     public var items: [AnyFormItemProtocol] = []
@@ -21,7 +21,7 @@ public struct FormSection: DiffableSection {
     public var footerItem: AnyFormItemProtocol?
     
     
-    public init(id: String) {
+    public init(id: FormItemIdentifier) {
         self.id = id
     }
 
@@ -58,7 +58,7 @@ public struct FormSection: DiffableSection {
 
 extension Array where Element == FormSection {
     
-    public mutating func append(id: String, _ setup: (String, inout FormSection) -> Void) {
+    public mutating func append(id: FormItemIdentifier, _ setup: (FormItemIdentifier, inout FormSection) -> Void) {
         var new = FormSection(id: id)
         setup(id, &new)
         self.append(new)
