@@ -10,27 +10,27 @@ import Foundation
 
 public struct Differ {
     
-    public static func compare(old oldItems: [AnyDiffable], new newItems: [AnyDiffable], findDuplicatedItems: Bool = false) -> DifferResult {
+    public static func compare(old oldItems: [Diffable], new newItems: [Diffable], findDuplicatedItems: Bool = false) -> DifferResult {
         // Init return vars
         var insertionIndexes = [Int]()
         var deletionIndexes = [Int]()
         var reloadIndexMap = [Int:Int]()
         var moveIndexMap = [Int:Int]()
-        var unmovedItems = [AnyDiffable]()
+        var unmovedItems = [Diffable]()
         var duplicatedIndexes: [Int]? = findDuplicatedItems ? [Int]() : nil
         
         // Diffing
-        var newIDs = [Int]()
-        var unmIDs = [Int]()
-        var reloadIDs = Set<Int>()
-        var oldIDMap = [Int:Int]()
-        var newIDMap = [Int:Int]()
+        var newIds = [Int]()
+        var unmIds = [Int]()
+        var reloadIds = Set<Int>()
+        var oldIdMap = [Int:Int]()
+        var newIdMap = [Int:Int]()
         
         // Test
         if findDuplicatedItems {
             var uniqueIndexes = Set<Int>()
-            for (newIndex, newModel) in newItems.enumerated() {
-                let newId = newModel.uniqueIdentifier
+            for (newIndex, newItem) in newItems.enumerated() {
+                let newId = newItem.uniqueIdentifier
                 if uniqueIndexes.contains(newId) {
                     duplicatedIndexes?.append(newIndex)
                 } else {
@@ -40,10 +40,10 @@ public struct Differ {
         }
         
         // Prepare mapping vars for new items
-        for (newIndex, newModel) in newItems.enumerated() {
-            let newId = newModel.uniqueIdentifier
-            newIDs.append(newId)
-            newIDMap[newId] = newIndex
+        for (newIndex, newItem) in newItems.enumerated() {
+            let newId = newItem.uniqueIdentifier
+            newIds.append(newId)
+            newIdMap[newId] = newIndex
         }
         
         // - Prepare mapping vars for old items
@@ -51,49 +51,49 @@ public struct Differ {
         // - Search for deletions
         for (oldIndex, oldItem) in oldItems.enumerated() {
             let id = oldItem.uniqueIdentifier
-            oldIDMap[id] = oldIndex
-            if let newIndex = newIDMap[id] {
-                let newModel = newItems[newIndex]
-                unmovedItems.append(newModel)
-                unmIDs.append(id)
+            oldIdMap[id] = oldIndex
+            if let newIndex = newIdMap[id] {
+                let newItem = newItems[newIndex]
+                unmovedItems.append(newItem)
+                unmIds.append(id)
             } else {
                 deletionIndexes.append(oldIndex)
             }
         }
         
         // Search for insertions and updates
-        for (newIndex, newModel) in newItems.enumerated() {
+        for (newIndex, newItem) in newItems.enumerated() {
             // Looking for changes
-            let id = newModel.uniqueIdentifier
-            if let oldIndex = oldIDMap[id] {
+            let id = newItem.uniqueIdentifier
+            if let oldIndex = oldIdMap[id] {
                 let oldItem = oldItems[oldIndex]
-                if !oldItem.isEqual(to: newModel) {
+                if oldItem.hashValue != newItem.hashValue {
                     // Found change
-                    reloadIDs.insert(id)
+                    reloadIds.insert(id)
                 }
             } else {
                 // Found insertion
                 insertionIndexes.append(newIndex)
-                unmovedItems.insert(newModel, at: newIndex)
-                unmIDs.insert(id, at: newIndex)
+                unmovedItems.insert(newItem, at: newIndex)
+                unmIds.insert(id, at: newIndex)
             }
         }
         
         // Reload
-        for (unmIndex, unmModel) in unmovedItems.enumerated() {
-            let id = unmModel.uniqueIdentifier
-            if reloadIDs.contains(id) {
-                let oldIndex = oldIDMap[id]!
+        for (unmIndex, unmItem) in unmovedItems.enumerated() {
+            let id = unmItem.uniqueIdentifier
+            if reloadIds.contains(id) {
+                let oldIndex = oldIdMap[id]!
                 reloadIndexMap[oldIndex] = unmIndex
             }
         }
         
         // Detect moving items
-        let diffResult = DiffArray<Int>.diff(unmIDs, newIDs)
+        let diffResult = DiffArray<Int>.diff(unmIds, newIds)
         for diffStep in diffResult.results {
             switch diffStep {
             case .delete(let unmIndex, let id) :
-                let newIndex = newIDMap[id]!
+                let newIndex = newIdMap[id]!
                 moveIndexMap[unmIndex] = newIndex
             default :
                 break

@@ -21,9 +21,11 @@ public protocol CollectionViewDataSourceFillLayout: UICollectionViewDataSource {
 public protocol CollectionViewDelegateFillLayout: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, alignmentForCellAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment
     func collectionView(_ collectionView: UICollectionView, minimumHeightForCellAt indexPath: IndexPath) -> CGFloat
+    func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForCellAt indexPath: IndexPath) -> Int
 
     func collectionView(_ collectionView: UICollectionView, alignmentForSupplementaryViewAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment
     func collectionView(_ collectionView: UICollectionView, minimumHeightForSupplementaryViewAt indexPath: IndexPath) -> CGFloat
+    func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForSupplementaryViewAt indexPath: IndexPath) -> Int
 }
 
 
@@ -33,14 +35,11 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
 
     // State
     private var insertedOrDeletedIndexPaths = Set<IndexPath>()
-    private var movedIndexPathsAfter = Set<IndexPath>()
-    private var movedIndexPathsBefore = Set<IndexPath>()
     var invalidateEverything = true
 
     // Cache
     private var cachedContentSize = CGSize.zero
     private var cachedBounds = CGRect.zero
-    private var cachedLayoutAttributesBefore = [TaggedIndexPath: UICollectionViewLayoutAttributes]()
     private var cachedLayoutAttributes = [TaggedIndexPath: UICollectionViewLayoutAttributes]()
 
     // Configuration
@@ -151,32 +150,23 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         }
     }
 
-//    override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
-//        super.prepare(forCollectionViewUpdates: updateItems)
-//
-//        cachedLayoutAttributesBefore = cachedLayoutAttributes
-//        invalidateEverything = true
-////        invalidateCachedLayoutAttributes()
-////        prepareImpl()
-//
-//        insertedOrDeletedIndexPaths.removeAll()
-//        movedIndexPathsBefore.removeAll()
-//        movedIndexPathsAfter.removeAll()
-//
-//        for updatedItem in updateItems {
-//            switch updatedItem.updateAction {
-//            case .insert:
-//                insertedOrDeletedIndexPaths.insert(updatedItem.indexPathAfterUpdate!)
-//            case .delete:
-//                insertedOrDeletedIndexPaths.insert(updatedItem.indexPathBeforeUpdate!)
-////            case .move:
-////                movedIndexPathsAfter.insert(updatedItem.indexPathAfterUpdate!)
-////                movedIndexPathsBefore.insert(updatedItem.indexPathBeforeUpdate!)
-//            default:
-//                break
-//            }
-//        }
-//    }
+    override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
+        super.prepare(forCollectionViewUpdates: updateItems)
+
+        invalidateEverything = true
+        insertedOrDeletedIndexPaths.removeAll()
+
+        for updatedItem in updateItems {
+            switch updatedItem.updateAction {
+            case .insert:
+                insertedOrDeletedIndexPaths.insert(updatedItem.indexPathAfterUpdate!)
+            case .delete:
+                insertedOrDeletedIndexPaths.insert(updatedItem.indexPathBeforeUpdate!)
+            default:
+                break
+            }
+        }
+    }
 
     // MARK: Invalidation
 
@@ -226,34 +216,14 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         return cachedLayoutAttributes[taggedIndexPath]!
     }
 
-//    public override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
-//        let indexPath = TaggedIndexPath(layoutAttributes: preferredAttributes)
-//        guard let before = cachedLayoutAttributesBefore[indexPath]?.frame, let after = cachedLayoutAttributes[indexPath]?.frame else {
-//            return false
-//        }
-//        return before != after
-//    }
-//
-//    public override func finalizeCollectionViewUpdates() {
-//        super.finalizeCollectionViewUpdates()
-//        cachedLayoutAttributesBefore.removeAll(keepingCapacity: true)
-//    }
-
     // MARK: Animation
 
     override public func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-//        if movedIndexPaths.contains(itemIndexPath) {
-//            movedIndexPaths.remove(itemIndexPath)
-//            return cachedLayoutAttributesBefore[itemIndexPath.tagged(with: .item)]
-//        }
-
         let layoutAttributes = super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
-
         if insertedOrDeletedIndexPaths.contains(itemIndexPath) {
             layoutAttributes?.alpha = 0
             insertedOrDeletedIndexPaths.remove(itemIndexPath)
         }
-
         return layoutAttributes
     }
 
@@ -267,7 +237,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     }
 
     override public func initialLayoutAttributesForAppearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let layoutAttributes = cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag.init(rawValue: elementKind)!)]
+        let layoutAttributes = super.initialLayoutAttributesForAppearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
         if insertedOrDeletedIndexPaths.contains(elementIndexPath) {
             layoutAttributes?.alpha = 0
             insertedOrDeletedIndexPaths.remove(elementIndexPath)
@@ -276,7 +246,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     }
 
     override public func finalLayoutAttributesForDisappearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let layoutAttributes = cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag.init(rawValue: elementKind)!)]
+        let layoutAttributes = super.finalLayoutAttributesForDisappearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
         if insertedOrDeletedIndexPaths.contains(elementIndexPath) {
             layoutAttributes?.alpha = 0
             insertedOrDeletedIndexPaths.remove(elementIndexPath)

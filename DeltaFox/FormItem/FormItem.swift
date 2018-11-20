@@ -13,7 +13,7 @@ import UIKit
 public typealias SelectionHandler = () -> ()
 
 
-public protocol AnyFormItemProtocol: AnyDiffable {
+public protocol AnyFormItemProtocol: Diffable {
     var id: FormItemIdentifier { get }
     static var typeIdentifier: String { get }
 }

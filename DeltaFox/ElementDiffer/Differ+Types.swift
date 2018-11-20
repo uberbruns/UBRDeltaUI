@@ -16,18 +16,18 @@ public struct DifferResult {
     public let reloadIndexMap: [Int:Int] // Old Index, New Index
     public let moveIndexMap: [Int:Int]
 
-    public let oldItems: [AnyDiffable]
-    public let unmovedItems: [AnyDiffable]
-    public let newItems: [AnyDiffable]
+    public let oldItems: [Diffable]
+    public let unmovedItems: [Diffable]
+    public let newItems: [Diffable]
     
     
     init(insertionIndexes: [Int],
                 deletionIndexes: [Int],
                 reloadIndexMap: [Int:Int],
                 moveIndexMap: [Int:Int],
-                oldItems: [AnyDiffable],
-                unmovedItems: [AnyDiffable],
-                newItems: [AnyDiffable],
+                oldItems: [Diffable],
+                unmovedItems: [Diffable],
+                newItems: [Diffable],
                 duplicatedIndexes: [Int]? = nil) {
         self.insertionIndexes = insertionIndexes
         self.deletionIndexes = deletionIndexes

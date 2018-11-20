@@ -119,14 +119,9 @@ open class FormView: UIView {
         sectionDiffer.throttleTimeInterval = 0.001
         sectionDiffer.debugOutput = logging != .none
 
-        sectionDiffer.animationContext = { [weak self] (work, completion) in
-            guard let this = self else { return }
-            // this.layout.invalidateCellSizes()
-            this.collectionView.performBatchUpdates({
-                work()
-            }, completion: { (_) in
-                completion()
-            })
+        sectionDiffer.animationContext = { work, completion in
+            work()
+            completion()
         }
 
         // Start updating collection view
@@ -338,6 +333,7 @@ open class FormView: UIView {
 
 
 extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFillLayout {
+
     open func numberOfSections(in collectionView: UICollectionView) -> Int {
         return sections.count
     }
@@ -409,6 +405,11 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
     }
 
 
+    public func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForCellAt indexPath: IndexPath) -> Int {
+        let item = sections[indexPath.section].items[indexPath.item]
+        return item.hashValue
+    }
+
     open func collectionView(_ collectionView: UICollectionView, alignmentForSupplementaryViewAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment {
         return .default
     }
@@ -416,6 +417,11 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
 
     open func collectionView(_ collectionView: UICollectionView, minimumHeightForSupplementaryViewAt indexPath: IndexPath) -> CGFloat {
         return 0
+    }
+
+    public func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForSupplementaryViewAt indexPath: IndexPath) -> Int {
+        let item = sections[indexPath.section].items[indexPath.item]
+        return item.hashValue
     }
 }
 

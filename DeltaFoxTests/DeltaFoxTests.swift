@@ -18,7 +18,7 @@ class DeltaFoxTests: XCTestCase {
     let janeway = Captain(name: "Kathrin Janeway", ships: ["USS Voxager"], fistFights: 12)
 
     
-    func diff(old oldElements: [AnyDiffable], new newElements: [AnyDiffable], findDuplicatedElements: Bool = false) -> DeltaFox.DifferResult {
+    func diff(old oldElements: [Diffable], new newElements: [Diffable], findDuplicatedElements: Bool = false) -> DeltaFox.DifferResult {
         return Differ.compare(old: oldElements, new: newElements, findDuplicatedElements: findDuplicatedElements)
     }
     
@@ -238,7 +238,7 @@ class DeltaFoxTests: XCTestCase {
             }
             
             // Diff Captains
-            let result = self.diff(old: oldCaptains.map({ $0 as AnyDiffable }), new: newCaptains.map({ $0 as AnyDiffable }))
+            let result = self.diff(old: oldCaptains.map({ $0 as Diffable }), new: newCaptains.map({ $0 as Diffable }))
             
             // Apply comparison result to oldCaptians
             // Expectation is that the changed `oldCaptains` in the end equals `newCaptians`
@@ -323,8 +323,8 @@ class DeltaFoxTests: XCTestCase {
         }
         
         // Diff Captains
-        let oldElements = oldCaptains.map({ $0 as AnyDiffable })
-        let newElements = newCaptains.map({ $0 as AnyDiffable })
+        let oldElements = oldCaptains.map({ $0 as Diffable })
+        let newElements = newCaptains.map({ $0 as Diffable })
         
         measure {
             _ = self.diff(old: oldElements, new: newElements)

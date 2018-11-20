@@ -10,8 +10,8 @@ import Foundation
 
 class SectionDiffer {
     
-    typealias ItemUpdateHandler = (_ items: [AnyDiffable], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> Void
-    typealias ItemReorderHandler = (_ items: [AnyDiffable], _ section: Int, _ reorderMap: [Int:Int]) -> Void
+    typealias ItemUpdateHandler = (_ items: [Diffable], _ section: Int, _ insertIndexPaths: [Int], _ reloadIndexPaths: [Int:Int], _ deleteIndexPaths: [Int]) -> Void
+    typealias ItemReorderHandler = (_ items: [Diffable], _ section: Int, _ reorderMap: [Int:Int]) -> Void
     typealias SectionUpdateHandler = (_ sections: [DiffableSection], _ insertIndexSet: [Int], _ reloadIndexSet: [Int:Int], _ deleteIndexSet: [Int]) -> Void
     typealias SectionReorderHandler = (_ sections: [DiffableSection], _ reorderMap: [Int:Int]) -> Void
     typealias StartHandler = () -> Void
@@ -93,7 +93,7 @@ class SectionDiffer {
                 
                 let newIndex = newSections.index { newSection -> Bool in
                     let isSame = newSection.uniqueIdentifier == oldSection.uniqueIdentifier
-                    let isEqual = newSection.isEqual(to: oldSection)
+                    let isEqual = newSection.hashValue == oldSection.hashValue
                     return isSame && isEqual
                 }
                 
@@ -115,8 +115,8 @@ class SectionDiffer {
             }
             
             // Satisfy argument requirements of UBRDelta.diff()
-            let oldSectionAsItems = oldSections.map({ $0 as AnyDiffable })
-            let newSectionsAsItems = newSections.map({ $0 as AnyDiffable })
+            let oldSectionAsItems = oldSections.map({ $0 as Diffable })
+            let newSectionsAsItems = newSections.map({ $0 as Diffable })
             
             // Diffing sections
             let sectionDiff = Differ.compare(old: oldSectionAsItems, new: newSectionsAsItems, findDuplicatedItems: reportDuplicatedItems)

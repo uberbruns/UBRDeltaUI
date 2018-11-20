@@ -14,7 +14,7 @@ public struct FormSection: DiffableSection {
     public let id: FormItemIdentifier
     public var uniqueIdentifier: Int { return id.hashValue }
     
-    internal var diffableSubitems: [AnyDiffable] { return items.map { $0 as AnyDiffable } }
+    internal var diffableSubitems: [Diffable] { return items.map { $0 as Diffable } }
     public var items: [AnyFormItemProtocol] = []
     
     public var headerItem: AnyFormItemProtocol?
@@ -25,33 +25,11 @@ public struct FormSection: DiffableSection {
         self.id = id
     }
 
-    
-    public func isEqual(to other: AnyDiffable) -> Bool {
-        guard let other = other as? FormSection else { return false }
-    
-        let headerItemIsEqual = { () -> Bool in
-            switch (headerItem, other.headerItem) {
-            case (let model?, let otherModel?):
-                return model.isEqual(to: otherModel)
-            case (nil, nil):
-                return true
-            default:
-                return false
-            }
-        }()
-
-        let footerItemIsEqual = { () -> Bool in
-            switch (footerItem, other.footerItem) {
-            case (let model?, let otherModel?):
-                return model.isEqual(to: otherModel)
-            case (nil, nil):
-                return true
-            default:
-                return false
-            }
-        }()
-        
-        return headerItemIsEqual && footerItemIsEqual
+    public var hashValue: Int {
+        var hasher = Hasher()
+        hasher.combine(headerItem?.hashValue ?? Int.max)
+        hasher.combine(footerItem?.hashValue ?? Int.min)
+        return hasher.finalize()
     }
 }
 
