@@ -19,7 +19,7 @@ public protocol AnyFormItemProtocol: Diffable {
 }
 
 
-public protocol FormItemProtocol: AnyFormItemProtocol, Diffable {
+public protocol FormItemProtocol: AnyFormItemProtocol {
     static var placeholder: Self { get }
 }
 

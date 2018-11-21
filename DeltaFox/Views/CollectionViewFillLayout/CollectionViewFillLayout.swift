@@ -23,9 +23,9 @@ public protocol CollectionViewDelegateFillLayout: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, minimumHeightForCellAt indexPath: IndexPath) -> CGFloat
     func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForCellAt indexPath: IndexPath) -> Int
 
-    func collectionView(_ collectionView: UICollectionView, alignmentForSupplementaryViewAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment
-    func collectionView(_ collectionView: UICollectionView, minimumHeightForSupplementaryViewAt indexPath: IndexPath) -> CGFloat
-    func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForSupplementaryViewAt indexPath: IndexPath) -> Int
+    func collectionView(_ collectionView: UICollectionView, alignmentForSupplementaryViewAt indexPath: IndexPath, position: CollectionViewFillLayout.SupplementaryViewPosition) -> CollectionViewFillLayout.Alignment
+    func collectionView(_ collectionView: UICollectionView, minimumHeightForSupplementaryViewAt indexPath: IndexPath, position: CollectionViewFillLayout.SupplementaryViewPosition) -> CGFloat
+    func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForSupplementaryViewAt indexPath: IndexPath, position: CollectionViewFillLayout.SupplementaryViewPosition) -> Int
 }
 
 
@@ -40,6 +40,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     // Cache
     private var cachedContentSize = CGSize.zero
     private var cachedBounds = CGRect.zero
+    private var cachedItemSizes = SizeCache()
     private var cachedLayoutAttributes = [TaggedIndexPath: UICollectionViewLayoutAttributes]()
 
     // Configuration
@@ -49,66 +50,78 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     // MARK: - Preparations -
 
     override public func prepare() {
-        prepareImpl()
-    }
-
-    private func prepareImpl() {
         guard let collectionView = collectionView,
             let delegate = collectionView.delegate as? CollectionViewDelegateFillLayout & CollectionViewDataSourceFillLayout else { return }
 
         // Cache invalidation
-        invalidateCachedLayoutAttributes()
-//        if invalidateEverything || collectionView.bounds.size != cachedBounds.size {
-//        }
+        cachedLayoutAttributes.removeAll(keepingCapacity: true)
 
         // Build an array of index paths
         var layoutItems = [CollectionViewFillLayout.Item<TaggedIndexPath>]()
         for section in 0..<collectionView.numberOfSections {
             for item in 0..<collectionView.numberOfItems(inSection: section) {
                 for tag in [TaggedIndexPath.Tag.before, .item, .after] {
+                    // Known Variables
+                    let collectionViewWidth = collectionView.bounds.width
                     let indexPath = TaggedIndexPath(item: item, section: section, tag: tag)
 
-                    // Item size
+                    // To be detemined
                     let cellSize: CGSize
-                    if let itemAttributes = self.cachedLayoutAttributes[indexPath] {
-                        cellSize = itemAttributes.frame.size
-                    } else {
-                        // Getting cell size be configuring
-                        let contentView: UIView
-                        let minimumHeight: CGFloat
-                        switch tag {
-                        case .before, .after:
-                            guard let viewType = delegate.collectionView(collectionView, supplementaryViewTypeAt: indexPath.native, position: .init(tag: tag)) else {
-                                continue
-                            }
+                    let contentHashValue: Int
+
+                    // To be detemined (if needed)
+                    var cachedCellSize: CGSize?
+                    var contentView: UIView?
+                    var minimumHeight: CGFloat?
+
+                    switch tag {
+                    case .before, .after:
+                        guard let viewType = delegate.collectionView(collectionView, supplementaryViewTypeAt: indexPath.native, position: .init(tag: tag)) else {
+                            continue
+                        }
+                        contentHashValue = delegate.collectionView(collectionView,
+                                                                   sizeInvalidationHashValueForSupplementaryViewAt: indexPath.native,
+                                                                   position: .init(tag: tag))
+                        cachedCellSize = cachedItemSizes[collectionViewWidth, tag, contentHashValue]
+                        if cachedCellSize == nil {
                             let supplementaryView = viewType.init(frame: .zero)
-                            minimumHeight = delegate.collectionView(collectionView, minimumHeightForSupplementaryViewAt: indexPath.native)
+                            minimumHeight = delegate.collectionView(collectionView, minimumHeightForSupplementaryViewAt: indexPath.native, position: .init(tag: tag))
                             delegate.collectionView(collectionView, configureSupplementaryView: supplementaryView, for: indexPath.native, position: .init(tag: tag))
                             contentView = supplementaryView
-                        case .item:
-                            let cellType = delegate.collectionView(collectionView, cellTypeAt: indexPath.native)
-                            let cell = cellType.init(frame: .zero)
+                        }
+                    case .item:
+                        let cellType = delegate.collectionView(collectionView, cellTypeAt: indexPath.native)
+                        let cell = cellType.init(frame: .zero)
+                        contentHashValue = delegate.collectionView(collectionView, sizeInvalidationHashValueForCellAt: indexPath.native)
+                        cachedCellSize = cachedItemSizes[collectionViewWidth, tag, contentHashValue]
+                        if cachedCellSize == nil {
                             minimumHeight = delegate.collectionView(collectionView, minimumHeightForCellAt: indexPath.native)
                             delegate.collectionView(collectionView, configureCell: cell, for: indexPath.native)
                             contentView = cell.contentView
                         }
+                    }
 
+                    if let cachedCellSize = cachedCellSize {
+                        cellSize = cachedCellSize
+                    } else if let minimumHeight = minimumHeight, let contentView = contentView {
                         NSLayoutConstraint.activate([
                             { $0.priority = .defaultLow; return $0 }(contentView.heightAnchor.constraint(equalToConstant: minimumHeight)),
                             { $0.priority = .defaultHigh; return $0 }(contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: minimumHeight)),
-                            ])
-
-                        let maximumCellSize = CGSize(width: collectionView.bounds.width, height: UILayoutFittingCompressedSize.height)
+                        ])
+                        let maximumCellSize = CGSize(width: collectionViewWidth, height: UILayoutFittingCompressedSize.height)
                         cellSize = contentView.systemLayoutSizeFitting(maximumCellSize,
                                                                        withHorizontalFittingPriority: .required,
                                                                        verticalFittingPriority: UILayoutPriority(1))
+                        cachedItemSizes[collectionViewWidth, tag, contentHashValue] = cellSize
+                    } else {
+                        fatalError()
                     }
 
                     // Item alignment
                     let alignment: CollectionViewFillLayout.Alignment
                     switch tag {
                     case .before, .after:
-                        alignment = delegate.collectionView(collectionView, alignmentForSupplementaryViewAt: indexPath.native)
+                        alignment = delegate.collectionView(collectionView, alignmentForSupplementaryViewAt: indexPath.native, position: .init(tag: tag))
                     case .item:
                         alignment = delegate.collectionView(collectionView, alignmentForCellAt: indexPath.native)
                     }
@@ -130,7 +143,6 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         // Cache
         cachedBounds = collectionView.bounds
         cachedContentSize = result.contentSize
-        invalidateCachedLayoutAttributes()
 
         for (index, positioning) in result.positionings.enumerated() {
             let indexPath = positioning.object
@@ -183,12 +195,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         super.invalidateLayout(with: context)
         if context.invalidateEverything {
             invalidateEverything = true
-            // invalidateCachedLayoutAttributes()
         }
-    }
-
-    private func invalidateCachedLayoutAttributes() {
-        cachedLayoutAttributes.removeAll(keepingCapacity: true)
     }
 
     // MARK: - Metrics -
@@ -321,5 +328,28 @@ private extension UICollectionViewLayoutAttributes {
 private extension IndexPath {
     func tagged(with tag: CollectionViewFillLayout.TaggedIndexPath.Tag) -> CollectionViewFillLayout.TaggedIndexPath {
         return CollectionViewFillLayout.TaggedIndexPath.init(item: item, section: section, tag: tag)
+    }
+}
+
+
+private class SizeCache {
+
+    struct Key: Hashable {
+        let width: CGFloat
+        let tag: CollectionViewFillLayout.TaggedIndexPath.Tag
+        let contentHashValue: Int
+    }
+
+    private var cache = [Key: CGSize]()
+
+    subscript(width: CGFloat, tag: CollectionViewFillLayout.TaggedIndexPath.Tag, hashValue: Int) -> CGSize? {
+        get {
+            let key = Key(width: width, tag: tag, contentHashValue: hashValue)
+            return cache[key]
+        }
+        set {
+            let key = Key(width: width, tag: tag, contentHashValue: hashValue)
+            cache[key] = newValue
+        }
     }
 }

@@ -339,12 +339,14 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    open func collectionView(_ collectionView: UICollectionView,
+                             numberOfItemsInSection section: Int) -> Int {
         return sections[section].items.count
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    open func collectionView(_ collectionView: UICollectionView,
+                             cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let item = sections[indexPath.section].items[indexPath.item]
         let itemType = type(of: item)
         let reuseIdentifier = itemType.typeIdentifier
@@ -354,12 +356,15 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+    open func collectionView(_ collectionView: UICollectionView,
+                             viewForSupplementaryElementOfKind kind: String,
+                             at indexPath: IndexPath) -> UICollectionReusableView {
         fatalError()
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, cellTypeAt indexPath: IndexPath) -> UICollectionViewCell.Type {
+    open func collectionView(_ collectionView: UICollectionView,
+                             cellTypeAt indexPath: IndexPath) -> UICollectionViewCell.Type {
         let item = sections[indexPath.section].items[indexPath.item]
         let itemType = type(of: item)
         let reuseIdentifier = itemType.typeIdentifier
@@ -367,7 +372,9 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, configureCell cell: UICollectionViewCell, for indexPath: IndexPath) {
+    open func collectionView(_ collectionView: UICollectionView,
+                             configureCell cell: UICollectionViewCell,
+                             for indexPath: IndexPath) {
         let item = sections[indexPath.section].items[indexPath.item]
         if let formCell = cell as? AnyFormCellProtocol & UICollectionViewCell {
             let oldItem = formCell.anyFormItem
@@ -378,48 +385,63 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, supplementaryViewTypeAt indexPath: IndexPath, position: CollectionViewFillLayout.SupplementaryViewPosition) -> UICollectionReusableView.Type? {
+    open func collectionView(_ collectionView: UICollectionView,
+                             supplementaryViewTypeAt indexPath: IndexPath,
+                             position: CollectionViewFillLayout.SupplementaryViewPosition) -> UICollectionReusableView.Type? {
         return nil
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, configureSupplementaryView view: UICollectionReusableView, for indexPath: IndexPath, position: CollectionViewFillLayout.SupplementaryViewPosition) {
+    open func collectionView(_ collectionView: UICollectionView,
+                             configureSupplementaryView view: UICollectionReusableView,
+                             for indexPath: IndexPath,
+                             position: CollectionViewFillLayout.SupplementaryViewPosition) {
         fatalError()
     }
 
 
     // MARK: CollectionViewDelegateFillLayout
 
-    open func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    open func collectionView(_ collectionView: UICollectionView,
+                             didSelectItemAt indexPath: IndexPath) {
         print(#function)
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, alignmentForCellAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment {
+    open func collectionView(_ collectionView: UICollectionView,
+                             alignmentForCellAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment {
         return .default
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, minimumHeightForCellAt indexPath: IndexPath) -> CGFloat {
+    open func collectionView(_ collectionView: UICollectionView,
+                             minimumHeightForCellAt indexPath: IndexPath) -> CGFloat {
         return 44
     }
 
 
-    public func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForCellAt indexPath: IndexPath) -> Int {
+    public func collectionView(_ collectionView: UICollectionView,
+                               sizeInvalidationHashValueForCellAt indexPath: IndexPath) -> Int {
         let item = sections[indexPath.section].items[indexPath.item]
         return item.hashValue
     }
 
-    open func collectionView(_ collectionView: UICollectionView, alignmentForSupplementaryViewAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment {
+    open func collectionView(_ collectionView: UICollectionView,
+                             alignmentForSupplementaryViewAt indexPath: IndexPath,
+                             position: CollectionViewFillLayout.SupplementaryViewPosition) -> CollectionViewFillLayout.Alignment {
         return .default
     }
 
 
-    open func collectionView(_ collectionView: UICollectionView, minimumHeightForSupplementaryViewAt indexPath: IndexPath) -> CGFloat {
+    open func collectionView(_ collectionView: UICollectionView,
+                             minimumHeightForSupplementaryViewAt indexPath: IndexPath,
+                             position: CollectionViewFillLayout.SupplementaryViewPosition) -> CGFloat {
         return 0
     }
 
-    public func collectionView(_ collectionView: UICollectionView, sizeInvalidationHashValueForSupplementaryViewAt indexPath: IndexPath) -> Int {
+    public func collectionView(_ collectionView: UICollectionView,
+                               sizeInvalidationHashValueForSupplementaryViewAt indexPath: IndexPath,
+                               position: CollectionViewFillLayout.SupplementaryViewPosition) -> Int {
         let item = sections[indexPath.section].items[indexPath.item]
         return item.hashValue
     }
