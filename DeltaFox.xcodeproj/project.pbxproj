@@ -92,8 +92,8 @@
 		9B0DC66F2190E775007ADEEF /* CollectionViewFillLayout */ = {
 			isa = PBXGroup;
 			children = (
-				9B0DC6702190E775007ADEEF /* CollectionViewFillLayout+Solver.swift */,
 				9B0DC6712190E775007ADEEF /* CollectionViewFillLayout.swift */,
+				9B0DC6702190E775007ADEEF /* CollectionViewFillLayout+Solver.swift */,
 				9B0DC6722190E775007ADEEF /* CollectionViewFillLayout+Types.swift */,
 			);
 			path = CollectionViewFillLayout;

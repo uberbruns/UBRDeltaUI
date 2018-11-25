@@ -92,7 +92,7 @@ extension CollectionViewFillLayout {
         // Validate offset to avoid layout issues on complete layout invalidation that create
         // invalid content offsets. For example when the content is scrolled all the way down
         // and items are removed.
-        let validatedOffset = { () -> CGFloat in
+        let bottomOffset = { () -> CGFloat in
             if clipOffset {
                 let maxOffset = contentSize.height - bounds.height - contentInsets.bottom
                 let minOffset = 0 - contentInsets.top - contentInsets.bottom
@@ -110,7 +110,7 @@ extension CollectionViewFillLayout {
             positionings[index].frame.origin.y = positionings[index].frame.origin.y
                 + bounds.maxY
                 - combinedBottomHeight
-                + validatedOffset
+                + bottomOffset
         }
 
         return Result(positionings: positionings,
