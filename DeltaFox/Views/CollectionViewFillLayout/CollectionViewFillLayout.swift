@@ -34,11 +34,10 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     // MARK: - Properties -
 
     // State
+    private var collectionViewElementsAreUpdating = false
     private var insertedDeletedOrMovedIndexPaths = Set<IndexPath>()
-    private var invalidateEverything = true
-    private var sizeIsChanging = false
-    private var itemsAreUpdating = false
-    private var needsInvalidationAfterUpdate = false
+    private var performFullInvalidation = true
+    private var performFrameAnimations = false
 
     // Cache
     private var cachedContentSize = CGSize.zero
@@ -49,26 +48,31 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     var automaticallyAdjustScrollIndicatorInsets = true
     var contentInsetObservationToken: AnyObject?
 
+    // MARK: - Custom API -
 
-    // MARK: - Preparations -
+    public func collectionViewUpdatesWillBegin() {
+        collectionViewElementsAreUpdating = true
+    }
+
+    public func collectionViewUpdatesDidEnd() {
+        collectionViewElementsAreUpdating = false
+    }
+
+    // MARK: - Layout Life Cycle -
+    // MARK: Preperation
 
     override public func prepare() {
         guard let collectionView = collectionView,
             let delegate = collectionView.delegate as? CollectionViewDelegateFillLayout & CollectionViewDataSourceFillLayout else { return }
 
-        
-
+        // Observe collection view content inset
         if contentInsetObservationToken == nil {
             contentInsetObservationToken = collectionView.observe(\.contentInset, options: [.new, .old]) { (collectionView, change) in
                 guard change.oldValue != change.newValue else { return }
-                if !self.itemsAreUpdating {
-                    self.sizeIsChanging = true
-                    self.invalidateLayout()
-                } else {
-                    self.invalidateEverything = true
-                    self.invalidateLayout()
-//                    self.needsInvalidationAfterUpdate = true
+                if !self.collectionViewElementsAreUpdating {
+                    self.performFrameAnimations = true
                 }
+                self.invalidateLayout()
             }
         }
 
@@ -155,7 +159,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         let result = CollectionViewFillLayout.solve(with: layoutItems,
                                                     inside: bounds,
                                                     offset: collectionView.contentOffset.y,
-                                                    clipOffset: invalidateEverything,
+                                                    clipOffset: performFullInvalidation,
                                                     contentInsets: collectionView.adjustedContentInset)
 
         // Cache
@@ -170,7 +174,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         }
 
         // Reset state
-        invalidateEverything = false
+        performFullInvalidation = false
 
         // Configure collection view
         collectionView.isPrefetchingEnabled = false // Removing this or setting it to true -> Dragons (Invisible and/or unresponsive cells when bounds are changing)
@@ -182,9 +186,9 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
         super.prepare(forCollectionViewUpdates: updateItems)
 
-        guard !updateItems.isEmpty else { return }
+        guard !updateItems.isEmpty, performFrameAnimations else { return }
 
-        invalidateEverything = true
+        performFullInvalidation = true
         insertedDeletedOrMovedIndexPaths.removeAll()
 
         for updatedItem in updateItems {
@@ -204,38 +208,23 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         }
     }
 
-    public func collectionViewUpdatesWillBegin() {
-        itemsAreUpdating = true
-    }
-
-    public func collectionViewUpdatesDidEnd() {
-        itemsAreUpdating = false
-//        if needsInvalidationAfterUpdate {
-//            self.needsInvalidationAfterUpdate = false
-//            self.sizeIsChanging = false
-//            UIView.animate(withDuration: 0.2) {
-//                self.collectionView!.reloadData()
-//            }
-//        }
-    }
-
     // MARK: Invalidation
 
     override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-        sizeIsChanging = newBounds != collectionView?.bounds
+        performFrameAnimations = newBounds.size != collectionView?.bounds.size
         return true
     }
 
     override public func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
         super.invalidateLayout(with: context)
         if context.invalidateEverything {
-            invalidateEverything = true
+            performFullInvalidation = true
         }
     }
 
     public override func finalizeAnimatedBoundsChange() {
         super.finalizeAnimatedBoundsChange()
-        sizeIsChanging = false
+        performFrameAnimations = false
     }
 
     // MARK: - Metrics -
@@ -263,10 +252,10 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         return cachedLayoutAttributes[taggedIndexPath]!
     }
 
-    // MARK: Animation
+    // MARK: Appearance Animation
 
     override public func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        guard sizeIsChanging else {
+        guard performFrameAnimations else {
             return super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
         }
 
@@ -279,7 +268,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     }
 
     override public func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        guard sizeIsChanging else {
+        guard performFrameAnimations else {
             return super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
         }
 
@@ -292,7 +281,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     }
 
     override public func initialLayoutAttributesForAppearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        guard sizeIsChanging else {
+        guard performFrameAnimations else {
             return super.initialLayoutAttributesForAppearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
         }
 
@@ -305,7 +294,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     }
 
     override public func finalLayoutAttributesForDisappearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        guard sizeIsChanging else { return super.finalLayoutAttributesForDisappearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath) }
+        guard performFrameAnimations else { return super.finalLayoutAttributesForDisappearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath) }
 
         let layoutAttributes = cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag(rawValue: elementKind)!)]
         if insertedDeletedOrMovedIndexPaths.contains(elementIndexPath) {
