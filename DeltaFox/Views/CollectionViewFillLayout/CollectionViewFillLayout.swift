@@ -197,7 +197,6 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
 
     override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         performFrameAnimations = newBounds.size != collectionView?.bounds.size
-        print(#function,  newBounds.size != collectionView?.bounds.size)
         return true
     }
 
@@ -241,7 +240,6 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     // MARK: Appearance Animation
 
     override public func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        print(#function, performFrameAnimations)
         guard performFrameAnimations else {
             return super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
         }
