@@ -8,6 +8,15 @@
 
 import UIKit
 
+private enum Config {
+    static let defaultLevel = 020_000
+    static let defaultLevelWhenAppearing = 010_000
+    static let defaultLevelWhenDisappearing = 000_000
+    static let pinnedToBottomLevel = 100_000
+    static let pinnedToBottomLevelWhenAppearing = 090_000
+    static let pinnedToBottomLevelWhenDisappearing = 080_000
+}
+
 
 public protocol CollectionViewDataSourceFillLayout: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellTypeAt indexPath: IndexPath) -> UICollectionViewCell.Type
@@ -35,7 +44,6 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
 
     // State
     private var collectionViewElementsAreUpdating = false
-    private var insertedDeletedOrMovedIndexPaths = Set<IndexPath>()
     private var performFullInvalidation = true
     private var performFrameAnimations = false
 
@@ -67,8 +75,8 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
 
         // Observe collection view content inset
         if contentInsetObservationToken == nil {
-            contentInsetObservationToken = collectionView.observe(\.contentInset, options: [.new, .old]) { (collectionView, change) in
-                guard change.oldValue != change.newValue else { return }
+            contentInsetObservationToken = collectionView.observe(\.contentInset, options: [.new, .old, .prior]) { (collectionView, change) in
+                guard change.isPrior, change.oldValue != change.newValue else { return }
                 if !self.collectionViewElementsAreUpdating {
                     self.performFrameAnimations = true
                 }
@@ -169,7 +177,9 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
             let indexPath = positioning.object
             let itemAttributes = UICollectionViewLayoutAttributes(taggedIndexPath: indexPath)
             itemAttributes.frame = positioning.frame
-            itemAttributes.zIndex = positioning.alignment == .pinnedToBottom ? index + 1000 : index
+            itemAttributes.zIndex = positioning.alignment == .pinnedToBottom
+                ? index + Config.pinnedToBottomLevel
+                : index + Config.defaultLevel
             cachedLayoutAttributes[indexPath] = itemAttributes
         }
 
@@ -179,32 +189,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         // Configure collection view
         collectionView.isPrefetchingEnabled = false // Removing this or setting it to true -> Dragons (Invisible and/or unresponsive cells when bounds are changing)
         if automaticallyAdjustScrollIndicatorInsets {
-            collectionView.scrollIndicatorInsets.bottom = result.stickyBottomHeight
-        }
-    }
-
-    override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
-        super.prepare(forCollectionViewUpdates: updateItems)
-
-        guard !updateItems.isEmpty, performFrameAnimations else { return }
-
-        performFullInvalidation = true
-        insertedDeletedOrMovedIndexPaths.removeAll()
-
-        for updatedItem in updateItems {
-            switch updatedItem.updateAction {
-            case .insert:
-                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathAfterUpdate!)
-            case .delete:
-                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathBeforeUpdate!)
-            case .move:
-                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathAfterUpdate!)
-                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathBeforeUpdate!)
-            case .reload:
-                break
-            default:
-                break
-            }
+            collectionView.scrollIndicatorInsets.bottom = result.pinnedToBottomHeight
         }
     }
 
@@ -212,6 +197,7 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
 
     override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         performFrameAnimations = newBounds.size != collectionView?.bounds.size
+        print(#function,  newBounds.size != collectionView?.bounds.size)
         return true
     }
 
@@ -255,53 +241,32 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     // MARK: Appearance Animation
 
     override public func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        print(#function, performFrameAnimations)
         guard performFrameAnimations else {
             return super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
         }
-
-        let layoutAttributes = cachedLayoutAttributes[itemIndexPath.tagged(with: .item)]
-        if insertedDeletedOrMovedIndexPaths.contains(itemIndexPath) {
-            layoutAttributes?.alpha = 0
-            insertedDeletedOrMovedIndexPaths.remove(itemIndexPath)
-        }
-        return layoutAttributes
+        return cachedLayoutAttributes[itemIndexPath.tagged(with: .item)]
     }
 
     override public func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         guard performFrameAnimations else {
             return super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
         }
-
-        let layoutAttributes = cachedLayoutAttributes[itemIndexPath.tagged(with: .item)]
-        if insertedDeletedOrMovedIndexPaths.contains(itemIndexPath) {
-            layoutAttributes?.alpha = 0
-            insertedDeletedOrMovedIndexPaths.remove(itemIndexPath)
-        }
-        return layoutAttributes
+        return cachedLayoutAttributes[itemIndexPath.tagged(with: .item)]
     }
 
     override public func initialLayoutAttributesForAppearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         guard performFrameAnimations else {
             return super.initialLayoutAttributesForAppearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
         }
-
-        let layoutAttributes = cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag(rawValue: elementKind)!)]
-        if insertedDeletedOrMovedIndexPaths.contains(elementIndexPath) {
-            layoutAttributes?.alpha = 0
-            insertedDeletedOrMovedIndexPaths.remove(elementIndexPath)
-        }
-        return layoutAttributes
+        return cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag(rawValue: elementKind)!)]
     }
 
     override public func finalLayoutAttributesForDisappearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        guard performFrameAnimations else { return super.finalLayoutAttributesForDisappearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath) }
-
-        let layoutAttributes = cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag(rawValue: elementKind)!)]
-        if insertedDeletedOrMovedIndexPaths.contains(elementIndexPath) {
-            layoutAttributes?.alpha = 0
-            insertedDeletedOrMovedIndexPaths.remove(elementIndexPath)
+        guard performFrameAnimations else {
+            return super.finalLayoutAttributesForDisappearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
         }
-        return layoutAttributes
+        return cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag(rawValue: elementKind)!)]
     }
 }
 

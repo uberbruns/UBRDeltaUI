@@ -43,6 +43,6 @@ public extension CollectionViewFillLayout {
     struct Result<T> {
         let positionings: [Positioning<T>]
         let contentSize: CGSize
-        let stickyBottomHeight: CGFloat
+        let pinnedToBottomHeight: CGFloat
     }
 }
