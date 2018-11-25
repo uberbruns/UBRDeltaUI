@@ -20,7 +20,7 @@ open class FormView: UIView {
 
     // MARK: - Properties -
 
-    let layout = CollectionViewFillLayout()
+    public let layout = CollectionViewFillLayout()
     open lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     public weak var delegate: FormViewDelegate?
 
@@ -32,6 +32,7 @@ open class FormView: UIView {
 
     public private(set) var sections = [FormSection]()
     private var cellTypes = [String: UICollectionViewCell.Type]()
+    private var viewTypes = [String: UICollectionReusableView.Type]()
 
 
     // MARK: - View -
@@ -102,9 +103,11 @@ open class FormView: UIView {
         cellTypes[reuseIdentifier] = cellType
     }
 
-    public func register<FC: FormCellProtocol & UICollectionReusableView>(viewType: FC.Type) {
+    public func register<FC: FormHeaderFooterView & UICollectionReusableView>(viewType: FC.Type) {
+        let reuseIdentifier = viewType.FormItemType.typeIdentifier
         collectionView.register(viewType, forSupplementaryViewOfKind: CollectionViewFillLayout.SupplementaryViewPosition.before.rawValue, withReuseIdentifier: viewType.FormItemType.typeIdentifier)
         collectionView.register(viewType, forSupplementaryViewOfKind: CollectionViewFillLayout.SupplementaryViewPosition.after.rawValue, withReuseIdentifier: viewType.FormItemType.typeIdentifier)
+        viewTypes[reuseIdentifier] = viewType
     }
 
     // MARK: Configuration
@@ -133,6 +136,7 @@ open class FormView: UIView {
             if this.animateViews == false {
                 UIView.setAnimationsEnabled(false)
             }
+            this.layout.collectionViewUpdatesWillBegin()
             this.collectionViewWillUpdateCells(this.animateViews)
         }
 
@@ -315,6 +319,7 @@ open class FormView: UIView {
 
             UIView.setAnimationsEnabled(true)
             this.collectionViewDidUpdateCells(this.animateViews)
+            this.layout.collectionViewUpdatesDidEnd()
             this.animateViews = true
         }
     }
@@ -357,13 +362,6 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
 
 
     open func collectionView(_ collectionView: UICollectionView,
-                             viewForSupplementaryElementOfKind kind: String,
-                             at indexPath: IndexPath) -> UICollectionReusableView {
-        fatalError()
-    }
-
-
-    open func collectionView(_ collectionView: UICollectionView,
                              cellTypeAt indexPath: IndexPath) -> UICollectionViewCell.Type {
         let item = sections[indexPath.section].items[indexPath.item]
         let itemType = type(of: item)
@@ -386,9 +384,35 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
 
 
     open func collectionView(_ collectionView: UICollectionView,
+                             viewForSupplementaryElementOfKind kind: String,
+                             at indexPath: IndexPath) -> UICollectionReusableView {
+        guard indexPath.item == 0,
+            let position = CollectionViewFillLayout.SupplementaryViewPosition(rawValue: kind),
+            position == .before,
+            let headerItem = sections[indexPath.section].headerItem
+            else { fatalError() }
+
+        let itemType = type(of: headerItem)
+        let reuseIdentifier = itemType.typeIdentifier
+        let view = collectionView.dequeueReusableSupplementaryView(ofKind: position.rawValue,
+                                                                   withReuseIdentifier: reuseIdentifier,
+                                                                   for: indexPath)
+
+        self.collectionView(collectionView, configureSupplementaryView: view, for: indexPath, position: position)
+        return view
+    }
+    
+    open func collectionView(_ collectionView: UICollectionView,
                              supplementaryViewTypeAt indexPath: IndexPath,
                              position: CollectionViewFillLayout.SupplementaryViewPosition) -> UICollectionReusableView.Type? {
-        return nil
+        guard indexPath.item == 0,
+            position == .before,
+            let headerItem = sections[indexPath.section].headerItem
+            else { return nil }
+
+        let itemType = type(of: headerItem)
+        let reuseIdentifier = itemType.typeIdentifier
+        return viewTypes[reuseIdentifier]
     }
 
 
@@ -396,7 +420,17 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
                              configureSupplementaryView view: UICollectionReusableView,
                              for indexPath: IndexPath,
                              position: CollectionViewFillLayout.SupplementaryViewPosition) {
-        fatalError()
+
+        let section = sections[indexPath.section]
+        let item = position == .before ? section.headerItem! : section.footerItem!
+        let type = position == .before ? HeaderFooterType.header : .footer
+
+        if let formHeaderFooterView = view as? AnyFormHeaderFooterView & UICollectionReusableView {
+            let oldItem = formHeaderFooterView.anyFormItem
+            formHeaderFooterView.anyFormItem = item
+            formHeaderFooterView.itemDidChange(oldItem: oldItem, animate: false, type: type)
+            formHeaderFooterView.tintColor = tintColor
+        }
     }
 
 
@@ -410,13 +444,13 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
 
     open func collectionView(_ collectionView: UICollectionView,
                              alignmentForCellAt indexPath: IndexPath) -> CollectionViewFillLayout.Alignment {
-        return .default
+        return sections[indexPath.section].items[indexPath.item].alignment
     }
 
 
     open func collectionView(_ collectionView: UICollectionView,
                              minimumHeightForCellAt indexPath: IndexPath) -> CGFloat {
-        return 44
+        return 10
     }
 
 
@@ -436,7 +470,7 @@ extension FormView: CollectionViewDataSourceFillLayout, CollectionViewDelegateFi
     open func collectionView(_ collectionView: UICollectionView,
                              minimumHeightForSupplementaryViewAt indexPath: IndexPath,
                              position: CollectionViewFillLayout.SupplementaryViewPosition) -> CGFloat {
-        return 0
+        return 10
     }
 
     public func collectionView(_ collectionView: UICollectionView,

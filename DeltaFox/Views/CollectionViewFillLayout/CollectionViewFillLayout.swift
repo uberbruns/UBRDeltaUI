@@ -34,24 +34,43 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     // MARK: - Properties -
 
     // State
-    private var insertedOrDeletedIndexPaths = Set<IndexPath>()
-    var invalidateEverything = true
+    private var insertedDeletedOrMovedIndexPaths = Set<IndexPath>()
+    private var invalidateEverything = true
+    private var sizeIsChanging = false
+    private var itemsAreUpdating = false
+    private var needsInvalidationAfterUpdate = false
 
     // Cache
     private var cachedContentSize = CGSize.zero
-    private var cachedBounds = CGRect.zero
     private var cachedItemSizes = SizeCache()
     private var cachedLayoutAttributes = [TaggedIndexPath: UICollectionViewLayoutAttributes]()
 
     // Configuration
     var automaticallyAdjustScrollIndicatorInsets = true
+    var contentInsetObservationToken: AnyObject?
 
-    
+
     // MARK: - Preparations -
 
     override public func prepare() {
         guard let collectionView = collectionView,
             let delegate = collectionView.delegate as? CollectionViewDelegateFillLayout & CollectionViewDataSourceFillLayout else { return }
+
+        
+
+        if contentInsetObservationToken == nil {
+            contentInsetObservationToken = collectionView.observe(\.contentInset, options: [.new, .old]) { (collectionView, change) in
+                guard change.oldValue != change.newValue else { return }
+                if !self.itemsAreUpdating {
+                    self.sizeIsChanging = true
+                    self.invalidateLayout()
+                } else {
+                    self.invalidateEverything = true
+                    self.invalidateLayout()
+//                    self.needsInvalidationAfterUpdate = true
+                }
+            }
+        }
 
         // Cache invalidation
         cachedLayoutAttributes.removeAll(keepingCapacity: true)
@@ -65,11 +84,12 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
                     let collectionViewWidth = collectionView.bounds.width
                     let indexPath = TaggedIndexPath(item: item, section: section, tag: tag)
 
-                    // To be detemined
+                    // To be determined
                     let cellSize: CGSize
                     let contentHashValue: Int
+                    let alignment: CollectionViewFillLayout.Alignment
 
-                    // To be detemined (if needed)
+                    // To be determined (if needed)
                     var cachedCellSize: CGSize?
                     var contentView: UIView?
                     var minimumHeight: CGFloat?
@@ -79,9 +99,12 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
                         guard let viewType = delegate.collectionView(collectionView, supplementaryViewTypeAt: indexPath.native, position: .init(tag: tag)) else {
                             continue
                         }
+
+                        alignment = delegate.collectionView(collectionView, alignmentForSupplementaryViewAt: indexPath.native, position: .init(tag: tag))
                         contentHashValue = delegate.collectionView(collectionView,
                                                                    sizeInvalidationHashValueForSupplementaryViewAt: indexPath.native,
                                                                    position: .init(tag: tag))
+
                         cachedCellSize = cachedItemSizes[collectionViewWidth, tag, contentHashValue]
                         if cachedCellSize == nil {
                             let supplementaryView = viewType.init(frame: .zero)
@@ -89,10 +112,14 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
                             delegate.collectionView(collectionView, configureSupplementaryView: supplementaryView, for: indexPath.native, position: .init(tag: tag))
                             contentView = supplementaryView
                         }
+
                     case .item:
                         let cellType = delegate.collectionView(collectionView, cellTypeAt: indexPath.native)
                         let cell = cellType.init(frame: .zero)
+
+                        alignment = delegate.collectionView(collectionView, alignmentForCellAt: indexPath.native)
                         contentHashValue = delegate.collectionView(collectionView, sizeInvalidationHashValueForCellAt: indexPath.native)
+
                         cachedCellSize = cachedItemSizes[collectionViewWidth, tag, contentHashValue]
                         if cachedCellSize == nil {
                             minimumHeight = delegate.collectionView(collectionView, minimumHeightForCellAt: indexPath.native)
@@ -117,15 +144,6 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
                         fatalError()
                     }
 
-                    // Item alignment
-                    let alignment: CollectionViewFillLayout.Alignment
-                    switch tag {
-                    case .before, .after:
-                        alignment = delegate.collectionView(collectionView, alignmentForSupplementaryViewAt: indexPath.native, position: .init(tag: tag))
-                    case .item:
-                        alignment = delegate.collectionView(collectionView, alignmentForCellAt: indexPath.native)
-                    }
-
                     let layoutItem = CollectionViewFillLayout.Item(with: indexPath, height: cellSize.height, alignment: alignment)
                     layoutItems.append(layoutItem)
                 }
@@ -141,7 +159,6 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
                                                     contentInsets: collectionView.adjustedContentInset)
 
         // Cache
-        cachedBounds = collectionView.bounds
         cachedContentSize = result.contentSize
 
         for (index, positioning) in result.positionings.enumerated() {
@@ -165,29 +182,47 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
         super.prepare(forCollectionViewUpdates: updateItems)
 
+        guard !updateItems.isEmpty else { return }
+
         invalidateEverything = true
-        insertedOrDeletedIndexPaths.removeAll()
+        insertedDeletedOrMovedIndexPaths.removeAll()
 
         for updatedItem in updateItems {
             switch updatedItem.updateAction {
             case .insert:
-                insertedOrDeletedIndexPaths.insert(updatedItem.indexPathAfterUpdate!)
+                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathAfterUpdate!)
             case .delete:
-                insertedOrDeletedIndexPaths.insert(updatedItem.indexPathBeforeUpdate!)
+                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathBeforeUpdate!)
+            case .move:
+                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathAfterUpdate!)
+                insertedDeletedOrMovedIndexPaths.insert(updatedItem.indexPathBeforeUpdate!)
+            case .reload:
+                break
             default:
                 break
             }
         }
     }
 
-    // MARK: Invalidation
-
-    func invalidateCellSizes() {
-        invalidateEverything = true
-        invalidateLayout()
+    public func collectionViewUpdatesWillBegin() {
+        itemsAreUpdating = true
     }
 
+    public func collectionViewUpdatesDidEnd() {
+        itemsAreUpdating = false
+//        if needsInvalidationAfterUpdate {
+//            self.needsInvalidationAfterUpdate = false
+//            self.sizeIsChanging = false
+//            UIView.animate(withDuration: 0.2) {
+//                self.collectionView!.reloadData()
+//            }
+//        }
+    }
+
+    // MARK: Invalidation
+
     override public func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        sizeIsChanging = newBounds != collectionView?.bounds
         return true
     }
 
@@ -196,6 +231,11 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
         if context.invalidateEverything {
             invalidateEverything = true
         }
+    }
+
+    public override func finalizeAnimatedBoundsChange() {
+        super.finalizeAnimatedBoundsChange()
+        sizeIsChanging = false
     }
 
     // MARK: - Metrics -
@@ -219,44 +259,58 @@ public class CollectionViewFillLayout: UICollectionViewLayout {
     }
 
     public override func layoutAttributesForSupplementaryView(ofKind elementKind: String, at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let taggedIndexPath = TaggedIndexPath(item: indexPath.item, section: indexPath.section, tag: TaggedIndexPath.Tag.init(rawValue: elementKind)!)
+        let taggedIndexPath = TaggedIndexPath(item: indexPath.item, section: indexPath.section, tag: TaggedIndexPath.Tag(rawValue: elementKind)!)
         return cachedLayoutAttributes[taggedIndexPath]!
     }
 
     // MARK: Animation
 
     override public func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let layoutAttributes = super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
-        if insertedOrDeletedIndexPaths.contains(itemIndexPath) {
+        guard sizeIsChanging else {
+            return super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
+        }
+
+        let layoutAttributes = cachedLayoutAttributes[itemIndexPath.tagged(with: .item)]
+        if insertedDeletedOrMovedIndexPaths.contains(itemIndexPath) {
             layoutAttributes?.alpha = 0
-            insertedOrDeletedIndexPaths.remove(itemIndexPath)
+            insertedDeletedOrMovedIndexPaths.remove(itemIndexPath)
         }
         return layoutAttributes
     }
 
     override public func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let layoutAttributes = super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
-        if insertedOrDeletedIndexPaths.contains(itemIndexPath) {
+        guard sizeIsChanging else {
+            return super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
+        }
+
+        let layoutAttributes = cachedLayoutAttributes[itemIndexPath.tagged(with: .item)]
+        if insertedDeletedOrMovedIndexPaths.contains(itemIndexPath) {
             layoutAttributes?.alpha = 0
-            insertedOrDeletedIndexPaths.remove(itemIndexPath)
+            insertedDeletedOrMovedIndexPaths.remove(itemIndexPath)
         }
         return layoutAttributes
     }
 
     override public func initialLayoutAttributesForAppearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let layoutAttributes = super.initialLayoutAttributesForAppearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
-        if insertedOrDeletedIndexPaths.contains(elementIndexPath) {
+        guard sizeIsChanging else {
+            return super.initialLayoutAttributesForAppearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
+        }
+
+        let layoutAttributes = cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag(rawValue: elementKind)!)]
+        if insertedDeletedOrMovedIndexPaths.contains(elementIndexPath) {
             layoutAttributes?.alpha = 0
-            insertedOrDeletedIndexPaths.remove(elementIndexPath)
+            insertedDeletedOrMovedIndexPaths.remove(elementIndexPath)
         }
         return layoutAttributes
     }
 
     override public func finalLayoutAttributesForDisappearingSupplementaryElement(ofKind elementKind: String, at elementIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let layoutAttributes = super.finalLayoutAttributesForDisappearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath)
-        if insertedOrDeletedIndexPaths.contains(elementIndexPath) {
+        guard sizeIsChanging else { return super.finalLayoutAttributesForDisappearingSupplementaryElement(ofKind: elementKind, at: elementIndexPath) }
+
+        let layoutAttributes = cachedLayoutAttributes[elementIndexPath.tagged(with: CollectionViewFillLayout.TaggedIndexPath.Tag(rawValue: elementKind)!)]
+        if insertedDeletedOrMovedIndexPaths.contains(elementIndexPath) {
             layoutAttributes?.alpha = 0
-            insertedOrDeletedIndexPaths.remove(elementIndexPath)
+            insertedDeletedOrMovedIndexPaths.remove(elementIndexPath)
         }
         return layoutAttributes
     }

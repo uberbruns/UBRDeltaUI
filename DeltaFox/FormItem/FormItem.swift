@@ -15,7 +15,15 @@ public typealias SelectionHandler = () -> ()
 
 public protocol AnyFormItemProtocol: Diffable {
     var id: FormItemIdentifier { get }
+    var alignment: CollectionViewFillLayout.Alignment { get }
     static var typeIdentifier: String { get }
+}
+
+
+public extension AnyFormItemProtocol {
+    var alignment: CollectionViewFillLayout.Alignment {
+        return .default
+    }
 }
 
 
